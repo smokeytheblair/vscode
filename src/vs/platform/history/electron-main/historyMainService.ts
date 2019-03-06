@@ -13,7 +13,7 @@ import { IPath } from 'vs/platform/windows/common/windows';
 import { Event as CommonEvent, Emitter } from 'vs/base/common/event';
 import { isWindows, isMacintosh, isLinux } from 'vs/base/common/platform';
 import { IWorkspaceIdentifier, IWorkspacesMainService, ISingleFolderWorkspaceIdentifier, isSingleFolderWorkspaceIdentifier, isWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
-import { IHistoryMainService, IRecentlyOpened } from 'vs/platform/history/common/history';
+import { IHistoryMainService, IRecentlyOpened, IRecentWorkspace, IRecentFolder, IRecentFile, isRecentWorkspace, isRecentFolder, IRecent, isRecentFile } from 'vs/platform/history/common/history';
 import { isEqual } from 'vs/base/common/extpath';
 import { RunOnceScheduler } from 'vs/base/common/async';
 import { getComparisonKey, isEqual as areResourcesEqual, dirname, originalFSPath } from 'vs/base/common/resources';
@@ -47,9 +47,24 @@ export class HistoryMainService implements IHistoryMainService {
 		this.macOSRecentDocumentsUpdater = new RunOnceScheduler(() => this.updateMacOSRecentDocuments(), 800);
 	}
 
-	addRecentlyOpened(workspaces: Array<IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier>, files: URI[]): void {
-		if ((workspaces && workspaces.length > 0) || (files && files.length > 0)) {
-			const mru = this.getRecentlyOpened();
+	addRecentlyOpened(newlyAdded: Array<IRecentWorkspace | IRecentFolder | IRecentFile>): void {
+		const mru = this.getRecentlyOpened();
+
+		for (let curr of newlyAdded) {
+			if (isRecentWorkspace(curr)) {
+				if (!this.workspacesMainService.isUntitledWorkspace(curr.workspace)) {
+					mru.workspaces.unshift(curr);
+				}
+			} else if (isRecentFolder(curr)) {
+				mru.workspaces.unshift(curr);
+			} else {
+				mru.files.unshift(curr);
+				// Add to recent documents (Windows only, macOS later)
+				if (isWindows && curr.file.scheme === Schemas.file) {
+					app.addRecentDocument(curr.file.fsPath);
+				}
+			}
+			mru.workspaces = arrays.distinct(mru.workspaces, workspace => this.distinctFn(workspace.w));
 
 			// Workspaces
 			if (Array.isArray(workspaces)) {
@@ -60,24 +75,24 @@ export class HistoryMainService implements IHistoryMainService {
 					}
 
 					mru.workspaces.unshift(workspace);
-					mru.workspaces = arrays.distinct(mru.workspaces, workspace => this.distinctFn(workspace));
 
 					// We do not add to recent documents here because on Windows we do this from a custom
 					// JumpList and on macOS we fill the recent documents in one go from all our data later.
 				});
+				mru.workspaces = arrays.distinct(mru.workspaces, workspace => this.distinctFn(workspace));
 			}
 
 			// Files
 			if (Array.isArray(files)) {
 				files.forEach((fileUri) => {
 					mru.files.unshift(fileUri);
-					mru.files = arrays.distinct(mru.files, file => this.distinctFn(file));
 
 					// Add to recent documents (Windows only, macOS later)
 					if (isWindows && fileUri.scheme === Schemas.file) {
 						app.addRecentDocument(fileUri.fsPath);
 					}
 				});
+				mru.files = arrays.distinct(mru.files, file => this.distinctFn(file));
 			}
 
 			// Make sure its bounded
@@ -199,14 +214,17 @@ export class HistoryMainService implements IHistoryMainService {
 		this._onRecentlyOpenedChange.fire();
 	}
 
-	getRecentlyOpened(currentWorkspace?: IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier, currentFiles?: IPath[]): IRecentlyOpened {
+	getRecentlyOpened(currentWorkspace?: IWorkspaceIdentifier, currentFolder?: ISingleFolderWorkspaceIdentifier, currentFiles?: IPath[]): IRecentlyOpened {
 
 		// Get from storage
 		let { workspaces, files } = this.getRecentlyOpenedFromStorage();
 
 		// Add current workspace to beginning if set
-		if (currentWorkspace) {
-			workspaces.unshift(currentWorkspace);
+		if (currentWorkspace && !workspaces.some(w => isRecentWorkspace(w) && w.workspace.id === currentWorkspace.id)) {
+			workspaces.unshift({ workspace: currentWorkspace });
+		}
+		if (currentFolder && !workspaces.some(w => isRecentFolder(w) && isEqual(w.folder, currentFolder)) {
+			workspaces.unshift({ workspace: currentWorkspace });
 		}
 
 		// Add currently files to open to the beginning if any
@@ -224,12 +242,14 @@ export class HistoryMainService implements IHistoryMainService {
 		return { workspaces, files };
 	}
 
-	private distinctFn(workspaceOrFile: IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier | URI): string {
-		if (workspaceOrFile instanceof URI) {
-			return getComparisonKey(workspaceOrFile);
+	private distinctFn(recent: IRecent): string {
+		if (isRecentFolder(recent)) {
+			return getComparisonKey(recent.folder);
 		}
-
-		return workspaceOrFile.id;
+		if (isRecentFile(recent)) {
+			return getComparisonKey(recent.file);
+		}
+		return recent.workspace.id;
 	}
 
 	private getRecentlyOpenedFromStorage(): IRecentlyOpened {

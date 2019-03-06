@@ -114,6 +114,9 @@ interface IPathToOpen extends IPath {
 
 	// indicator to create the file path in the Code instance
 	createFilePath?: boolean;
+
+	// optional label for the recent history
+	label?: string;
 }
 
 function isFolderPathToOpen(path: IPathToOpen): path is IFolderPathToOpen {
@@ -130,6 +133,9 @@ interface IFolderPathToOpen {
 
 	// the remote authority for the Code instance to open. Undefined if not remote.
 	remoteAuthority?: string;
+
+	// optional label for the recent history
+	label?: string;
 }
 
 function isWorkspacePathToOpen(path: IPathToOpen): path is IWorkspacePathToOpen {
@@ -146,6 +152,9 @@ interface IWorkspacePathToOpen {
 
 	// the remote authority for the Code instance to open. Undefined if not remote.
 	remoteAuthority?: string;
+
+	// optional label for the recent history
+	label?: string;
 }
 
 export class WindowsManager implements IWindowsMainService {
@@ -479,7 +488,7 @@ export class WindowsManager implements IWindowsMainService {
 
 		// Remember in recent document list (unless this opens for extension development)
 		// Also do not add paths when files are opened for diffing, only if opened individually
-		if (!usedWindows.some(w => w.isExtensionDevelopmentHost) && !openConfig.diffMode) {
+		if (!usedWindows.some(w => w.isExtensionDevelopmentHost) && !openConfig.diffMode && !this.environmentService.skipAddToRecentlyOpened) {
 			const recentlyOpenedWorkspaces: Array<IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier> = [];
 			const recentlyOpenedFiles: URI[] = [];
 
@@ -492,10 +501,7 @@ export class WindowsManager implements IWindowsMainService {
 					recentlyOpenedFiles.push(win.fileUri);
 				}
 			});
-
-			if (!this.environmentService.skipAddToRecentlyOpened) {
-				this.historyMainService.addRecentlyOpened(recentlyOpenedWorkspaces, recentlyOpenedFiles);
-			}
+			this.historyMainService.addRecentlyOpened(recentlyOpenedWorkspaces, recentlyOpenedFiles);
 		}
 
 		// If we got started with --wait from the CLI, we need to signal to the outside when the window
