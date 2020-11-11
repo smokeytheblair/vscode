@@ -5,27 +5,29 @@
 
 import { Registry } from 'vs/platform/registry/common/platform';
 import { IPanel } from 'vs/workbench/common/panel';
-import { Composite, CompositeDescriptor, CompositeRegistry } from 'vs/workbench/browser/composite';
-import { Action } from 'vs/base/common/actions';
-import { IPanelService } from 'vs/workbench/services/panel/common/panelService';
-import { IPartService, Parts } from 'vs/workbench/services/part/common/partService';
-import { IConstructorSignature0 } from 'vs/platform/instantiation/common/instantiation';
-import { isAncestor } from 'vs/base/browser/dom';
+import { CompositeDescriptor, CompositeRegistry } from 'vs/workbench/browser/composite';
+import { IConstructorSignature0, BrandedService } from 'vs/platform/instantiation/common/instantiation';
+import { assertIsDefined } from 'vs/base/common/types';
+import { PaneComposite } from 'vs/workbench/browser/panecomposite';
 
-export abstract class Panel extends Composite implements IPanel { }
+export abstract class Panel extends PaneComposite implements IPanel { }
 
 /**
  * A panel descriptor is a leightweight descriptor of a panel in the workbench.
  */
 export class PanelDescriptor extends CompositeDescriptor<Panel> {
 
-	constructor(ctor: IConstructorSignature0<Panel>, id: string, name: string, cssClass?: string, order?: number, _commandId?: string) {
-		super(ctor, id, name, cssClass, order, _commandId);
+	static create<Services extends BrandedService[]>(ctor: { new(...services: Services): Panel }, id: string, name: string, cssClass?: string, order?: number, requestedIndex?: number, _commandId?: string): PanelDescriptor {
+		return new PanelDescriptor(ctor as IConstructorSignature0<Panel>, id, name, cssClass, order, requestedIndex, _commandId);
+	}
+
+	private constructor(ctor: IConstructorSignature0<Panel>, id: string, name: string, cssClass?: string, order?: number, requestedIndex?: number, _commandId?: string) {
+		super(ctor, id, name, cssClass, order, requestedIndex, _commandId);
 	}
 }
 
 export class PanelRegistry extends CompositeRegistry<Panel> {
-	private defaultPanelId: string;
+	private defaultPanelId: string | undefined;
 
 	/**
 	 * Registers a panel to the platform.
@@ -42,10 +44,17 @@ export class PanelRegistry extends CompositeRegistry<Panel> {
 	}
 
 	/**
+	 * Returns a panel by id.
+	 */
+	getPanel(id: string): PanelDescriptor | undefined {
+		return this.getComposite(id);
+	}
+
+	/**
 	 * Returns an array of registered panels known to the platform.
 	 */
 	getPanels(): PanelDescriptor[] {
-		return this.getComposites() as PanelDescriptor[];
+		return this.getComposites();
 	}
 
 	/**
@@ -59,7 +68,7 @@ export class PanelRegistry extends CompositeRegistry<Panel> {
 	 * Gets the id of the panel that should open on startup by default.
 	 */
 	getDefaultPanelId(): string {
-		return this.defaultPanelId;
+		return assertIsDefined(this.defaultPanelId);
 	}
 
 	/**
@@ -67,48 +76,6 @@ export class PanelRegistry extends CompositeRegistry<Panel> {
 	 */
 	hasPanel(id: string): boolean {
 		return this.getPanels().some(panel => panel.id === id);
-	}
-}
-
-/**
- * A reusable action to toggle a panel with a specific id depending on focus.
- */
-export abstract class TogglePanelAction extends Action {
-
-	private panelId: string;
-
-	constructor(
-		id: string,
-		label: string,
-		panelId: string,
-		protected panelService: IPanelService,
-		private partService: IPartService,
-		cssClass?: string
-	) {
-		super(id, label, cssClass);
-		this.panelId = panelId;
-	}
-
-	run(): Promise<any> {
-		if (this.isPanelFocused()) {
-			this.partService.setPanelHidden(true);
-		} else {
-			this.panelService.openPanel(this.panelId, true);
-		}
-
-		return Promise.resolve();
-	}
-
-	private isPanelActive(): boolean {
-		const activePanel = this.panelService.getActivePanel();
-
-		return !!activePanel && activePanel.getId() === this.panelId;
-	}
-
-	private isPanelFocused(): boolean {
-		const activeElement = document.activeElement;
-
-		return !!(this.isPanelActive() && activeElement && isAncestor(activeElement, this.partService.getContainer(Parts.PANEL_PART)));
 	}
 }
 

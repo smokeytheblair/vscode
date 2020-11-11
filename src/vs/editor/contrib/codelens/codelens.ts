@@ -9,48 +9,74 @@ import { illegalArgument, onUnexpectedExternalError } from 'vs/base/common/error
 import { URI } from 'vs/base/common/uri';
 import { registerLanguageCommand } from 'vs/editor/browser/editorExtensions';
 import { ITextModel } from 'vs/editor/common/model';
-import { CodeLensProvider, CodeLensProviderRegistry, ICodeLensSymbol } from 'vs/editor/common/modes';
+import { CodeLensProvider, CodeLensProviderRegistry, CodeLens, CodeLensList } from 'vs/editor/common/modes';
 import { IModelService } from 'vs/editor/common/services/modelService';
+import { DisposableStore } from 'vs/base/common/lifecycle';
 
-export interface ICodeLensData {
-	symbol: ICodeLensSymbol;
+export interface CodeLensItem {
+	symbol: CodeLens;
 	provider: CodeLensProvider;
 }
 
-export function getCodeLensData(model: ITextModel, token: CancellationToken): Promise<ICodeLensData[]> {
+export class CodeLensModel {
 
-	const symbols: ICodeLensData[] = [];
-	const provider = CodeLensProviderRegistry.ordered(model);
+	lenses: CodeLensItem[] = [];
 
-	const promises = provider.map(provider => Promise.resolve(provider.provideCodeLenses(model, token)).then(result => {
-		if (Array.isArray(result)) {
-			for (let symbol of result) {
-				symbols.push({ symbol, provider });
-			}
+	private readonly _disposables = new DisposableStore();
+
+	dispose(): void {
+		this._disposables.dispose();
+	}
+
+	add(list: CodeLensList, provider: CodeLensProvider): void {
+		this._disposables.add(list);
+		for (const symbol of list.lenses) {
+			this.lenses.push({ symbol, provider });
 		}
-	}).catch(onUnexpectedExternalError));
+	}
+}
 
-	return Promise.all(promises).then(() => {
+export async function getCodeLensModel(model: ITextModel, token: CancellationToken): Promise<CodeLensModel> {
 
-		return mergeSort(symbols, (a, b) => {
-			// sort by lineNumber, provider-rank, and column
-			if (a.symbol.range.startLineNumber < b.symbol.range.startLineNumber) {
-				return -1;
-			} else if (a.symbol.range.startLineNumber > b.symbol.range.startLineNumber) {
-				return 1;
-			} else if (provider.indexOf(a.provider) < provider.indexOf(b.provider)) {
-				return -1;
-			} else if (provider.indexOf(a.provider) > provider.indexOf(b.provider)) {
-				return 1;
-			} else if (a.symbol.range.startColumn < b.symbol.range.startColumn) {
-				return -1;
-			} else if (a.symbol.range.startColumn > b.symbol.range.startColumn) {
-				return 1;
-			} else {
-				return 0;
+	const provider = CodeLensProviderRegistry.ordered(model);
+	const providerRanks = new Map<CodeLensProvider, number>();
+	const result = new CodeLensModel();
+
+	const promises = provider.map(async (provider, i) => {
+
+		providerRanks.set(provider, i);
+
+		try {
+			const list = await Promise.resolve(provider.provideCodeLenses(model, token));
+			if (list) {
+				result.add(list, provider);
 			}
-		});
+		} catch (err) {
+			onUnexpectedExternalError(err);
+		}
 	});
+
+	await Promise.all(promises);
+
+	result.lenses = mergeSort(result.lenses, (a, b) => {
+		// sort by lineNumber, provider-rank, and column
+		if (a.symbol.range.startLineNumber < b.symbol.range.startLineNumber) {
+			return -1;
+		} else if (a.symbol.range.startLineNumber > b.symbol.range.startLineNumber) {
+			return 1;
+		} else if ((providerRanks.get(a.provider)!) < (providerRanks.get(b.provider)!)) {
+			return -1;
+		} else if ((providerRanks.get(a.provider)!) > (providerRanks.get(b.provider)!)) {
+			return 1;
+		} else if (a.symbol.range.startColumn < b.symbol.range.startColumn) {
+			return -1;
+		} else if (a.symbol.range.startColumn > b.symbol.range.startColumn) {
+			return 1;
+		} else {
+			return 0;
+		}
+	});
+	return result;
 }
 
 registerLanguageCommand('_executeCodeLensProvider', function (accessor, args) {
@@ -65,12 +91,14 @@ registerLanguageCommand('_executeCodeLensProvider', function (accessor, args) {
 		throw illegalArgument();
 	}
 
-	const result: ICodeLensSymbol[] = [];
-	return getCodeLensData(model, CancellationToken.None).then(value => {
+	const result: CodeLens[] = [];
+	const disposables = new DisposableStore();
+	return getCodeLensModel(model, CancellationToken.None).then(value => {
 
+		disposables.add(value);
 		let resolve: Promise<any>[] = [];
 
-		for (const item of value) {
+		for (const item of value.lenses) {
 			if (typeof itemResolveCount === 'undefined' || Boolean(item.symbol.command)) {
 				result.push(item.symbol);
 			} else if (itemResolveCount-- > 0 && item.provider.resolveCodeLens) {
@@ -82,5 +110,9 @@ registerLanguageCommand('_executeCodeLensProvider', function (accessor, args) {
 
 	}).then(() => {
 		return result;
+	}).finally(() => {
+		// make sure to return results, then (on next tick)
+		// dispose the results
+		setTimeout(() => disposables.dispose(), 100);
 	});
 });

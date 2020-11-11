@@ -38,6 +38,7 @@ echo:
 	@-+-+echo Error will be ignored here; invalidcommand
 	# And we can see variables are highlited as supposed to be:
 	@echo '$(CC) $(shell echo "123") -o $@'
+	@-./point-and-slash-should-not-be-highlighted
 
 define defined
   $(info Checking existance of $(1) $(flavor $(1)))
@@ -75,6 +76,7 @@ var:=123
 var!=echo val
 var:=val \
 notvar=butval
+var:=$(val:.c=.o)
 
 var-$(nested-var)=val
 
@@ -82,3 +84,5 @@ var-$(nested-var)=val
 # but not so much.
 var-$(shell printf 2) := val2
 $(info Should be 'val2' here: $(var-2))
+
+export a ?= b:c

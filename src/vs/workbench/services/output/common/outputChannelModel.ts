@@ -17,6 +17,7 @@ import { isNumber } from 'vs/base/common/types';
 import { EditOperation } from 'vs/editor/common/core/editOperation';
 import { Position } from 'vs/editor/common/core/position';
 import { binarySearch } from 'vs/base/common/arrays';
+import { VSBuffer } from 'vs/base/common/buffer';
 
 export interface IOutputChannelModel extends IDisposable {
 	readonly onDidAppendedContent: Event<void>;
@@ -30,7 +31,7 @@ export interface IOutputChannelModel extends IDisposable {
 export const IOutputChannelModelService = createDecorator<IOutputChannelModelService>('outputChannelModelService');
 
 export interface IOutputChannelModelService {
-	_serviceBrand: any;
+	readonly _serviceBrand: undefined;
 
 	createOutputChannelModel(id: string, modelUri: URI, mimeType: string, file?: URI): IOutputChannelModel;
 
@@ -50,14 +51,14 @@ export abstract class AsbtractOutputChannelModelService {
 
 export abstract class AbstractFileOutputChannelModel extends Disposable implements IOutputChannelModel {
 
-	protected _onDidAppendedContent = new Emitter<void>();
+	protected readonly _onDidAppendedContent = this._register(new Emitter<void>());
 	readonly onDidAppendedContent: Event<void> = this._onDidAppendedContent.event;
 
-	protected _onDispose = new Emitter<void>();
+	protected readonly _onDispose = this._register(new Emitter<void>());
 	readonly onDispose: Event<void> = this._onDispose.event;
 
 	protected modelUpdater: RunOnceScheduler;
-	protected model: ITextModel | null;
+	protected model: ITextModel | null = null;
 
 	protected startOffset: number = 0;
 	protected endOffset: number = 0;
@@ -95,12 +96,11 @@ export abstract class AbstractFileOutputChannelModel extends Disposable implemen
 		} else {
 			this.model = this.modelService.createModel(content, this.modeService.create(this.mimeType), this.modelUri);
 			this.onModelCreated(this.model);
-			const disposables: IDisposable[] = [];
-			disposables.push(this.model.onWillDispose(() => {
+			const disposable = this.model.onWillDispose(() => {
 				this.onModelWillDispose(this.model);
 				this.model = null;
-				dispose(disposables);
-			}));
+				dispose(disposable);
+			});
 		}
 		return this.model;
 	}
@@ -115,7 +115,7 @@ export abstract class AbstractFileOutputChannelModel extends Disposable implemen
 	}
 
 	abstract loadModel(): Promise<ITextModel>;
-	abstract append(message: string);
+	abstract append(message: string): void;
 
 	protected onModelCreated(model: ITextModel) { }
 	protected onModelWillDispose(model: ITextModel | null) { }
@@ -128,6 +128,7 @@ export abstract class AbstractFileOutputChannelModel extends Disposable implemen
 	}
 }
 
+// TODO@ben see if new watchers can cope with spdlog and avoid polling then
 class OutputFileListener extends Disposable {
 
 	private readonly _onDidContentChange = new Emitter<number | undefined>();
@@ -159,7 +160,7 @@ class OutputFileListener extends Disposable {
 	}
 
 	private doWatch(): Promise<void> {
-		return this.fileService.resolveFile(this.file)
+		return this.fileService.resolve(this.file, { resolveMetadata: true })
 			.then(stat => {
 				if (stat.etag !== this.etag) {
 					this.etag = stat.etag;
@@ -184,7 +185,7 @@ class OutputFileListener extends Disposable {
 /**
  * An output channel driven by a file and does not support appending messages.
  */
-export class FileOutputChannelModel extends AbstractFileOutputChannelModel implements IOutputChannelModel {
+class FileOutputChannelModel extends AbstractFileOutputChannelModel implements IOutputChannelModel {
 
 	private readonly fileHandler: OutputFileListener;
 
@@ -208,12 +209,23 @@ export class FileOutputChannelModel extends AbstractFileOutputChannelModel imple
 	}
 
 	loadModel(): Promise<ITextModel> {
-		this.loadModelPromise = this.fileService.resolveContent(this.file, { position: this.startOffset, encoding: 'utf8' })
-			.then(content => {
-				this.endOffset = this.startOffset + Buffer.from(content.value).byteLength;
-				this.etag = content.etag;
-				return this.createModel(content.value);
-			});
+		this.loadModelPromise = new Promise<ITextModel>(async (c, e) => {
+			try {
+				let content = '';
+				if (await this.fileService.exists(this.file)) {
+					const fileContent = await this.fileService.readFile(this.file, { position: this.startOffset });
+					this.endOffset = this.startOffset + fileContent.value.byteLength;
+					this.etag = fileContent.etag;
+					content = fileContent.value.toString();
+				} else {
+					this.startOffset = 0;
+					this.endOffset = 0;
+				}
+				c(this.createModel(content));
+			} catch (error) {
+				e(error);
+			}
+		});
 		return this.loadModelPromise;
 	}
 
@@ -231,12 +243,12 @@ export class FileOutputChannelModel extends AbstractFileOutputChannelModel imple
 
 	protected updateModel(): void {
 		if (this.model) {
-			this.fileService.resolveContent(this.file, { position: this.endOffset, encoding: 'utf8' })
+			this.fileService.readFile(this.file, { position: this.endOffset })
 				.then(content => {
 					this.etag = content.etag;
 					if (content.value) {
-						this.endOffset = this.endOffset + Buffer.from(content.value).byteLength;
-						this.appendToModel(content.value);
+						this.endOffset = this.endOffset + content.value.byteLength;
+						this.appendToModel(content.value.toString());
 					}
 					this.updateInProgress = false;
 				}, () => this.updateInProgress = false);
@@ -257,6 +269,10 @@ export class FileOutputChannelModel extends AbstractFileOutputChannelModel imple
 		this.updateInProgress = false;
 	}
 
+	protected getByteLength(str: string): number {
+		return VSBuffer.fromString(str).byteLength;
+	}
+
 	update(size?: number): void {
 		if (this.model) {
 			if (!this.updateInProgress) {
@@ -271,7 +287,7 @@ export class FileOutputChannelModel extends AbstractFileOutputChannelModel imple
 	}
 }
 
-class BufferredOutputChannel extends Disposable implements IOutputChannelModel {
+export class BufferredOutputChannel extends Disposable implements IOutputChannelModel {
 
 	readonly file: URI | null = null;
 	scrollLock: boolean = false;
@@ -283,7 +299,7 @@ class BufferredOutputChannel extends Disposable implements IOutputChannelModel {
 	readonly onDispose: Event<void> = this._onDispose.event;
 
 	private modelUpdater: RunOnceScheduler;
-	private model: ITextModel | null;
+	private model: ITextModel | null = null;
 	private readonly bufferredContent: BufferedContent;
 	private lastReadId: number | undefined = undefined;
 
@@ -334,11 +350,10 @@ class BufferredOutputChannel extends Disposable implements IOutputChannelModel {
 
 	private createModel(content: string): ITextModel {
 		const model = this.modelService.createModel(content, this.modeService.create(this.mimeType), this.modelUri);
-		const disposables: IDisposable[] = [];
-		disposables.push(model.onWillDispose(() => {
+		const disposable = model.onWillDispose(() => {
 			this.model = null;
-			dispose(disposables);
-		}));
+			dispose(disposable);
+		});
 		return model;
 	}
 
@@ -361,7 +376,7 @@ class BufferredOutputChannel extends Disposable implements IOutputChannelModel {
 
 class BufferedContent {
 
-	private static MAX_OUTPUT_LENGTH = 10000 /* Max. number of output lines to show in output */ * 100 /* Guestimated chars per line */;
+	private static readonly MAX_OUTPUT_LENGTH = 10000 /* Max. number of output lines to show in output */ * 100 /* Guestimated chars per line */;
 
 	private data: string[] = [];
 	private dataIds: number[] = [];

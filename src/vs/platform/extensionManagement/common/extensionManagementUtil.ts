@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ILocalExtension, IGalleryExtension, IExtensionIdentifier, IReportedExtension } from 'vs/platform/extensionManagement/common/extensionManagement';
+import { ILocalExtension, IGalleryExtension, IExtensionIdentifier, IReportedExtension, IExtensionIdentifierWithVersion } from 'vs/platform/extensionManagement/common/extensionManagement';
 import { compareIgnoreCase } from 'vs/base/common/strings';
+import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
 
 export function areSameExtensions(a: IExtensionIdentifier, b: IExtensionIdentifier): boolean {
 	if (a.uuid && b.uuid) {
@@ -14,6 +15,31 @@ export function areSameExtensions(a: IExtensionIdentifier, b: IExtensionIdentifi
 		return true;
 	}
 	return compareIgnoreCase(a.id, b.id) === 0;
+}
+
+export class ExtensionIdentifierWithVersion implements IExtensionIdentifierWithVersion {
+
+	readonly id: string;
+	readonly uuid?: string;
+
+	constructor(
+		identifier: IExtensionIdentifier,
+		readonly version: string
+	) {
+		this.id = identifier.id;
+		this.uuid = identifier.uuid;
+	}
+
+	key(): string {
+		return `${this.id}-${this.version}`;
+	}
+
+	equals(o: any): boolean {
+		if (!(o instanceof ExtensionIdentifierWithVersion)) {
+			return false;
+		}
+		return areSameExtensions(this, o) && this.version === o.version;
+	}
 }
 
 export function adoptToGalleryExtensionId(id: string): string {
@@ -26,7 +52,7 @@ export function getGalleryExtensionId(publisher: string, name: string): string {
 
 export function groupByExtension<T>(extensions: T[], getExtensionIdentifier: (t: T) => IExtensionIdentifier): T[][] {
 	const byExtension: T[][] = [];
-	const findGroup = extension => {
+	const findGroup = (extension: T) => {
 		for (const group of byExtension) {
 			if (group.some(e => areSameExtensions(getExtensionIdentifier(e), getExtensionIdentifier(extension)))) {
 				return group;
@@ -50,9 +76,9 @@ export function getLocalExtensionTelemetryData(extension: ILocalExtension): any 
 		id: extension.identifier.id,
 		name: extension.manifest.name,
 		galleryId: null,
-		publisherId: extension.metadata ? extension.metadata.publisherId : null,
+		publisherId: extension.publisherId,
 		publisherName: extension.manifest.publisher,
-		publisherDisplayName: extension.metadata ? extension.metadata.publisherDisplayName : null,
+		publisherDisplayName: extension.publisherDisplayName,
 		dependencies: extension.manifest.extensionDependencies && extension.manifest.extensionDependencies.length > 0
 	};
 }
@@ -85,7 +111,7 @@ export function getGalleryExtensionTelemetryData(extension: IGalleryExtension): 
 	};
 }
 
-export const BetterMergeId = 'pprice.better-merge';
+export const BetterMergeId = new ExtensionIdentifier('pprice.better-merge');
 
 export function getMaliciousExtensionsSet(report: IReportedExtension[]): Set<string> {
 	const result = new Set<string>();

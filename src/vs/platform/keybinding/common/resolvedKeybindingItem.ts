@@ -5,20 +5,21 @@
 
 import { CharCode } from 'vs/base/common/charCode';
 import { ResolvedKeybinding } from 'vs/base/common/keyCodes';
-import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
+import { ContextKeyExpression } from 'vs/platform/contextkey/common/contextkey';
 
 export class ResolvedKeybindingItem {
 	_resolvedKeybindingItemBrand: void;
 
-	public readonly resolvedKeybinding: ResolvedKeybinding | null;
+	public readonly resolvedKeybinding: ResolvedKeybinding | undefined;
 	public readonly keypressParts: string[];
 	public readonly bubble: boolean;
 	public readonly command: string | null;
 	public readonly commandArgs: any;
-	public readonly when: ContextKeyExpr | null;
+	public readonly when: ContextKeyExpression | undefined;
 	public readonly isDefault: boolean;
+	public readonly extensionId: string | null;
 
-	constructor(resolvedKeybinding: ResolvedKeybinding | null, command: string | null, commandArgs: any, when: ContextKeyExpr | null, isDefault: boolean) {
+	constructor(resolvedKeybinding: ResolvedKeybinding | undefined, command: string | null, commandArgs: any, when: ContextKeyExpression | undefined, isDefault: boolean, extensionId: string | null) {
 		this.resolvedKeybinding = resolvedKeybinding;
 		this.keypressParts = resolvedKeybinding ? removeElementsAfterNulls(resolvedKeybinding.getDispatchParts()) : [];
 		this.bubble = (command ? command.charCodeAt(0) === CharCode.Caret : false);
@@ -26,6 +27,7 @@ export class ResolvedKeybindingItem {
 		this.commandArgs = commandArgs;
 		this.when = when;
 		this.isDefault = isDefault;
+		this.extensionId = extensionId;
 	}
 }
 

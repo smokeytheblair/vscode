@@ -24,7 +24,7 @@ export function tokenizeToString(text: string, tokenizationSupport: IReducedToke
 	return _tokenizeToString(text, tokenizationSupport || fallback);
 }
 
-export function tokenizeLineToHTML(text: string, viewLineTokens: IViewLineTokens, colorMap: string[], startOffset: number, endOffset: number, tabSize: number): string {
+export function tokenizeLineToHTML(text: string, viewLineTokens: IViewLineTokens, colorMap: string[], startOffset: number, endOffset: number, tabSize: number, useNbsp: boolean): string {
 	let result = `<div>`;
 	let charIndex = startOffset;
 	let tabsCharDelta = 0;
@@ -46,7 +46,7 @@ export function tokenizeLineToHTML(text: string, viewLineTokens: IViewLineTokens
 					let insertSpacesCount = tabSize - (charIndex + tabsCharDelta) % tabSize;
 					tabsCharDelta += insertSpacesCount - 1;
 					while (insertSpacesCount > 0) {
-						partContent += '&nbsp;';
+						partContent += useNbsp ? '&#160;' : ' ';
 						insertSpacesCount--;
 					}
 					break;
@@ -68,13 +68,19 @@ export function tokenizeLineToHTML(text: string, viewLineTokens: IViewLineTokens
 					break;
 
 				case CharCode.UTF8_BOM:
-				case CharCode.LINE_SEPARATOR_2028:
+				case CharCode.LINE_SEPARATOR:
+				case CharCode.PARAGRAPH_SEPARATOR:
+				case CharCode.NEXT_LINE:
 					partContent += '\ufffd';
 					break;
 
 				case CharCode.CarriageReturn:
 					// zero width space, because carriage return would introduce a line break
 					partContent += '&#8203';
+					break;
+
+				case CharCode.Space:
+					partContent += useNbsp ? '&#160;' : ' ';
 					break;
 
 				default:
@@ -95,7 +101,7 @@ export function tokenizeLineToHTML(text: string, viewLineTokens: IViewLineTokens
 
 function _tokenizeToString(text: string, tokenizationSupport: IReducedTokenizationSupport): string {
 	let result = `<div class="monaco-tokenized-source">`;
-	let lines = text.split(/\r\n|\r|\n/);
+	let lines = strings.splitLines(text);
 	let currentState = tokenizationSupport.getInitialState();
 	for (let i = 0, len = lines.length; i < len; i++) {
 		let line = lines[i];

@@ -11,12 +11,13 @@ import { KeyCode, Keybinding, ResolvedKeybinding } from 'vs/base/common/keyCodes
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
 import { ICommandService } from 'vs/platform/commands/common/commands';
 import { IContextKeyService, IContextKeyServiceTarget } from 'vs/platform/contextkey/common/contextkey';
-import { IKeybindingEvent, IKeybindingService, IKeyboardEvent } from 'vs/platform/keybinding/common/keybinding';
+import { IKeybindingEvent, IKeybindingService, IKeyboardEvent, KeybindingsSchemaContribution } from 'vs/platform/keybinding/common/keybinding';
 import { IResolveResult, KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver';
 import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem';
 import { INotificationService } from 'vs/platform/notification/common/notification';
-import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification } from 'vs/base/common/actions';
+import { ILogService } from 'vs/platform/log/common/log';
 
 interface CurrentChord {
 	keypress: string;
@@ -24,45 +25,39 @@ interface CurrentChord {
 }
 
 export abstract class AbstractKeybindingService extends Disposable implements IKeybindingService {
-	public _serviceBrand: any;
+	public _serviceBrand: undefined;
+
+	protected readonly _onDidUpdateKeybindings: Emitter<IKeybindingEvent> = this._register(new Emitter<IKeybindingEvent>());
+	get onDidUpdateKeybindings(): Event<IKeybindingEvent> {
+		return this._onDidUpdateKeybindings ? this._onDidUpdateKeybindings.event : Event.None; // Sinon stubbing walks properties on prototype
+	}
 
 	private _currentChord: CurrentChord | null;
 	private _currentChordChecker: IntervalTimer;
 	private _currentChordStatusMessage: IDisposable | null;
-	protected _onDidUpdateKeybindings: Emitter<IKeybindingEvent>;
+	protected _logging: boolean;
 
-	private _contextKeyService: IContextKeyService;
-	private _statusService: IStatusbarService | undefined;
-	private _notificationService: INotificationService;
-	protected _commandService: ICommandService;
-	protected _telemetryService: ITelemetryService;
+	public get inChordMode(): boolean {
+		return !!this._currentChord;
+	}
 
 	constructor(
-		contextKeyService: IContextKeyService,
-		commandService: ICommandService,
-		telemetryService: ITelemetryService,
-		notificationService: INotificationService,
-		statusService?: IStatusbarService
+		private _contextKeyService: IContextKeyService,
+		protected _commandService: ICommandService,
+		protected _telemetryService: ITelemetryService,
+		private _notificationService: INotificationService,
+		protected _logService: ILogService,
 	) {
 		super();
-		this._contextKeyService = contextKeyService;
-		this._commandService = commandService;
-		this._telemetryService = telemetryService;
-		this._statusService = statusService;
-		this._notificationService = notificationService;
 
 		this._currentChord = null;
 		this._currentChordChecker = new IntervalTimer();
 		this._currentChordStatusMessage = null;
-		this._onDidUpdateKeybindings = this._register(new Emitter<IKeybindingEvent>());
+		this._logging = false;
 	}
 
 	public dispose(): void {
 		super.dispose();
-	}
-
-	get onDidUpdateKeybindings(): Event<IKeybindingEvent> {
-		return this._onDidUpdateKeybindings ? this._onDidUpdateKeybindings.event : Event.None; // Sinon stubbing walks properties on prototype
 	}
 
 	protected abstract _getResolver(): KeybindingResolver;
@@ -70,17 +65,30 @@ export abstract class AbstractKeybindingService extends Disposable implements IK
 	public abstract resolveKeybinding(keybinding: Keybinding): ResolvedKeybinding[];
 	public abstract resolveKeyboardEvent(keyboardEvent: IKeyboardEvent): ResolvedKeybinding;
 	public abstract resolveUserBinding(userBinding: string): ResolvedKeybinding[];
+	public abstract registerSchemaContribution(contribution: KeybindingsSchemaContribution): void;
 	public abstract _dumpDebugInfo(): string;
+	public abstract _dumpDebugInfoJSON(): string;
 
 	public getDefaultKeybindingsContent(): string {
 		return '';
 	}
 
-	public getDefaultKeybindings(): ResolvedKeybindingItem[] {
+	public toggleLogging(): boolean {
+		this._logging = !this._logging;
+		return this._logging;
+	}
+
+	protected _log(str: string): void {
+		if (this._logging) {
+			this._logService.info(`[KeybindingService]: ${str}`);
+		}
+	}
+
+	public getDefaultKeybindings(): readonly ResolvedKeybindingItem[] {
 		return this._getResolver().getDefaultKeybindings();
 	}
 
-	public getKeybindings(): ResolvedKeybindingItem[] {
+	public getKeybindings(): readonly ResolvedKeybindingItem[] {
 		return this._getResolver().getKeybindings();
 	}
 
@@ -95,11 +103,11 @@ export abstract class AbstractKeybindingService extends Disposable implements IK
 	}
 
 	public lookupKeybinding(commandId: string): ResolvedKeybinding | undefined {
-		let result = this._getResolver().lookupPrimaryKeybinding(commandId);
+		const result = this._getResolver().lookupPrimaryKeybinding(commandId);
 		if (!result) {
 			return undefined;
 		}
-		return result.resolvedKeybinding || undefined;
+		return result.resolvedKeybinding;
 	}
 
 	public dispatchEvent(e: IKeyboardEvent, target: IContextKeyServiceTarget): boolean {
@@ -128,9 +136,7 @@ export abstract class AbstractKeybindingService extends Disposable implements IK
 			keypress: firstPart,
 			label: keypressLabel
 		};
-		if (this._statusService) {
-			this._currentChordStatusMessage = this._statusService.setStatusMessage(nls.localize('first.chord', "({0}) was pressed. Waiting for second key of chord...", keypressLabel));
-		}
+		this._currentChordStatusMessage = this._notificationService.status(nls.localize('first.chord', "({0}) was pressed. Waiting for second key of chord...", keypressLabel));
 		const chordEnterTime = Date.now();
 		this._currentChordChecker.cancelAndSet(() => {
 
@@ -177,6 +183,7 @@ export abstract class AbstractKeybindingService extends Disposable implements IK
 		}
 		const [firstPart,] = keybinding.getDispatchParts();
 		if (firstPart === null) {
+			this._log(`\\ Keyboard event cannot be dispatched.`);
 			// cannot be dispatched, probably only modifier keys
 			return shouldPreventDefault;
 		}
@@ -186,15 +193,17 @@ export abstract class AbstractKeybindingService extends Disposable implements IK
 		const keypressLabel = keybinding.getLabel();
 		const resolveResult = this._getResolver().resolve(contextValue, currentChord, firstPart);
 
+		this._logService.trace('KeybindingService#dispatch', keypressLabel, resolveResult?.commandId);
+
 		if (resolveResult && resolveResult.enterChord) {
 			shouldPreventDefault = true;
 			this._enterChordMode(firstPart, keypressLabel);
 			return shouldPreventDefault;
 		}
 
-		if (this._statusService && this._currentChord) {
+		if (this._currentChord) {
 			if (!resolveResult || !resolveResult.commandId) {
-				this._statusService.setStatusMessage(nls.localize('missing.chord', "The key combination ({0}, {1}) is not a command.", this._currentChord.label, keypressLabel), 10 * 1000 /* 10s */);
+				this._notificationService.status(nls.localize('missing.chord', "The key combination ({0}, {1}) is not a command.", this._currentChord.label, keypressLabel), { hideAfter: 10 * 1000 /* 10s */ });
 				shouldPreventDefault = true;
 			}
 		}
@@ -210,13 +219,7 @@ export abstract class AbstractKeybindingService extends Disposable implements IK
 			} else {
 				this._commandService.executeCommand(resolveResult.commandId, resolveResult.commandArgs).then(undefined, err => this._notificationService.warn(err));
 			}
-			/* __GDPR__
-				"workbenchActionExecuted" : {
-					"id" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" },
-					"from": { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-				}
-			*/
-			this._telemetryService.publicLog('workbenchActionExecuted', { id: resolveResult.commandId, from: 'keybinding' });
+			this._telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: resolveResult.commandId, from: 'keybinding' });
 		}
 
 		return shouldPreventDefault;

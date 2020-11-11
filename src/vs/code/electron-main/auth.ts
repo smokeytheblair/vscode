@@ -4,16 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from 'vs/nls';
-import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { IWindowsMainService } from 'vs/platform/windows/electron-main/windows';
+import { Disposable } from 'vs/base/common/lifecycle';
 import { Event } from 'vs/base/common/event';
-import { BrowserWindow, app } from 'electron';
+import { FileAccess } from 'vs/base/common/network';
+import { BrowserWindow, BrowserWindowConstructorOptions, app, AuthInfo, WebContents, Event as ElectronEvent } from 'electron';
 
 type LoginEvent = {
-	event: Electron.Event;
-	webContents: Electron.WebContents;
-	req: Electron.Request;
-	authInfo: Electron.AuthInfo;
+	event: ElectronEvent;
+	webContents: WebContents;
+	req: Request;
+	authInfo: AuthInfo;
 	cb: (username: string, password: string) => void;
 };
 
@@ -22,18 +22,21 @@ type Credentials = {
 	password: string;
 };
 
-export class ProxyAuthHandler {
+export class ProxyAuthHandler extends Disposable {
 
-	_serviceBrand: any;
+	declare readonly _serviceBrand: undefined;
 
 	private retryCount = 0;
-	private disposables: IDisposable[] = [];
 
-	constructor(
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService
-	) {
+	constructor() {
+		super();
+
+		this.registerListeners();
+	}
+
+	private registerListeners(): void {
 		const onLogin = Event.fromNodeEventEmitter<LoginEvent>(app, 'login', (event, webContents, req, authInfo, cb) => ({ event, webContents, req, authInfo, cb }));
-		onLogin(this.onLogin, this, this.disposables);
+		this._register(onLogin(this.onLogin, this));
 	}
 
 	private onLogin({ event, authInfo, cb }: LoginEvent): void {
@@ -47,46 +50,53 @@ export class ProxyAuthHandler {
 
 		event.preventDefault();
 
-		const opts: any = {
+		const opts: BrowserWindowConstructorOptions = {
 			alwaysOnTop: true,
 			skipTaskbar: true,
 			resizable: false,
 			width: 450,
-			height: 220,
+			height: 225,
 			show: true,
-			title: 'VS Code'
+			title: 'VS Code',
+			webPreferences: {
+				preload: FileAccess.asFileUri('vs/base/parts/sandbox/electron-browser/preload.js', require).fsPath,
+				sandbox: true,
+				contextIsolation: true,
+				enableWebSQL: false,
+				enableRemoteModule: false,
+				spellcheck: false,
+				devTools: false
+			}
 		};
 
-		const focusedWindow = this.windowsMainService.getFocusedWindow();
-
+		const focusedWindow = BrowserWindow.getFocusedWindow();
 		if (focusedWindow) {
-			opts.parent = focusedWindow.win;
+			opts.parent = focusedWindow;
 			opts.modal = true;
 		}
 
 		const win = new BrowserWindow(opts);
-		const config = {};
-		const baseUrl = require.toUrl('vs/code/electron-browser/proxy/auth.html');
-		const url = `${baseUrl}?config=${encodeURIComponent(JSON.stringify(config))}`;
+		const windowUrl = FileAccess.asBrowserUri('vs/code/electron-sandbox/proxy/auth.html', require);
 		const proxyUrl = `${authInfo.host}:${authInfo.port}`;
 		const title = localize('authRequire', "Proxy Authentication Required");
 		const message = localize('proxyauth', "The proxy {0} requires authentication.", proxyUrl);
-		const data = { title, message };
-		const javascript = 'promptForCredentials(' + JSON.stringify(data) + ')';
 
 		const onWindowClose = () => cb('', '');
 		win.on('close', onWindowClose);
 
 		win.setMenu(null);
-		win.loadURL(url);
-		win.webContents.executeJavaScript(javascript, true).then(({ username, password }: Credentials) => {
-			cb(username, password);
-			win.removeListener('close', onWindowClose);
-			win.close();
+		win.webContents.on('did-finish-load', () => {
+			const data = { title, message };
+			win.webContents.send('vscode:openProxyAuthDialog', data);
 		});
-	}
-
-	dispose(): void {
-		this.disposables = dispose(this.disposables);
+		win.webContents.on('ipc-message', (event, channel, credentials: Credentials) => {
+			if (channel === 'vscode:proxyAuthResponse') {
+				const { username, password } = credentials;
+				cb(username, password);
+				win.removeListener('close', onWindowClose);
+				win.close();
+			}
+		});
+		win.loadURL(windowUrl.toString(true));
 	}
 }

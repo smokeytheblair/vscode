@@ -11,7 +11,8 @@ import { MockContextKeyService } from 'vs/platform/keybinding/test/common/mockKe
 import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
 import { NullLogService } from 'vs/platform/log/common/log';
 import { Handler } from 'vs/editor/common/editorCommon';
-import { timeout } from 'vs/base/common/async';
+import { CoreEditingCommands } from 'vs/editor/browser/controller/coreCommands';
+import { createTextModel } from 'vs/editor/test/common/editorTestUtils';
 
 suite('SnippetController2', function () {
 
@@ -36,7 +37,7 @@ suite('SnippetController2', function () {
 
 	setup(function () {
 		contextKeys = new MockContextKeyService();
-		model = TextModel.createFromString('if\n    $state\nfi');
+		model = createTextModel('if\n    $state\nfi');
 		editor = createTestCodeEditor({ model: model });
 		editor.setSelections([new Selection(1, 1, 1, 1), new Selection(2, 5, 2, 5)]);
 		assert.equal(model.getEOL(), '\n');
@@ -134,11 +135,11 @@ suite('SnippetController2', function () {
 		assertSelections(editor, new Selection(1, 1, 1, 7), new Selection(2, 5, 2, 11));
 
 		editor.trigger('test', 'cut', {});
-		assertContextKeys(contextKeys, false, false, false);
+		assertContextKeys(contextKeys, true, false, true);
 		assertSelections(editor, new Selection(1, 1, 1, 1), new Selection(2, 5, 2, 5));
 
 		editor.trigger('test', 'type', { text: 'abc' });
-		assertContextKeys(contextKeys, false, false, false);
+		assertContextKeys(contextKeys, true, false, true);
 
 		ctrl.next();
 		assertContextKeys(contextKeys, false, false, false);
@@ -160,9 +161,9 @@ suite('SnippetController2', function () {
 		assertSelections(editor, new Selection(1, 4, 1, 4), new Selection(2, 8, 2, 8));
 		assertContextKeys(contextKeys, true, false, true);
 
-		// ctrl.next();
-		// assertSelections(editor, new Selection(1, 7, 1, 7), new Selection(2, 11, 2, 11));
-		// assertContextKeys(contextKeys, true, true, true);
+		ctrl.next();
+		assertSelections(editor, new Selection(1, 7, 1, 7), new Selection(2, 11, 2, 11));
+		assertContextKeys(contextKeys, true, true, true);
 
 		ctrl.next();
 		assertSelections(editor, new Selection(1, 7, 1, 7), new Selection(2, 11, 2, 11));
@@ -177,10 +178,10 @@ suite('SnippetController2', function () {
 
 		ctrl.insert('farboo');
 		assertSelections(editor, new Selection(1, 7, 1, 7), new Selection(2, 11, 2, 11));
-		// assertContextKeys(contextKeys, true, false, true);
+		assertContextKeys(contextKeys, true, false, true);
 
-		// ctrl.next();
-		// assertSelections(editor, new Selection(1, 7, 1, 7), new Selection(2, 11, 2, 11));
+		ctrl.next();
+		assertSelections(editor, new Selection(1, 7, 1, 7), new Selection(2, 11, 2, 11));
 		assertContextKeys(contextKeys, false, false, false);
 	});
 
@@ -403,22 +404,55 @@ suite('SnippetController2', function () {
 		assertSelections(editor, new Selection(1, 22, 1, 22));
 	});
 
-	test('A little confusing visual effect of highlighting for snippet tabstop #43270', async function () {
+	test('User defined snippet tab stops ignored #72862', function () {
 		const ctrl = new SnippetController2(editor, logService, contextKeys);
 		model.setValue('');
 		editor.setSelection(new Selection(1, 1, 1, 1));
 
-		ctrl.insert('background-color: ${1:fff};$0');
-		assertSelections(editor, new Selection(1, 19, 1, 22));
-
-		editor.setSelection(new Selection(1, 22, 1, 22));
+		ctrl.insert('export default $1');
 		assertContextKeys(contextKeys, true, false, true);
-		editor.trigger('', 'deleteRight', null);
+	});
 
-		assert.equal(model.getValue(), 'background-color: fff');
+	test('Optional tabstop in snippets #72358', function () {
+		const ctrl = new SnippetController2(editor, logService, contextKeys);
+		model.setValue('');
+		editor.setSelection(new Selection(1, 1, 1, 1));
 
-		await timeout(0); // this depends on re-scheduling of events...
+		ctrl.insert('${1:prop: {$2\\},}\nmore$0');
+		assertContextKeys(contextKeys, true, false, true);
 
+		assertSelections(editor, new Selection(1, 1, 1, 10));
+		editor.trigger('test', Handler.Cut, {});
+
+		assertSelections(editor, new Selection(1, 1, 1, 1));
+
+		ctrl.next();
+		assertSelections(editor, new Selection(2, 5, 2, 5));
 		assertContextKeys(contextKeys, false, false, false);
+	});
+
+	test('issue #90135: confusing trim whitespace edits', function () {
+		const ctrl = new SnippetController2(editor, logService, contextKeys);
+		model.setValue('');
+		CoreEditingCommands.Tab.runEditorCommand(null, editor, null);
+
+		ctrl.insert('\nfoo');
+		assertSelections(editor, new Selection(2, 8, 2, 8));
+	});
+
+	test('leading TAB by snippets won\'t replace by spaces #101870', function () {
+		const ctrl = new SnippetController2(editor, logService, contextKeys);
+		model.setValue('');
+		model.updateOptions({ insertSpaces: true, tabSize: 4 });
+		ctrl.insert('\tHello World\n\tNew Line');
+		assert.strictEqual(model.getValue(), '    Hello World\n    New Line');
+	});
+
+	test('leading TAB by snippets won\'t replace by spaces #101870 (part 2)', function () {
+		const ctrl = new SnippetController2(editor, logService, contextKeys);
+		model.setValue('');
+		model.updateOptions({ insertSpaces: true, tabSize: 4 });
+		ctrl.insert('\tHello World\n\tNew Line\n${1:\tmore}');
+		assert.strictEqual(model.getValue(), '    Hello World\n    New Line\n    more');
 	});
 });

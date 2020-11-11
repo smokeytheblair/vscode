@@ -87,6 +87,17 @@ export const enum TerminateResponseCode {
 	ProcessNotFound = 3,
 }
 
+export interface ProcessItem {
+	name: string;
+	cmd: string;
+	pid: number;
+	ppid: number;
+	load: number;
+	mem: number;
+
+	children?: ProcessItem[];
+}
+
 /**
  * Sanitizes a VS Code process environment by removing all Electron/VS Code-related values.
  */
@@ -99,7 +110,8 @@ export function sanitizeProcessEnvironment(env: IProcessEnvironment, ...preserve
 		/^ELECTRON_.+$/,
 		/^GOOGLE_API_KEY$/,
 		/^VSCODE_.+$/,
-		/^SNAP(|_.*)$/
+		/^SNAP(|_.*)$/,
+		/^GDK_PIXBUF_.+$/,
 	];
 	const envKeys = Object.keys(env);
 	envKeys

@@ -31,6 +31,24 @@ suite('Arrays', () => {
 		assert.equal(array[idx], 1);
 	});
 
+	test('quickSelect', () => {
+
+		function assertMedian(expexted: number, data: number[], nth: number = Math.floor(data.length / 2)) {
+			const compare = (a: number, b: number) => a - b;
+			let actual1 = arrays.quickSelect(nth, data, compare);
+			assert.equal(actual1, expexted);
+
+			let actual2 = data.slice().sort(compare)[nth];
+			assert.equal(actual2, expexted);
+		}
+
+		assertMedian(5, [9, 1, 0, 2, 3, 4, 6, 8, 7, 10, 5]);
+		assertMedian(8, [9, 1, 0, 2, 3, 4, 6, 8, 7, 10, 5], 8);
+		assertMedian(8, [13, 4, 8]);
+		assertMedian(4, [13, 4, 8, 4, 4]);
+		assertMedian(13, [13, 4, 8], 2);
+	});
+
 	test('stableSort', () => {
 		function fill<T>(num: number, valueFn: () => T, arr: T[] = []): T[] {
 			for (let i = 0; i < num; i++) {
@@ -270,7 +288,7 @@ suite('Arrays', () => {
 	}
 
 	test('coalesce', () => {
-		let a: Array<number | undefined | null> = arrays.coalesce([null, 1, null, 2, 3]);
+		let a: Array<number | null> = arrays.coalesce([null, 1, null, 2, 3]);
 		assert.equal(a.length, 3);
 		assert.equal(a[0], 1);
 		assert.equal(a[1], 2);
@@ -306,7 +324,7 @@ suite('Arrays', () => {
 	});
 
 	test('coalesce - inplace', function () {
-		let a: Array<number | undefined | null> = [null, 1, null, 2, 3];
+		let a: Array<number | null> = [null, 1, null, 2, 3];
 		arrays.coalesceInPlace(a);
 		assert.equal(a.length, 3);
 		assert.equal(a[0], 1);
@@ -342,5 +360,13 @@ suite('Arrays', () => {
 		arrays.coalesceInPlace(sparse);
 		assert.equal(sparse.length, 5);
 	});
-});
 
+	test('insert, remove', function () {
+		const array: string[] = [];
+		const remove = arrays.insert(array, 'foo');
+		assert.equal(array[0], 'foo');
+
+		remove();
+		assert.equal(array.length, 0);
+	});
+});

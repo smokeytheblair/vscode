@@ -6,16 +6,17 @@
 import { KeyCode, Keybinding, SimpleKeybinding, createKeybinding } from 'vs/base/common/keyCodes';
 import { OS, OperatingSystem } from 'vs/base/common/platform';
 import { CommandsRegistry, ICommandHandler, ICommandHandlerDescription } from 'vs/platform/commands/common/commands';
-import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
+import { ContextKeyExpression } from 'vs/platform/contextkey/common/contextkey';
 import { Registry } from 'vs/platform/registry/common/platform';
 
 export interface IKeybindingItem {
 	keybinding: Keybinding;
 	command: string;
 	commandArgs?: any;
-	when: ContextKeyExpr | null | undefined;
+	when: ContextKeyExpression | null | undefined;
 	weight1: number;
 	weight2: number;
+	extensionId: string | null;
 }
 
 export interface IKeybindings {
@@ -38,7 +39,8 @@ export interface IKeybindings {
 export interface IKeybindingRule extends IKeybindings {
 	id: string;
 	weight: number;
-	when: ContextKeyExpr | null | undefined;
+	args?: any;
+	when?: ContextKeyExpression | null | undefined;
 }
 
 export interface IKeybindingRule2 {
@@ -49,7 +51,8 @@ export interface IKeybindingRule2 {
 	id: string;
 	args?: any;
 	weight: number;
-	when: ContextKeyExpr | null;
+	when: ContextKeyExpression | undefined;
+	extensionId?: string;
 }
 
 export const enum KeybindingWeight {
@@ -132,7 +135,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 		if (actualKb && actualKb.primary) {
 			const kk = createKeybinding(actualKb.primary, OS);
 			if (kk) {
-				this._registerDefaultKeybinding(kk, rule.id, undefined, rule.weight, 0, rule.when);
+				this._registerDefaultKeybinding(kk, rule.id, rule.args, rule.weight, 0, rule.when);
 			}
 		}
 
@@ -141,7 +144,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 				const k = actualKb.secondary[i];
 				const kk = createKeybinding(k, OS);
 				if (kk) {
-					this._registerDefaultKeybinding(kk, rule.id, undefined, rule.weight, -i - 1, rule.when);
+					this._registerDefaultKeybinding(kk, rule.id, rule.args, rule.weight, -i - 1, rule.when);
 				}
 			}
 		}
@@ -160,7 +163,8 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 					commandArgs: rule.args,
 					when: rule.when,
 					weight1: rule.weight,
-					weight2: 0
+					weight2: 0,
+					extensionId: rule.extensionId || null
 				};
 			}
 		}
@@ -208,7 +212,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 		}
 	}
 
-	private _registerDefaultKeybinding(keybinding: Keybinding, commandId: string, commandArgs: any, weight1: number, weight2: number, when: ContextKeyExpr | null | undefined): void {
+	private _registerDefaultKeybinding(keybinding: Keybinding, commandId: string, commandArgs: any, weight1: number, weight2: number, when: ContextKeyExpression | null | undefined): void {
 		if (OS === OperatingSystem.Windows) {
 			this._assertNoCtrlAlt(keybinding.parts[0], commandId);
 		}
@@ -218,7 +222,8 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 			commandArgs: commandArgs,
 			when: when,
 			weight1: weight1,
-			weight2: weight2
+			weight2: weight2,
+			extensionId: null
 		});
 		this._cachedMergedKeybindings = null;
 	}

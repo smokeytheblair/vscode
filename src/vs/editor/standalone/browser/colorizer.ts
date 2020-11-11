@@ -54,7 +54,7 @@ export class Colorizer {
 		if (strings.startsWithUTF8BOM(text)) {
 			text = text.substr(1);
 		}
-		let lines = text.split(/\r\n|\r|\n/);
+		let lines = strings.splitLines(text);
 		let language = modeService.getModeId(mimeType);
 		if (!language) {
 			return Promise.resolve(_fakeColorize(lines, tabSize));
@@ -63,16 +63,16 @@ export class Colorizer {
 		// Send out the event to create the mode
 		modeService.triggerMode(language);
 
-		let tokenizationSupport = TokenizationRegistry.get(language);
+		const tokenizationSupport = TokenizationRegistry.get(language);
 		if (tokenizationSupport) {
 			return _colorize(lines, tabSize, tokenizationSupport);
 		}
 
-		let tokenizationSupportPromise = TokenizationRegistry.getPromise(language);
+		const tokenizationSupportPromise = TokenizationRegistry.getPromise(language);
 		if (tokenizationSupportPromise) {
 			// A tokenizer will be registered soon
 			return new Promise<string>((resolve, reject) => {
-				tokenizationSupportPromise!.then(tokenizationSupport => {
+				tokenizationSupportPromise.then(tokenizationSupport => {
 					_colorize(lines, tabSize, tokenizationSupport).then(resolve, reject);
 				}, reject);
 			});
@@ -125,10 +125,14 @@ export class Colorizer {
 			[],
 			tabSize,
 			0,
+			0,
+			0,
+			0,
 			-1,
 			'none',
 			false,
-			false
+			false,
+			null
 		));
 		return renderResult.html;
 	}
@@ -192,10 +196,14 @@ function _fakeColorize(lines: string[], tabSize: number): string {
 			[],
 			tabSize,
 			0,
+			0,
+			0,
+			0,
 			-1,
 			'none',
 			false,
-			false
+			false,
+			null
 		));
 
 		html = html.concat(renderResult.html);
@@ -228,10 +236,14 @@ function _actualColorize(lines: string[], tabSize: number, tokenizationSupport: 
 			[],
 			tabSize,
 			0,
+			0,
+			0,
+			0,
 			-1,
 			'none',
 			false,
-			false
+			false,
+			null
 		));
 
 		html = html.concat(renderResult.html);

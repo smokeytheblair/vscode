@@ -4,46 +4,48 @@
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./welcomePage';
+import 'vs/workbench/contrib/welcome/page/browser/vs_code_welcome_page';
 import { URI } from 'vs/base/common/uri';
-import * as strings from 'vs/base/common/strings';
-import * as path from 'vs/base/common/path';
-import { ICommandService } from 'vs/platform/commands/common/commands';
+import { CommandsRegistry, ICommandService } from 'vs/platform/commands/common/commands';
 import * as arrays from 'vs/base/common/arrays';
-import { WalkThroughInput } from 'vs/workbench/contrib/welcome/walkThrough/common/walkThroughInput';
+import { WalkThroughInput } from 'vs/workbench/contrib/welcome/walkThrough/browser/walkThroughInput';
 import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { onUnexpectedError, isPromiseCanceledError } from 'vs/base/common/errors';
-import { IWindowService, URIType } from 'vs/platform/windows/common/windows';
+import { IWindowOpenable } from 'vs/platform/windows/common/windows';
 import { IWorkspaceContextService, WorkbenchState } from 'vs/platform/workspace/common/workspace';
-import { IConfigurationService, ConfigurationTarget } from 'vs/platform/configuration/common/configuration';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { localize } from 'vs/nls';
-import { Action } from 'vs/base/common/actions';
+import { Action, WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification } from 'vs/base/common/actions';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { IEnvironmentService } from 'vs/platform/environment/common/environment';
-import { Schemas } from 'vs/base/common/network';
+import { FileAccess, Schemas } from 'vs/base/common/network';
 import { IBackupFileService } from 'vs/workbench/services/backup/common/backup';
 import { getInstalledExtensions, IExtensionStatus, onExtensionChanged, isKeymapExtension } from 'vs/workbench/contrib/extensions/common/extensionsUtils';
-import { IExtensionEnablementService, IExtensionManagementService, IExtensionGalleryService, IExtensionTipsService, EnablementState, ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement';
-import { used } from 'vs/workbench/contrib/welcome/page/browser/vs_code_welcome_page';
-import { ILifecycleService, StartupKind } from 'vs/platform/lifecycle/common/lifecycle';
-import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { tildify, getBaseLabel } from 'vs/base/common/labels';
+import { IExtensionManagementService, IExtensionGalleryService, ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement';
+import { IWorkbenchExtensionEnablementService, EnablementState } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
+import { IExtensionRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionRecommendations';
+import { ILifecycleService, StartupKind } from 'vs/workbench/services/lifecycle/common/lifecycle';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { splitName } from 'vs/base/common/labels';
 import { registerThemingParticipant } from 'vs/platform/theme/common/themeService';
 import { registerColor, focusBorder, textLinkForeground, textLinkActiveForeground, foreground, descriptionForeground, contrastBorder, activeContrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import { getExtraColor } from 'vs/workbench/contrib/welcome/walkThrough/common/walkThroughUtils';
-import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions';
-import { IWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, isSingleFolderWorkspaceIdentifier, isWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
+import { IExtensionsViewPaneContainer, IExtensionsWorkbenchService, VIEWLET_ID } from 'vs/workbench/contrib/extensions/common/extensions';
 import { IEditorInputFactory, EditorInput } from 'vs/workbench/common/editor';
 import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
 import { TimeoutTimer } from 'vs/base/common/async';
 import { areSameExtensions } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
 import { ILabelService } from 'vs/platform/label/common/label';
 import { IFileService } from 'vs/platform/files/common/files';
-import { ExtensionType } from 'vs/platform/extensions/common/extensions';
 import { joinPath } from 'vs/base/common/resources';
-
-used();
+import { IRecentlyOpened, isRecentWorkspace, IRecentWorkspace, IRecentFolder, isRecentFolder, IWorkspacesService } from 'vs/platform/workspaces/common/workspaces';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { IHostService } from 'vs/workbench/services/host/browser/host';
+import { IProductService } from 'vs/platform/product/common/productService';
+import { IEditorOptions } from 'vs/platform/editor/common/editor';
+import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService';
+import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 
 const configurationKey = 'workbench.startupEditor';
 const oldConfigurationKey = 'workbench.welcome.enabled';
@@ -59,20 +61,24 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 		@IFileService fileService: IFileService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@ILifecycleService lifecycleService: ILifecycleService,
+		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@ICommandService private readonly commandService: ICommandService,
 	) {
 		const enabled = isWelcomePageEnabled(configurationService, contextService);
 		if (enabled && lifecycleService.startupKind !== StartupKind.ReloadedWindow) {
 			backupFileService.hasBackups().then(hasBackups => {
-				const activeEditor = editorService.activeEditor;
-				if (!activeEditor && !hasBackups) {
+				// Open the welcome even if we opened a set of default editors
+				if ((!editorService.activeEditor || layoutService.openedDefaultEditors) && !hasBackups) {
 					const openWithReadme = configurationService.getValue(configurationKey) === 'readme';
 					if (openWithReadme) {
 						return Promise.all(contextService.getWorkspace().folders.map(folder => {
 							const folderUri = folder.uri;
-							return fileService.readFolder(folderUri)
-								.then(files => {
-									const file = arrays.find(files.sort(), file => strings.startsWith(file.toLowerCase(), 'readme'));
+							return fileService.resolve(folderUri)
+								.then(folder => {
+									const files = folder.children ? folder.children.map(child => child.name).sort() : [];
+
+									const file = files.find(file => file.toLowerCase() === 'readme.md') || files.find(file => file.toLowerCase().startsWith('readme'));
+
 									if (file) {
 										return joinPath(folderUri, file);
 									}
@@ -82,7 +88,7 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 							.then<any>(readmes => {
 								if (!editorService.activeEditor) {
 									if (readmes.length) {
-										const isMarkDown = (readme: URI) => strings.endsWith(readme.path.toLowerCase(), '.md');
+										const isMarkDown = (readme: URI) => readme.path.toLowerCase().endsWith('.md');
 										return Promise.all([
 											this.commandService.executeCommand('markdown.showPreview', null, readmes.filter(isMarkDown), { locked: true }),
 											editorService.openEditors(readmes.filter(readme => !isMarkDown(readme))
@@ -95,7 +101,18 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 								return undefined;
 							});
 					} else {
-						return instantiationService.createInstance(WelcomePage).openEditor();
+						let options: IEditorOptions;
+						let editor = editorService.activeEditor;
+						if (editor) {
+							// Ensure that the welcome editor won't get opened more than once
+							if (editor.getTypeId() === welcomeInputTypeId || editorService.editors.some(e => e.getTypeId() === welcomeInputTypeId)) {
+								return undefined;
+							}
+							options = { pinned: false, index: 0 };
+						} else {
+							options = { pinned: false };
+						}
+						return instantiationService.createInstance(WelcomePage).openEditor(options);
 					}
 				}
 				return undefined;
@@ -106,7 +123,7 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 
 function isWelcomePageEnabled(configurationService: IConfigurationService, contextService: IWorkspaceContextService) {
 	const startupEditor = configurationService.inspect(configurationKey);
-	if (!startupEditor.user && !startupEditor.workspace) {
+	if (!startupEditor.userValue && !startupEditor.workspaceValue) {
 		const welcomeEnabled = configurationService.inspect(oldConfigurationKey);
 		if (welcomeEnabled.value !== undefined && welcomeEnabled.value !== null) {
 			return welcomeEnabled.value;
@@ -145,12 +162,11 @@ interface ExtensionSuggestion {
 
 const extensionPacks: ExtensionSuggestion[] = [
 	{ name: localize('welcomePage.javaScript', "JavaScript"), id: 'dbaeumer.vscode-eslint' },
-	{ name: localize('welcomePage.typeScript', "TypeScript"), id: 'ms-vscode.vscode-typescript-tslint-plugin' },
 	{ name: localize('welcomePage.python', "Python"), id: 'ms-python.python' },
-	// { name: localize('welcomePage.go', "Go"), id: 'lukehoban.go' },
+	{ name: localize('welcomePage.java', "Java"), id: 'vscjava.vscode-java-pack' },
 	{ name: localize('welcomePage.php', "PHP"), id: 'felixfbecker.php-pack' },
 	{ name: localize('welcomePage.azure', "Azure"), title: localize('welcomePage.showAzureExtensions', "Show Azure extensions"), id: 'workbench.extensions.action.showAzureExtensions', isCommand: true },
-	{ name: localize('welcomePage.docker', "Docker"), id: 'peterjausovec.vscode-docker' },
+	{ name: localize('welcomePage.docker', "Docker"), id: 'ms-azuretools.vscode-docker' },
 ];
 
 const keymapExtensions: ExtensionSuggestion[] = [
@@ -206,6 +222,16 @@ const extensionPackStrings: Strings = {
 	extensionNotFound: localize('welcomePage.extensionPackNotFound', "Support for {0} with id {1} could not be found."),
 };
 
+CommandsRegistry.registerCommand('workbench.extensions.action.showAzureExtensions', accessor => {
+	const viewletService = accessor.get(IViewletService);
+	return viewletService.openViewlet(VIEWLET_ID, true)
+		.then(viewlet => viewlet?.getViewPaneContainer() as IExtensionsViewPaneContainer)
+		.then(viewlet => {
+			viewlet.search('@sort:installs azure ');
+			viewlet.focus();
+		});
+});
+
 /* __GDPR__
 	"installKeymap" : {
 		"${include}": [
@@ -244,34 +270,35 @@ const keymapStrings: Strings = {
 
 const welcomeInputTypeId = 'workbench.editors.welcomePageInput';
 
-class WelcomePage {
-
-	private disposables: IDisposable[] = [];
+class WelcomePage extends Disposable {
 
 	readonly editorInput: WalkThroughInput;
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWindowService private readonly windowService: IWindowService,
+		@IWorkspacesService private readonly workspacesService: IWorkspacesService,
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
 		@ILabelService private readonly labelService: ILabelService,
 		@INotificationService private readonly notificationService: INotificationService,
-		@IExtensionEnablementService private readonly extensionEnablementService: IExtensionEnablementService,
+		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
 		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IExtensionTipsService private readonly tipsService: IExtensionTipsService,
+		@IExtensionRecommendationsService private readonly tipsService: IExtensionRecommendationsService,
 		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService
-	) {
-		this.disposables.push(lifecycleService.onShutdown(() => this.dispose()));
+		@ITelemetryService private readonly telemetryService: ITelemetryService,
+		@IHostService private readonly hostService: IHostService,
+		@IProductService private readonly productService: IProductService,
 
-		const recentlyOpened = this.windowService.getRecentlyOpened();
+	) {
+		super();
+		this._register(lifecycleService.onShutdown(() => this.dispose()));
+
+		const recentlyOpened = this.workspacesService.getRecentlyOpened();
 		const installedExtensions = this.instantiationService.invokeFunction(getInstalledExtensions);
-		const resource = URI.parse(require.toUrl('./vs_code_welcome_page'))
+		const resource = FileAccess.asBrowserUri('./vs_code_welcome_page', require)
 			.with({
 				scheme: Schemas.walkThrough,
 				query: JSON.stringify({ moduleId: 'vs/workbench/contrib/welcome/page/browser/vs_code_welcome_page' })
@@ -285,23 +312,28 @@ class WelcomePage {
 		});
 	}
 
-	public openEditor() {
-		return this.editorService.openEditor(this.editorInput, { pinned: false });
+	public openEditor(options: IEditorOptions = { pinned: false }) {
+		return this.editorService.openEditor(this.editorInput, options);
 	}
 
-	private onReady(container: HTMLElement, recentlyOpened: Promise<{ files: URI[]; workspaces: Array<IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier>; }>, installedExtensions: Promise<IExtensionStatus[]>): void {
+	private onReady(container: HTMLElement, recentlyOpened: Promise<IRecentlyOpened>, installedExtensions: Promise<IExtensionStatus[]>): void {
 		const enabled = isWelcomePageEnabled(this.configurationService, this.contextService);
 		const showOnStartup = <HTMLInputElement>container.querySelector('#showOnStartup');
 		if (enabled) {
 			showOnStartup.setAttribute('checked', 'checked');
 		}
 		showOnStartup.addEventListener('click', e => {
-			this.configurationService.updateValue(configurationKey, showOnStartup.checked ? 'welcomePage' : 'newUntitledFile', ConfigurationTarget.USER);
+			this.configurationService.updateValue(configurationKey, showOnStartup.checked ? 'welcomePage' : 'newUntitledFile');
 		});
+
+		const prodName = container.querySelector('.welcomePage .title .caption') as HTMLElement;
+		if (prodName) {
+			prodName.textContent = this.productService.nameLong;
+		}
 
 		recentlyOpened.then(({ workspaces }) => {
 			// Filter out the current workspace
-			workspaces = workspaces.filter(workspace => !this.contextService.isCurrentWorkspace(workspace));
+			workspaces = workspaces.filter(recent => !this.contextService.isCurrentWorkspace(isRecentWorkspace(recent) ? recent.workspace : recent.folderUri));
 			if (!workspaces.length) {
 				const recent = container.querySelector('.welcomePage') as HTMLElement;
 				recent.classList.add('emptyRecent');
@@ -321,14 +353,14 @@ class WelcomePage {
 				ul.append(...listEntries, moreRecent);
 			};
 			updateEntries();
-			this.disposables.push(this.labelService.onDidChangeFormatters(updateEntries));
+			this._register(this.labelService.onDidChangeFormatters(updateEntries));
 		}).then(undefined, onUnexpectedError);
 
 		this.addExtensionList(container, '.extensionPackList', extensionPacks, extensionPackStrings);
 		this.addExtensionList(container, '.keymapList', keymapExtensions, keymapStrings);
 
 		this.updateInstalledExtensions(container, installedExtensions);
-		this.disposables.push(this.instantiationService.invokeFunction(onExtensionChanged)(ids => {
+		this._register(this.instantiationService.invokeFunction(onExtensionChanged)(ids => {
 			for (const id of ids) {
 				if (container.querySelector(`.installExtension[data-extension="${id.id}"], .enabledExtension[data-extension="${id.id}"]`)) {
 					const installedExtensions = this.instantiationService.invokeFunction(getInstalledExtensions);
@@ -339,60 +371,33 @@ class WelcomePage {
 		}));
 	}
 
-	private createListEntries(workspaces: (URI | IWorkspaceIdentifier)[]) {
-		return workspaces.map(workspace => {
-			let label: string;
-			let resource: URI;
-			let typeHint: URIType | undefined;
-			if (isSingleFolderWorkspaceIdentifier(workspace)) {
-				resource = workspace;
-				label = this.labelService.getWorkspaceLabel(workspace);
-				typeHint = 'folder';
-			} else if (isWorkspaceIdentifier(workspace)) {
-				label = this.labelService.getWorkspaceLabel(workspace);
-				resource = workspace.configPath;
-				typeHint = 'file';
+	private createListEntries(recents: (IRecentWorkspace | IRecentFolder)[]) {
+		return recents.map(recent => {
+			let fullPath: string;
+			let windowOpenable: IWindowOpenable;
+			if (isRecentFolder(recent)) {
+				windowOpenable = { folderUri: recent.folderUri };
+				fullPath = recent.label || this.labelService.getWorkspaceLabel(recent.folderUri, { verbose: true });
 			} else {
-				label = getBaseLabel(workspace);
-				resource = URI.file(workspace);
-				typeHint = 'file';
+				fullPath = recent.label || this.labelService.getWorkspaceLabel(recent.workspace, { verbose: true });
+				windowOpenable = { workspaceUri: recent.workspace.configPath };
 			}
+
+			const { name, parentPath } = splitName(fullPath);
 
 			const li = document.createElement('li');
-
 			const a = document.createElement('a');
-			let name = label;
-			let parentFolderPath: string | undefined;
-
-			if (resource.scheme === Schemas.file) {
-				let parentFolder = path.dirname(resource.fsPath);
-				if (!name && parentFolder) {
-					const tmp = name;
-					name = parentFolder;
-					parentFolder = tmp;
-				}
-				parentFolderPath = tildify(parentFolder, this.environmentService.userHome);
-			} else {
-				parentFolderPath = this.labelService.getUriLabel(resource);
-			}
-
 
 			a.innerText = name;
-			a.title = label;
-			a.setAttribute('aria-label', localize('welcomePage.openFolderWithPath', "Open folder {0} with path {1}", name, parentFolderPath));
+			a.title = fullPath;
+			a.setAttribute('aria-label', localize('welcomePage.openFolderWithPath', "Open folder {0} with path {1}", name, parentPath));
 			a.href = 'javascript:void(0)';
 			a.addEventListener('click', e => {
-				/* __GDPR__
-					"workbenchActionExecuted" : {
-						"id" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" },
-						"from": { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-					}
-				*/
-				this.telemetryService.publicLog('workbenchActionExecuted', {
+				this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', {
 					id: 'openRecentFolder',
 					from: telemetryFrom
 				});
-				this.windowService.openWindow([{ uri: resource, typeHint }], { forceNewWindow: e.ctrlKey || e.metaKey });
+				this.hostService.openWindow([windowOpenable], { forceNewWindow: e.ctrlKey || e.metaKey });
 				e.preventDefault();
 				e.stopPropagation();
 			});
@@ -401,8 +406,8 @@ class WelcomePage {
 			const span = document.createElement('span');
 			span.classList.add('path');
 			span.classList.add('detail');
-			span.innerText = parentFolderPath;
-			span.title = label;
+			span.innerText = parentPath;
+			span.title = fullPath;
 			li.appendChild(span);
 
 			return li;
@@ -457,7 +462,7 @@ class WelcomePage {
 			extensionId: extensionSuggestion.id,
 		});
 		this.instantiationService.invokeFunction(getInstalledExtensions).then(extensions => {
-			const installedExtension = arrays.first(extensions, extension => areSameExtensions(extension.identifier, { id: extensionSuggestion.id }));
+			const installedExtension = extensions.find(extension => areSameExtensions(extension.identifier, { id: extensionSuggestion.id }));
 			if (installedExtension && installedExtension.globallyEnabled) {
 				/* __GDPR__FRAGMENT__
 					"WelcomePageInstalled-1" : {
@@ -474,18 +479,18 @@ class WelcomePage {
 				this.notificationService.info(strings.alreadyInstalled.replace('{0}', extensionSuggestion.name));
 				return;
 			}
-			const foundAndInstalled = installedExtension ? Promise.resolve(installedExtension.local) : this.extensionGalleryService.query({ names: [extensionSuggestion.id], source: telemetryFrom })
+			const foundAndInstalled = installedExtension ? Promise.resolve(installedExtension.local) : this.extensionGalleryService.query({ names: [extensionSuggestion.id], source: telemetryFrom }, CancellationToken.None)
 				.then((result): null | Promise<ILocalExtension | null> => {
 					const [extension] = result.firstPage;
 					if (!extension) {
 						return null;
 					}
 					return this.extensionManagementService.installFromGallery(extension)
-						.then(() => this.extensionManagementService.getInstalled(ExtensionType.User))
+						.then(() => this.extensionManagementService.getInstalled())
 						.then(installed => {
 							const local = installed.filter(i => areSameExtensions(extension.identifier, i.identifier))[0];
 							// TODO: Do this as part of the install to avoid multiple events.
-							return this.extensionEnablementService.setEnablement([local], EnablementState.Disabled).then(() => local);
+							return this.extensionEnablementService.setEnablement([local], EnablementState.DisabledGlobally).then(() => local);
 						});
 				});
 
@@ -500,12 +505,12 @@ class WelcomePage {
 							this.notificationService.info(strings.installing.replace('{0}', extensionSuggestion.name));
 						}, 300);
 						const extensionsToDisable = extensions.filter(extension => isKeymapExtension(this.tipsService, extension) && extension.globallyEnabled).map(extension => extension.local);
-						extensionsToDisable.length ? this.extensionEnablementService.setEnablement(extensionsToDisable, EnablementState.Disabled) : Promise.resolve()
+						extensionsToDisable.length ? this.extensionEnablementService.setEnablement(extensionsToDisable, EnablementState.DisabledGlobally) : Promise.resolve()
 							.then(() => {
 								return foundAndInstalled.then(foundExtension => {
 									messageDelay.cancel();
 									if (foundExtension) {
-										return this.extensionEnablementService.setEnablement([foundExtension], EnablementState.Enabled)
+										return this.extensionEnablementService.setEnablement([foundExtension], EnablementState.EnabledGlobally)
 											.then(() => {
 												/* __GDPR__FRAGMENT__
 													"WelcomePageInstalled-2" : {
@@ -519,7 +524,7 @@ class WelcomePage {
 													extensionId: extensionSuggestion.id,
 													outcome: installedExtension ? 'enabled' : 'installed',
 												});
-												return this.windowService.reloadWindow();
+												return this.hostService.reload();
 											});
 									} else {
 										/* __GDPR__FRAGMENT__
@@ -543,15 +548,13 @@ class WelcomePage {
 									"WelcomePageInstalled-4" : {
 										"from" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" },
 										"extensionId": { "classification": "SystemMetaData", "purpose": "FeatureInsight" },
-										"outcome": { "classification": "SystemMetaData", "purpose": "FeatureInsight" },
-										"error": { "classification": "CallstackOrException", "purpose": "PerformanceAndHealth" }
+										"outcome": { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 									}
 								*/
 								this.telemetryService.publicLog(strings.installedEvent, {
 									from: telemetryFrom,
 									extensionId: extensionSuggestion.id,
 									outcome: isPromiseCanceledError(err) ? 'canceled' : 'error',
-									error: String(err),
 								});
 								this.notificationService.error(err);
 							});
@@ -569,7 +572,7 @@ class WelcomePage {
 							from: telemetryFrom,
 							extensionId: extensionSuggestion.id,
 						});
-						this.extensionsWorkbenchService.queryGallery({ names: [extensionSuggestion.id] })
+						this.extensionsWorkbenchService.queryGallery({ names: [extensionSuggestion.id] }, CancellationToken.None)
 							.then(result => this.extensionsWorkbenchService.open(result.firstPage[0]))
 							.then(undefined, onUnexpectedError);
 					}
@@ -580,15 +583,13 @@ class WelcomePage {
 				"WelcomePageInstalled-6" : {
 					"from" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" },
 					"extensionId": { "classification": "SystemMetaData", "purpose": "FeatureInsight" },
-					"outcome": { "classification": "SystemMetaData", "purpose": "FeatureInsight" },
-					"error": { "classification": "CallstackOrException", "purpose": "PerformanceAndHealth" }
+					"outcome": { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 				}
 			*/
 			this.telemetryService.publicLog(strings.installedEvent, {
 				from: telemetryFrom,
 				extensionId: extensionSuggestion.id,
 				outcome: isPromiseCanceledError(err) ? 'canceled' : 'error',
-				error: String(err),
 			});
 			this.notificationService.error(err);
 		});
@@ -614,15 +615,15 @@ class WelcomePage {
 				});
 		}).then(undefined, onUnexpectedError);
 	}
-
-	dispose(): void {
-		this.disposables = dispose(this.disposables);
-	}
 }
 
 export class WelcomeInputFactory implements IEditorInputFactory {
 
 	static readonly ID = welcomeInputTypeId;
+
+	public canSerialize(editorInput: EditorInput): boolean {
+		return true;
+	}
 
 	public serialize(editorInput: EditorInput): string {
 		return '{}';

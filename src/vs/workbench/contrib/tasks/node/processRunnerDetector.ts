@@ -14,7 +14,7 @@ import { IFileService } from 'vs/platform/files/common/files';
 import { IWorkspaceContextService, IWorkspaceFolder, WorkbenchState } from 'vs/platform/workspace/common/workspace';
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver';
 import * as Tasks from '../common/tasks';
-import * as TaskConfig from './taskConfiguration';
+import * as TaskConfig from '../common/taskConfiguration';
 
 const build = 'build';
 const test = 'test';
@@ -59,9 +59,9 @@ class RegexpTaskMatcher implements TaskDetectorMatcher {
 }
 
 class GruntTaskMatcher implements TaskDetectorMatcher {
-	private tasksStart: boolean;
-	private tasksEnd: boolean;
-	private descriptionOffset: number | null;
+	private tasksStart!: boolean;
+	private tasksEnd!: boolean;
+	private descriptionOffset!: number | null;
 
 	init() {
 		this.tasksStart = false;
@@ -179,7 +179,7 @@ export class ProcessRunnerDetector {
 				commandExecutable, isShellCommand, config.matcher, ProcessRunnerDetector.DefaultProblemMatchers, list));
 		} else {
 			if (detectSpecific) {
-				let detectorPromise: Promise<DetectorResult>;
+				let detectorPromise: Promise<DetectorResult | null>;
 				if ('gulp' === detectSpecific) {
 					detectorPromise = this.tryDetectGulp(this._workspaceRoot, list);
 				} else if ('jake' === detectSpecific) {
@@ -187,7 +187,7 @@ export class ProcessRunnerDetector {
 				} else if ('grunt' === detectSpecific) {
 					detectorPromise = this.tryDetectGrunt(this._workspaceRoot, list);
 				} else {
-					throw new Error('Unkown detector type');
+					throw new Error('Unknown detector type');
 				}
 				return detectorPromise.then((value) => {
 					if (value) {
@@ -218,7 +218,7 @@ export class ProcessRunnerDetector {
 	}
 
 	private resolveCommandOptions(workspaceFolder: IWorkspaceFolder, options: CommandOptions): CommandOptions {
-		// TODO@Dirk adopt new configuration resolver service https://github.com/Microsoft/vscode/issues/31365
+		// TODO@Dirk adopt new configuration resolver service https://github.com/microsoft/vscode/issues/31365
 		let result = Objects.deepClone(options);
 		if (result.cwd) {
 			result.cwd = this.configurationResolverService.resolve(workspaceFolder, result.cwd);
@@ -229,8 +229,8 @@ export class ProcessRunnerDetector {
 		return result;
 	}
 
-	private tryDetectGulp(workspaceFolder: IWorkspaceFolder, list: boolean): Promise<DetectorResult> {
-		return Promise.resolve(this.fileService.resolveFile(workspaceFolder.toResource('gulpfile.js'))).then((stat) => { // TODO@Dirk (https://github.com/Microsoft/vscode/issues/29454)
+	private tryDetectGulp(workspaceFolder: IWorkspaceFolder, list: boolean): Promise<DetectorResult | null> {
+		return Promise.resolve(this.fileService.resolve(workspaceFolder.toResource('gulpfile.js'))).then((stat) => { // TODO@Dirk (https://github.com/microsoft/vscode/issues/29454)
 			let config = ProcessRunnerDetector.detectorConfig('gulp');
 			let process = new LineProcess('gulp', [config.arg, '--no-color'], true, { cwd: this._cwd });
 			return this.runDetection(process, 'gulp', true, config.matcher, ProcessRunnerDetector.DefaultProblemMatchers, list);
@@ -239,8 +239,8 @@ export class ProcessRunnerDetector {
 		});
 	}
 
-	private tryDetectGrunt(workspaceFolder: IWorkspaceFolder, list: boolean): Promise<DetectorResult> {
-		return Promise.resolve(this.fileService.resolveFile(workspaceFolder.toResource('Gruntfile.js'))).then((stat) => { // TODO@Dirk (https://github.com/Microsoft/vscode/issues/29454)
+	private tryDetectGrunt(workspaceFolder: IWorkspaceFolder, list: boolean): Promise<DetectorResult | null> {
+		return Promise.resolve(this.fileService.resolve(workspaceFolder.toResource('Gruntfile.js'))).then((stat) => { // TODO@Dirk (https://github.com/microsoft/vscode/issues/29454)
 			let config = ProcessRunnerDetector.detectorConfig('grunt');
 			let process = new LineProcess('grunt', [config.arg, '--no-color'], true, { cwd: this._cwd });
 			return this.runDetection(process, 'grunt', true, config.matcher, ProcessRunnerDetector.DefaultProblemMatchers, list);
@@ -249,16 +249,16 @@ export class ProcessRunnerDetector {
 		});
 	}
 
-	private tryDetectJake(workspaceFolder: IWorkspaceFolder, list: boolean): Promise<DetectorResult> {
+	private tryDetectJake(workspaceFolder: IWorkspaceFolder, list: boolean): Promise<DetectorResult | null> {
 		let run = () => {
 			let config = ProcessRunnerDetector.detectorConfig('jake');
 			let process = new LineProcess('jake', [config.arg], true, { cwd: this._cwd });
 			return this.runDetection(process, 'jake', true, config.matcher, ProcessRunnerDetector.DefaultProblemMatchers, list);
 		};
-		return Promise.resolve(this.fileService.resolveFile(workspaceFolder.toResource('Jakefile'))).then((stat) => { // TODO@Dirk (https://github.com/Microsoft/vscode/issues/29454)
+		return Promise.resolve(this.fileService.resolve(workspaceFolder.toResource('Jakefile'))).then((stat) => { // TODO@Dirk (https://github.com/microsoft/vscode/issues/29454)
 			return run();
 		}, (err: any) => {
-			return this.fileService.resolveFile(workspaceFolder.toResource('Jakefile.js')).then((stat) => { // TODO@Dirk (https://github.com/Microsoft/vscode/issues/29454)
+			return this.fileService.resolve(workspaceFolder.toResource('Jakefile.js')).then((stat) => { // TODO@Dirk (https://github.com/microsoft/vscode/issues/29454)
 				return run();
 			}, (err: any) => {
 				return null;
@@ -363,7 +363,7 @@ export class ProcessRunnerDetector {
 		if (taskName === build) {
 			taskInfo.index = index;
 			taskInfo.exact = 4;
-		} else if ((Strings.startsWith(taskName, build) || Strings.endsWith(taskName, build)) && taskInfo.exact < 4) {
+		} else if ((taskName.startsWith(build) || taskName.endsWith(build)) && taskInfo.exact < 4) {
 			taskInfo.index = index;
 			taskInfo.exact = 3;
 		} else if (taskName.indexOf(build) !== -1 && taskInfo.exact < 3) {
@@ -379,7 +379,7 @@ export class ProcessRunnerDetector {
 		if (taskName === test) {
 			taskInfo.index = index;
 			taskInfo.exact = 3;
-		} else if ((Strings.startsWith(taskName, test) || Strings.endsWith(taskName, test)) && taskInfo.exact < 3) {
+		} else if ((taskName.startsWith(test) || taskName.endsWith(test)) && taskInfo.exact < 3) {
 			taskInfo.index = index;
 			taskInfo.exact = 2;
 		} else if (taskName.indexOf(test) !== -1 && taskInfo.exact < 2) {

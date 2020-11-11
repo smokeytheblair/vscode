@@ -6,14 +6,13 @@
 import * as assert from 'assert';
 import { join, normalize } from 'vs/base/common/path';
 import * as platform from 'vs/base/common/platform';
-import { IDebugAdapterExecutable, IConfigurationManager, IConfig, IDebugSession } from 'vs/workbench/contrib/debug/common/debug';
-import { Debugger } from 'vs/workbench/contrib/debug/node/debugger';
+import { IDebugAdapterExecutable, IConfig, IDebugSession, IAdapterManager } from 'vs/workbench/contrib/debug/common/debug';
+import { Debugger } from 'vs/workbench/contrib/debug/common/debugger';
 import { TestConfigurationService } from 'vs/platform/configuration/test/common/testConfigurationService';
 import { URI } from 'vs/base/common/uri';
 import { ExecutableDebugAdapter } from 'vs/workbench/contrib/debug/node/debugAdapter';
-import { TestTextResourcePropertiesService } from 'vs/workbench/test/workbenchTestServices';
-import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
-import { IExtensionDescription } from 'vs/workbench/services/extensions/common/extensions';
+import { TestTextResourcePropertiesService } from 'vs/editor/test/common/services/modelService.test';
+import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions';
 
 
 suite('Debug - Debugger', () => {
@@ -23,7 +22,6 @@ suite('Debug - Debugger', () => {
 	const debuggerContribution = {
 		type: 'mock',
 		label: 'Mock Debug',
-		enableBreakpointsFor: { 'languageIds': ['markdown'] },
 		program: './out/mock/mockDebug.js',
 		args: ['arg1', 'arg2'],
 		configurationAttributes: {
@@ -57,6 +55,7 @@ suite('Debug - Debugger', () => {
 		publisher: 'vscode',
 		extensionLocation: URI.file(extensionFolderPath),
 		isBuiltin: false,
+		isUserBuiltin: false,
 		isUnderDevelopment: false,
 		engines: null!,
 		contributes: {
@@ -74,6 +73,7 @@ suite('Debug - Debugger', () => {
 		publisher: 'vscode',
 		extensionLocation: URI.file('/e1/b/c/'),
 		isBuiltin: false,
+		isUserBuiltin: false,
 		isUnderDevelopment: false,
 		engines: null!,
 		contributes: {
@@ -97,6 +97,7 @@ suite('Debug - Debugger', () => {
 		publisher: 'vscode',
 		extensionLocation: URI.file('/e2/b/c/'),
 		isBuiltin: false,
+		isUserBuiltin: false,
 		isUnderDevelopment: false,
 		engines: null!,
 		contributes: {
@@ -121,7 +122,7 @@ suite('Debug - Debugger', () => {
 	};
 
 
-	const configurationManager = <IConfigurationManager>{
+	const adapterManager = <IAdapterManager>{
 		getDebugAdapterDescriptor(session: IDebugSession, config: IConfig): Promise<IDebugAdapterExecutable | undefined> {
 			return Promise.resolve(undefined);
 		}
@@ -131,7 +132,7 @@ suite('Debug - Debugger', () => {
 	const testResourcePropertiesService = new TestTextResourcePropertiesService(configurationService);
 
 	setup(() => {
-		_debugger = new Debugger(configurationManager, debuggerContribution, extensionDescriptor0, configurationService, testResourcePropertiesService, undefined!, undefined!, undefined!);
+		_debugger = new Debugger(adapterManager, debuggerContribution, extensionDescriptor0, configurationService, testResourcePropertiesService, undefined!, undefined!, undefined!, undefined!);
 	});
 
 	teardown(() => {
@@ -149,10 +150,10 @@ suite('Debug - Debugger', () => {
 	});
 
 	test('schema attributes', () => {
-		const schemaAttribute = _debugger.getSchemaAttributes()[0];
+		const schemaAttribute = _debugger.getSchemaAttributes()![0];
 		assert.notDeepEqual(schemaAttribute, debuggerContribution.configurationAttributes);
 		Object.keys(debuggerContribution.configurationAttributes.launch).forEach(key => {
-			assert.deepEqual(schemaAttribute[key], debuggerContribution.configurationAttributes.launch[key]);
+			assert.deepEqual((<any>schemaAttribute)[key], (<any>debuggerContribution.configurationAttributes.launch)[key]);
 		});
 
 		assert.equal(schemaAttribute['additionalProperties'], false);

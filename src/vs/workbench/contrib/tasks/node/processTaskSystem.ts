@@ -82,12 +82,28 @@ export class ProcessTaskSystem implements ITaskSystem {
 		return !!this.childProcess;
 	}
 
+	public isTaskVisible(): boolean {
+		return true;
+	}
+
 	public getActiveTasks(): Task[] {
 		let result: Task[] = [];
 		if (this.activeTask) {
 			result.push(this.activeTask);
 		}
 		return result;
+	}
+
+	public getLastInstance(task: Task): Task | undefined {
+		let result = undefined;
+		if (this.activeTask) {
+			result = this.activeTask;
+		}
+		return result;
+	}
+
+	public getBusyTasks(): Task[] {
+		return [];
 	}
 
 	public run(task: Task): ITaskExecuteResult {
@@ -100,6 +116,10 @@ export class ProcessTaskSystem implements ITaskSystem {
 	public revealTask(task: Task): boolean {
 		this.showOutput();
 		return true;
+	}
+
+	public customExecutionComplete(task: Task, result?: number): Promise<void> {
+		throw new TaskError(Severity.Error, 'Custom execution task completion is never expected in the process task system.', TaskErrors.UnknownError);
 	}
 
 	public hasErrors(value: boolean): void {
@@ -127,7 +147,7 @@ export class ProcessTaskSystem implements ITaskSystem {
 		if (this.childProcess) {
 			let task = this.activeTask;
 			return this.childProcess.terminate().then((response) => {
-				let result: TaskTerminateResponse = Objects.assign({ task: task! }, response);
+				let result: TaskTerminateResponse = Object.assign({ task: task! }, response);
 				this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.Terminated, task!));
 				return [result];
 			});
@@ -315,7 +335,7 @@ export class ProcessTaskSystem implements ITaskSystem {
 			this.activeTask = task;
 			const inactiveEvent = TaskEvent.create(TaskEventKind.Inactive, task);
 			let processStartedSignaled: boolean = false;
-			const onProgress = (progress) => {
+			const onProgress = (progress: LineData) => {
 				let line = Strings.removeAnsiEscapeCodes(progress.line);
 				this.appendOutput(line + '\n');
 				startStopProblemMatcher.processLine(line);
@@ -433,7 +453,7 @@ export class ProcessTaskSystem implements ITaskSystem {
 				matcher = value;
 			}
 			if (!matcher) {
-				this.appendOutput(nls.localize('unkownProblemMatcher', 'Problem matcher {0} can\'t be resolved. The matcher will be ignored'));
+				this.appendOutput(nls.localize('unknownProblemMatcher', 'Problem matcher {0} can\'t be resolved. The matcher will be ignored'));
 				return;
 			}
 			if (!matcher.filePrefix) {

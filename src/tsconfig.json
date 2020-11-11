@@ -4,19 +4,25 @@
 		"removeComments": false,
 		"preserveConstEnums": true,
 		"sourceMap": false,
-		"outDir": "../out",
-		"target": "es6",
-		"lib": [
-			"dom",
-			"es5",
-			"es2015.iterable"
+		"outDir": "../out/vs",
+		"target": "es2017",
+		"types": [
+			"keytar",
+			"mocha",
+			"semver",
+			"sinon",
+			"winreg",
+			"trusted-types"
+		],
+		"plugins": [
+			{
+				// the path is relative to TS server, "../../" points to the root dir
+				"name": "../../node_modules/tsec/lib/tsec_lib/language_service_plugin.js"
+			}
 		]
 	},
 	"include": [
 		"./typings",
 		"./vs"
-	],
-	"exclude": [
-		"./typings/require-monaco.d.ts"
 	]
 }
