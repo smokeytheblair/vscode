@@ -495,7 +495,7 @@ suite('markdown.SmartSelect', () => {
 				`- stuff here [te${CURSOR}xt](https://google.com) and here`,
 				`- list`
 			));
-		assertNestedRangesEqual(ranges![0], [6, 14, 6, 28], [6, 13, 6, 29], [6, 13, 6, 49], [6, 0, 6, 59], [5, 0, 7, 6], [4, 0, 7, 6], [1, 0, 7, 6], [0, 0, 7, 6]);
+		assertNestedRangesEqual(ranges![0], [6, 14, 6, 28], [6, 13, 6, 29], [6, 13, 6, 49], [6, 0, 6, 58], [5, 0, 7, 6], [4, 0, 7, 6], [1, 0, 7, 6], [0, 0, 7, 6]);
 	});
 	test('Smart select link under header in list', async () => {
 		const ranges = await getSelectionRangesForDocument(
@@ -509,7 +509,7 @@ suite('markdown.SmartSelect', () => {
 				`- stuff here [text](${CURSOR}https://google.com) and here`,
 				`- list`
 			));
-		assertNestedRangesEqual(ranges![0], [6, 20, 6, 48], [6, 19, 6, 49], [6, 13, 6, 49], [6, 0, 6, 59], [5, 0, 7, 6], [4, 0, 7, 6], [1, 0, 7, 6], [0, 0, 7, 6]);
+		assertNestedRangesEqual(ranges![0], [6, 20, 6, 48], [6, 19, 6, 49], [6, 13, 6, 49], [6, 0, 6, 58], [5, 0, 7, 6], [4, 0, 7, 6], [1, 0, 7, 6], [0, 0, 7, 6]);
 	});
 	test('Smart select bold within list where multiple bold elements exists', async () => {
 		const ranges = await getSelectionRangesForDocument(
@@ -523,7 +523,7 @@ suite('markdown.SmartSelect', () => {
 				`- stuff here [text]**${CURSOR}items in here** and **here**`,
 				`- list`
 			));
-		assertNestedRangesEqual(ranges![0], [6, 21, 6, 44], [6, 19, 6, 46], [6, 0, 6, 60], [5, 0, 7, 6], [4, 0, 7, 6], [1, 0, 7, 6], [0, 0, 7, 6]);
+		assertNestedRangesEqual(ranges![0], [6, 21, 6, 44], [6, 19, 6, 46], [6, 0, 6, 59], [5, 0, 7, 6], [4, 0, 7, 6], [1, 0, 7, 6], [0, 0, 7, 6]);
 	});
 	test('Smart select link in paragraph with multiple links', async () => {
 		const ranges = await getSelectionRangesForDocument(

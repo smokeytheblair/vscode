@@ -27,7 +27,7 @@ import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { createAndFillInActionBarActions } from 'vs/platform/actions/browser/menuEntryActionViewItem';
 import { Codicon } from 'vs/base/common/codicons';
-import { isMacintosh } from 'vs/base/common/platform';
+import { isMacintosh, isWeb } from 'vs/base/common/platform';
 import { getCurrentAuthenticationSessionInfo, IAuthenticationService } from 'vs/workbench/services/authentication/browser/authenticationService';
 import { AuthenticationSession } from 'vs/editor/common/modes';
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
@@ -235,7 +235,7 @@ export class AccountsActionViewItem extends ActivityActionViewItem {
 		}
 
 		menus.push(new Action('hide', nls.localize('hide', "Hide"), undefined, true, _ => {
-			this.storageService.store2(ACCOUNTS_VISIBILITY_PREFERENCE_KEY, false, StorageScope.GLOBAL, StorageTarget.USER);
+			this.storageService.store(ACCOUNTS_VISIBILITY_PREFERENCE_KEY, false, StorageScope.GLOBAL, StorageTarget.USER);
 			return Promise.resolve();
 		}));
 
@@ -246,7 +246,7 @@ export class AccountsActionViewItem extends ActivityActionViewItem {
 		const accountsActions: IAction[] = [];
 		const accountsMenu = this.menuService.createMenu(MenuId.AccountsContext, this.contextKeyService);
 		const actionsDisposable = createAndFillInActionBarActions(accountsMenu, undefined, { primary: [], secondary: accountsActions });
-		const customMenus = getTitleBarStyle(this.configurationService, this.environmentService) !== 'native' && !isMacintosh; // see #40262
+		const customMenus = isWeb || (getTitleBarStyle(this.configurationService, this.environmentService) !== 'native' && !isMacintosh); // see #40262
 		const position = this.configurationService.getValue('workbench.sideBar.location');
 
 		const actions = await this.getActions(accountsMenu);
@@ -307,7 +307,7 @@ export class GlobalActivityActionViewItem extends ActivityActionViewItem {
 		const globalActivityActions: IAction[] = [];
 		const globalActivityMenu = this.menuService.createMenu(MenuId.GlobalActivity, this.contextKeyService);
 		const actionsDisposable = createAndFillInActionBarActions(globalActivityMenu, undefined, { primary: [], secondary: globalActivityActions });
-		const customMenus = getTitleBarStyle(this.configurationService, this.environmentService) !== 'native' && !isMacintosh; // see #40262
+		const customMenus = isWeb || (getTitleBarStyle(this.configurationService, this.environmentService) !== 'native' && !isMacintosh); // see #40262
 		const position = this.configurationService.getValue('workbench.sideBar.location');
 
 		this.contextMenuService.showContextMenu({

@@ -176,11 +176,6 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TimelineItemContext,
 		description: localize('view.timelineContext', "The Timeline view item context menu")
 	},
-	{
-		key: 'search/context',
-		id: MenuId.SearchContext,
-		description: localize('menus.searchContext', "The search context menu")
-	},
 ];
 
 namespace schema {
@@ -466,7 +461,7 @@ namespace schema {
 				type: 'string'
 			},
 			enablement: {
-				description: localize('vscode.extension.contributes.commandType.precondition', '(Optional) Condition which must be true to enable the command'),
+				description: localize('vscode.extension.contributes.commandType.precondition', '(Optional) Condition which must be true to enable the command in the UI (menu and keybindings). Does not prevent executing the command by other means, like the `executeCommand`-api.'),
 				type: 'string'
 			},
 			icon: {

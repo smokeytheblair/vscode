@@ -663,7 +663,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 					{
 						label: nls.localize('dontShowAgain', "Don't Show Again"),
 						isSecondary: true,
-						run: () => this._storageService.store2(NEVER_MEASURE_RENDER_TIME_STORAGE_KEY, true, StorageScope.GLOBAL, StorageTarget.MACHINE)
+						run: () => this._storageService.store(NEVER_MEASURE_RENDER_TIME_STORAGE_KEY, true, StorageScope.GLOBAL, StorageTarget.MACHINE)
 					} as IPromptChoice
 				];
 				this._notificationService.prompt(
@@ -733,6 +733,10 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		}
 		const terminalFocused = !isFocused && (document.activeElement === this._xterm.textarea || document.activeElement === this._xterm.element);
 		this._terminalFocusContextKey.set(terminalFocused);
+	}
+
+	public refreshFocusState() {
+		this.notifyFindWidgetFocusChanged(false);
 	}
 
 	public dispose(immediate?: boolean): void {

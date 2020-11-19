@@ -1116,6 +1116,10 @@ declare namespace monaco.editor {
 		 */
 		wordBasedSuggestions?: boolean;
 		/**
+		 * Controls whether word based completions should be included from opened documents of the same language or any language.
+		 */
+		wordBasedSuggestionsOnlySameLanguage?: boolean;
+		/**
 		 * Controls whether the semanticHighlighting is shown for the languages that support it.
 		 * true: semanticHighlighting is enabled for all themes
 		 * false: semanticHighlighting is disabled for all themes
@@ -1685,6 +1689,10 @@ declare namespace monaco.editor {
 		 * @return EOL char sequence (e.g.: '\n' or '\r\n').
 		 */
 		getEOL(): string;
+		/**
+		 * Get the end of line sequence predominantly used in the text buffer.
+		 */
+		getEndOfLineSequence(): EndOfLineSequence;
 		/**
 		 * Get the minimum legal column for line at `lineNumber`
 		 */
@@ -3189,20 +3197,19 @@ declare namespace monaco.editor {
 		 */
 		originalEditable?: boolean;
 		/**
-		 * Original editor should be have code lens enabled?
+		 * Should the diff editor enable code lens?
 		 * Defaults to false.
 		 */
-		originalCodeLens?: boolean;
-		/**
-		 * Modified editor should be have code lens enabled?
-		 * Defaults to false.
-		 */
-		modifiedCodeLens?: boolean;
+		diffCodeLens?: boolean;
 		/**
 		 * Is the diff editor inside another editor
 		 * Defaults to false
 		 */
 		isInEmbeddedEditor?: boolean;
+		/**
+		 * Control the wrapping of the diff editor.
+		 */
+		diffWordWrap?: 'off' | 'on' | 'inherit';
 	}
 
 	/**
@@ -5079,9 +5086,9 @@ declare namespace monaco.languages {
 	export function registerDocumentHighlightProvider(languageId: string, provider: DocumentHighlightProvider): IDisposable;
 
 	/**
-	 * Register an on type rename provider.
+	 * Register an on type rename range provider.
 	 */
-	export function registerOnTypeRenameProvider(languageId: string, provider: OnTypeRenameProvider): IDisposable;
+	export function registerOnTypeRenameRangeProvider(languageId: string, provider: OnTypeRenameRangeProvider): IDisposable;
 
 	/**
 	 * Register a definition provider (used by e.g. go to definition).
@@ -5825,18 +5832,30 @@ declare namespace monaco.languages {
 	}
 
 	/**
-	 * The rename provider interface defines the contract between extensions and
+	 * The rename range provider interface defines the contract between extensions and
 	 * the live-rename feature.
 	 */
-	export interface OnTypeRenameProvider {
-		wordPattern?: RegExp;
+	export interface OnTypeRenameRangeProvider {
 		/**
 		 * Provide a list of ranges that can be live-renamed together.
 		 */
-		provideOnTypeRenameRanges(model: editor.ITextModel, position: Position, token: CancellationToken): ProviderResult<{
-			ranges: IRange[];
-			wordPattern?: RegExp;
-		}>;
+		provideOnTypeRenameRanges(model: editor.ITextModel, position: Position, token: CancellationToken): ProviderResult<OnTypeRenameRanges>;
+	}
+
+	/**
+	 * Represents a list of ranges that can be renamed together along with a word pattern to describe valid range contents.
+	 */
+	export interface OnTypeRenameRanges {
+		/**
+		 * A list of ranges that can be renamed together. The ranges must have
+		 * identical length and contain identical text content. The ranges cannot overlap
+		 */
+		ranges: IRange[];
+		/**
+		 * An optional word pattern that describes valid contents for the given ranges.
+		 * If no pattern is provided, the language configuration's word pattern will be used.
+		 */
+		wordPattern?: RegExp;
 	}
 
 	/**
@@ -6241,6 +6260,8 @@ declare namespace monaco.languages {
 		ignoreIfNotExists?: boolean;
 		ignoreIfExists?: boolean;
 		recursive?: boolean;
+		copy?: boolean;
+		folder?: boolean;
 	}
 
 	export interface WorkspaceFileEdit {
