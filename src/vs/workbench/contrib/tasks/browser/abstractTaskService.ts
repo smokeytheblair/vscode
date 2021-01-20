@@ -76,9 +76,10 @@ import { ITextEditorSelection, TextEditorSelectionRevealType } from 'vs/platform
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences';
 import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
 import { IViewsService, IViewDescriptorService } from 'vs/workbench/common/views';
-import { isWorkspaceFolder, TaskQuickPickEntry, QUICKOPEN_DETAIL_CONFIG, TaskQuickPick, QUICKOPEN_SKIP_CONFIG } from 'vs/workbench/contrib/tasks/browser/taskQuickPick';
+import { isWorkspaceFolder, TaskQuickPickEntry, QUICKOPEN_DETAIL_CONFIG, TaskQuickPick, QUICKOPEN_SKIP_CONFIG, configureTaskIcon } from 'vs/workbench/contrib/tasks/browser/taskQuickPick';
 import { ILogService } from 'vs/platform/log/common/log';
 import { once } from 'vs/base/common/functional';
+import { ThemeIcon } from 'vs/platform/theme/common/themeService';
 
 const QUICKOPEN_HISTORY_LIMIT_CONFIG = 'task.quickOpen.history';
 const PROBLEM_MATCHER_NEVER_CONFIG = 'task.problemMatchers.neverPrompt';
@@ -853,7 +854,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 	}
 
 	private openDocumentation(): void {
-		this.openerService.open(URI.parse('https://go.microsoft.com/fwlink/?LinkId=733558'));
+		this.openerService.open(URI.parse('https://code.visualstudio.com/docs/editor/tasks#_defining-a-problem-matcher'));
 	}
 
 	public async build(): Promise<ITaskSummary> {
@@ -1249,7 +1250,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 			if (editorConfig.editor.insertSpaces) {
 				content = content.replace(/(\n)(\t+)/g, (_, s1, s2) => s1 + ' '.repeat(s2.length * editorConfig.editor.tabSize));
 			}
-			promise = this.textFileService.create(workspaceFolder.toResource('.vscode/tasks.json'), content).then(() => { });
+			promise = this.textFileService.create([{ resource: workspaceFolder.toResource('.vscode/tasks.json'), value: content }]).then(() => { });
 		} else {
 			// We have a global task configuration
 			if ((index === -1) && properties) {
@@ -1703,7 +1704,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 						return;
 					}
 
-					if (contributed.length === 0) {
+					if (this.contextService.getWorkbenchState() === WorkbenchState.EMPTY) {
 						result.add(key, ...folderTasks.set.tasks);
 					} else {
 						let configurations = folderTasks.configurations;
@@ -1976,7 +1977,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 		await this.computeTasksForSingleConfig(workspaceFolder, configuration.config, runSource, custom, customizedTasks.byIdentifier, TaskConfig.TaskConfigSource.WorkspaceFile);
 		const engine = configuration.config ? TaskConfig.ExecutionEngine.from(configuration.config) : ExecutionEngine.Terminal;
 		if (engine === ExecutionEngine.Process) {
-			this.notificationService.warn(nls.localize('TaskSystem.versionWorkspaceFile', 'Only tasks version 2.0.0 permitted in .codeworkspace.'));
+			this.notificationService.warn(nls.localize('TaskSystem.versionWorkspaceFile', 'Only tasks version 2.0.0 permitted in workspace configuration files.'));
 			return this.emptyWorkspaceTaskResults(workspaceFolder);
 		}
 		return { workspaceFolder, set: { tasks: custom }, configurations: customizedTasks, hasErrors: configuration.hasParseErrors };
@@ -2201,7 +2202,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 			}
 			for (let task of tasks) {
 				let entry: TaskQuickPickEntry = TaskQuickPickEntry(task);
-				entry.buttons = [{ iconClass: 'codicon-gear', tooltip: nls.localize('configureTask', "Configure Task") }];
+				entry.buttons = [{ iconClass: ThemeIcon.asClassName(configureTaskIcon), tooltip: nls.localize('configureTask', "Configure Task") }];
 				if (selectedEntry && (task === selectedEntry.task)) {
 					entries.unshift(selectedEntry);
 				} else {
@@ -2821,8 +2822,8 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 			}
 
 			if (!fileExists && content) {
-				return this.textFileService.create(resource, content).then((result): URI => {
-					return result.resource;
+				return this.textFileService.create([{ resource, value: content }]).then(result => {
+					return result[0].resource;
 				});
 			} else if (fileExists && (tasksExistInFile || content)) {
 				if (content) {
@@ -2865,7 +2866,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 		}
 		if (this.isTaskEntry(selection)) {
 			this.configureTask(selection.task);
-		} else if (this.contextService.getWorkbenchState() !== WorkbenchState.EMPTY) {
+		} else if (selection.folder && (this.contextService.getWorkbenchState() !== WorkbenchState.EMPTY)) {
 			this.openTaskFile(selection.folder.toResource('.vscode/tasks.json'), TaskSourceKind.Workspace);
 		} else {
 			const resource = this.getResourceForKind(TaskSourceKind.User);

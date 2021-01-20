@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStringDictionary } from 'vs/base/common/collections';
 import { Emitter, Event } from 'vs/base/common/event';
 import { Disposable } from 'vs/base/common/lifecycle';
+import { adoptToGalleryExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IStorageService, IStorageValueChangeEvent, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
 
@@ -22,7 +22,7 @@ export interface IExtensionsStorageSyncService {
 
 	readonly onDidChangeExtensionsStorage: Event<void>;
 	setKeysForSync(extensionIdWithVersion: IExtensionIdWithVersion, keys: string[]): void;
-	getStorageForSync(extensionIdWithVersion: IExtensionIdWithVersion): IStringDictionary<any> | undefined;
+	getKeysForSync(extensionIdWithVersion: IExtensionIdWithVersion): string[] | undefined;
 
 }
 
@@ -33,7 +33,7 @@ export class ExtensionsStorageSyncService extends Disposable implements IExtensi
 	declare readonly _serviceBrand: undefined;
 
 	private static toKey(extension: IExtensionIdWithVersion): string {
-		return `extensionKeys/${extension.id}@${extension.version}`;
+		return `extensionKeys/${adoptToGalleryExtensionId(extension.id)}@${extension.version}`;
 	}
 
 	private static fromKey(key: string): IExtensionIdWithVersion | undefined {
@@ -91,19 +91,8 @@ export class ExtensionsStorageSyncService extends Disposable implements IExtensi
 		this.storageService.store(ExtensionsStorageSyncService.toKey(extensionIdWithVersion), JSON.stringify(keys), StorageScope.GLOBAL, StorageTarget.MACHINE);
 	}
 
-	getStorageForSync(extensionIdWithVersion: IExtensionIdWithVersion): IStringDictionary<any> | undefined {
+	getKeysForSync(extensionIdWithVersion: IExtensionIdWithVersion): string[] | undefined {
 		const keysForSyncValue = this.storageService.get(ExtensionsStorageSyncService.toKey(extensionIdWithVersion), StorageScope.GLOBAL);
-		if (keysForSyncValue) {
-			const keys = JSON.parse(keysForSyncValue);
-			const extensionStorageValue = this.storageService.get(extensionIdWithVersion.id, StorageScope.GLOBAL) || '{}';
-			const extensionStorageState = JSON.parse(extensionStorageValue);
-			return Object.keys(extensionStorageState).reduce((state: IStringDictionary<any>, key) => {
-				if (keys.includes(key)) {
-					state[key] = extensionStorageState[key];
-				}
-				return state;
-			}, {});
-		}
-		return undefined;
+		return keysForSyncValue ? JSON.parse(keysForSyncValue) : undefined;
 	}
 }

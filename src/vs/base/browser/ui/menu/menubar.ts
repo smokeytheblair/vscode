@@ -21,11 +21,11 @@ import { asArray } from 'vs/base/common/arrays';
 import { ScanCodeUtils, ScanCode } from 'vs/base/common/scanCode';
 import { isMacintosh } from 'vs/base/common/platform';
 import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
-import { Codicon, registerIcon } from 'vs/base/common/codicons';
+import { Codicon, registerCodicon } from 'vs/base/common/codicons';
 
 const $ = DOM.$;
 
-const menuBarMoreIcon = registerIcon('menubar-more', Codicon.more);
+const menuBarMoreIcon = registerCodicon('menubar-more', Codicon.more);
 
 export interface IMenuBarOptions {
 	enableMnemonics?: boolean;
@@ -126,9 +126,11 @@ export class MenuBar extends Disposable {
 			let eventHandled = true;
 			const key = !!e.key ? e.key.toLocaleLowerCase() : '';
 
-			if (event.equals(KeyCode.LeftArrow) || (isMacintosh && event.equals(KeyCode.Tab | KeyMod.Shift))) {
+			const tabNav = isMacintosh && this.options.compactMode === undefined;
+
+			if (event.equals(KeyCode.LeftArrow) || (tabNav && event.equals(KeyCode.Tab | KeyMod.Shift))) {
 				this.focusPrevious();
-			} else if (event.equals(KeyCode.RightArrow) || (isMacintosh && event.equals(KeyCode.Tab))) {
+			} else if (event.equals(KeyCode.RightArrow) || (tabNav && event.equals(KeyCode.Tab))) {
 				this.focusNext();
 			} else if (event.equals(KeyCode.Escape) && this.isFocused && !this.isOpen) {
 				this.setUnfocusedState();

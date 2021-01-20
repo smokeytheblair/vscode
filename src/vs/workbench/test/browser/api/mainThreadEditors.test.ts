@@ -40,7 +40,7 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
 import { ILabelService } from 'vs/platform/label/common/label';
-import { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService';
+import { IWorkingCopyFileService, IMoveOperation, IDeleteOperation, ICopyOperation, ICreateFileOperation, ICreateOperation } from 'vs/workbench/services/workingCopy/common/workingCopyFileService';
 import { UndoRedoService } from 'vs/platform/undoRedo/common/undoRedoService';
 import { TestDialogService } from 'vs/platform/dialogs/test/common/testDialogService';
 import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
@@ -50,6 +50,8 @@ import { INotificationService } from 'vs/platform/notification/common/notificati
 import { TestTextResourcePropertiesService, TestContextService } from 'vs/workbench/test/common/workbenchTestServices';
 import { IUriIdentityService } from 'vs/workbench/services/uriIdentity/common/uriIdentity';
 import { extUri } from 'vs/base/common/resources';
+import { ITextSnapshot } from 'vs/editor/common/model';
+import { VSBuffer, VSBufferReadable } from 'vs/base/common/buffer';
 
 suite('MainThreadEditors', () => {
 
@@ -100,26 +102,40 @@ suite('MainThreadEditors', () => {
 				onDidRevert: Event.None,
 				onDidChangeDirty: Event.None
 			};
+			create(operations: { resource: URI }[]) {
+				for (const o of operations) {
+					createdResources.add(o.resource);
+				}
+				return Promise.resolve(Object.create(null));
+			}
+			async getEncodedReadable(resource: URI, value?: string | ITextSnapshot): Promise<VSBuffer | VSBufferReadable | undefined> {
+				return undefined;
+			}
 		});
 		services.set(IWorkingCopyFileService, new class extends mock<IWorkingCopyFileService>() {
 			onDidRunWorkingCopyFileOperation = Event.None;
-			create(resource: URI) {
-				createdResources.add(resource);
+			createFolder(operations: ICreateOperation[]): any {
+				this.create(operations);
+			}
+			create(operations: ICreateFileOperation[]) {
+				for (const operation of operations) {
+					createdResources.add(operation.resource);
+				}
 				return Promise.resolve(Object.create(null));
 			}
-			move(files: { source: URI, target: URI }[]) {
-				const { source, target } = files[0];
+			move(operations: IMoveOperation[]) {
+				const { source, target } = operations[0].file;
 				movedResources.set(source, target);
 				return Promise.resolve(Object.create(null));
 			}
-			copy(files: { source: URI, target: URI }[]) {
-				const { source, target } = files[0];
+			copy(operations: ICopyOperation[]) {
+				const { source, target } = operations[0].file;
 				copiedResources.set(source, target);
 				return Promise.resolve(Object.create(null));
 			}
-			delete(resources: URI[]) {
-				for (const resource of resources) {
-					deletedResources.add(resource);
+			delete(operations: IDeleteOperation[]) {
+				for (const operation of operations) {
+					deletedResources.add(operation.resource);
 				}
 				return Promise.resolve(undefined);
 			}
@@ -183,7 +199,7 @@ suite('MainThreadEditors', () => {
 		model.applyEdits([EditOperation.insert(new Position(0, 0), 'something')]);
 
 		return editors.$tryApplyWorkspaceEdit({ edits: [workspaceResourceEdit] }).then((result) => {
-			assert.equal(result, false);
+			assert.strictEqual(result, false);
 		});
 	});
 
@@ -212,11 +228,11 @@ suite('MainThreadEditors', () => {
 
 		let p1 = editors.$tryApplyWorkspaceEdit({ edits: [workspaceResourceEdit1] }).then((result) => {
 			// first edit request succeeds
-			assert.equal(result, true);
+			assert.strictEqual(result, true);
 		});
 		let p2 = editors.$tryApplyWorkspaceEdit({ edits: [workspaceResourceEdit2] }).then((result) => {
 			// second edit request fails
-			assert.equal(result, false);
+			assert.strictEqual(result, false);
 		});
 		return Promise.all([p1, p2]);
 	});
@@ -229,10 +245,10 @@ suite('MainThreadEditors', () => {
 				{ _type: WorkspaceEditType.File, oldUri: resource, newUri: undefined, options: undefined }
 			]
 		}).then((result) => {
-			assert.equal(result, true);
-			assert.equal(movedResources.get(resource), resource);
-			assert.equal(createdResources.has(resource), true);
-			assert.equal(deletedResources.has(resource), true);
+			assert.strictEqual(result, true);
+			assert.strictEqual(movedResources.get(resource), resource);
+			assert.strictEqual(createdResources.has(resource), true);
+			assert.strictEqual(deletedResources.has(resource), true);
 		});
 	});
 });

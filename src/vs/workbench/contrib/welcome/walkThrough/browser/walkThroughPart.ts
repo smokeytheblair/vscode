@@ -189,11 +189,6 @@ export class WalkThroughPart extends EditorPane {
 			this.notificationService.info(localize('walkThrough.gitNotFound', "It looks like Git is not installed on your system."));
 			return;
 		}
-		if (uri.scheme === 'command' && uri.path === 'workbench.action.files.newUntitledFile') {
-			this.openerService.open(this.addFrom(uri))
-				.then(() => this.openerService.open(this.addFrom(URI.parse('command:workbench.action.files.save'))));
-			return;
-		}
 		this.openerService.open(this.addFrom(uri));
 	}
 
@@ -215,6 +210,10 @@ export class WalkThroughPart extends EditorPane {
 				disposable.layout();
 			}
 		});
+		const walkthroughInput = this.input instanceof WalkThroughInput && this.input;
+		if (walkthroughInput && walkthroughInput.layout) {
+			walkthroughInput.layout(dimension);
+		}
 		this.scrollbar.scanDomNode();
 	}
 
@@ -272,7 +271,9 @@ export class WalkThroughPart extends EditorPane {
 			this.saveTextEditorViewState(this.input);
 		}
 
-		this.contentDisposables = dispose(this.contentDisposables);
+		const store = new DisposableStore();
+		this.contentDisposables.push(store);
+
 		this.content.innerText = '';
 
 		return super.setInput(input, options, context, token)
@@ -295,7 +296,7 @@ export class WalkThroughPart extends EditorPane {
 					this.decorateContent();
 					this.contentDisposables.push(this.keybindingService.onDidUpdateKeybindings(() => this.decorateContent()));
 					if (input.onReady) {
-						input.onReady(this.content.firstElementChild as HTMLElement);
+						input.onReady(this.content.firstElementChild as HTMLElement, store);
 					}
 					this.scrollbar.scanDomNode();
 					this.loadTextEditorViewState(input);
@@ -405,7 +406,7 @@ export class WalkThroughPart extends EditorPane {
 					}
 				}));
 				if (input.onReady) {
-					input.onReady(innerContent);
+					input.onReady(innerContent, store);
 				}
 				this.scrollbar.scanDomNode();
 				this.loadTextEditorViewState(input);
@@ -501,6 +502,7 @@ export class WalkThroughPart extends EditorPane {
 		if (this.input instanceof WalkThroughInput) {
 			this.saveTextEditorViewState(this.input);
 		}
+		this.contentDisposables = dispose(this.contentDisposables);
 		super.clearInput();
 	}
 

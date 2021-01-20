@@ -46,7 +46,7 @@ suite('ExtHostDecorations', function () {
 		let calledB = false;
 
 		// never returns
-		extHostDecorations.registerDecorationProvider({
+		extHostDecorations.registerFileDecorationProvider({
 
 			provideFileDecoration() {
 				calledA = true;
@@ -55,7 +55,7 @@ suite('ExtHostDecorations', function () {
 		}, nullExtensionDescription.identifier);
 
 		// always returns
-		extHostDecorations.registerDecorationProvider({
+		extHostDecorations.registerFileDecorationProvider({
 
 			provideFileDecoration() {
 				calledB = true;
@@ -68,17 +68,17 @@ suite('ExtHostDecorations', function () {
 			return extHostDecorations.$provideDecorations(handle, [{ id: idx, uri: URI.parse('test:///file') }], CancellationToken.None);
 		});
 
-		assert.equal(calledA, true);
-		assert.equal(calledB, true);
+		assert.strictEqual(calledA, true);
+		assert.strictEqual(calledB, true);
 
-		assert.equal(requests.length, 2);
+		assert.strictEqual(requests.length, 2);
 		const [first, second] = requests;
 
 		const firstResult = await Promise.race([first, timeout(30).then(() => false)]);
-		assert.equal(typeof firstResult, 'boolean'); // never finishes...
+		assert.strictEqual(typeof firstResult, 'boolean'); // never finishes...
 
 		const secondResult = await Promise.race([second, timeout(30).then(() => false)]);
-		assert.equal(typeof secondResult, 'object');
+		assert.strictEqual(typeof secondResult, 'object');
 	});
 
 });

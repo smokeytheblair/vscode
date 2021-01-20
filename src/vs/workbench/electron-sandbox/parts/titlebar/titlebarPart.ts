@@ -24,9 +24,9 @@ import { INativeHostService } from 'vs/platform/native/electron-sandbox/native';
 import { getTitleBarStyle } from 'vs/platform/windows/common/windows';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { Codicon } from 'vs/base/common/codicons';
+import { NativeMenubarControl } from 'vs/workbench/electron-sandbox/parts/titlebar/menubarControl';
 
 export class TitlebarPart extends BrowserTitleBarPart {
-	private appIcon: HTMLElement | undefined;
 	private windowControls: HTMLElement | undefined;
 	private maxRestoreControl: HTMLElement | undefined;
 	private dragRegion: HTMLElement | undefined;
@@ -119,7 +119,6 @@ export class TitlebarPart extends BrowserTitleBarPart {
 	}
 
 	protected onConfigurationChanged(event: IConfigurationChangeEvent): void {
-
 		super.onConfigurationChanged(event);
 
 		if (event.affectsConfiguration('window.doubleClickIconToClose')) {
@@ -165,9 +164,13 @@ export class TitlebarPart extends BrowserTitleBarPart {
 	createContentArea(parent: HTMLElement): HTMLElement {
 		const ret = super.createContentArea(parent);
 
+		// Native menu controller
+		if (isMacintosh || getTitleBarStyle(this.configurationService) === 'native') {
+			this._register(this.instantiationService.createInstance(NativeMenubarControl));
+		}
+
 		// App Icon (Native Windows/Linux)
-		if (!isMacintosh) {
-			this.appIcon = DOM.prepend(this.element, DOM.$('div.window-appicon'));
+		if (this.appIcon) {
 			this.onUpdateAppIconDragBehavior();
 
 			this._register(DOM.addDisposableListener(this.appIcon, DOM.EventType.DBLCLICK, (e => {
@@ -218,7 +221,7 @@ export class TitlebarPart extends BrowserTitleBarPart {
 	updateLayout(dimension: DOM.Dimension): void {
 		this.lastLayoutDimensions = dimension;
 
-		if (getTitleBarStyle(this.configurationService, this.environmentService) === 'custom') {
+		if (getTitleBarStyle(this.configurationService) === 'custom') {
 			// Only prevent zooming behavior on macOS or when the menubar is not visible
 			if (isMacintosh || this.currentMenubarVisibility === 'hidden') {
 				this.title.style.zoom = `${1 / getZoomFactor()}`;

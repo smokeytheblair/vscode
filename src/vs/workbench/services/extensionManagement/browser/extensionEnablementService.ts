@@ -79,10 +79,10 @@ export class ExtensionEnablementService extends Disposable implements IWorkbench
 
 	getEnablementState(extension: IExtension): EnablementState {
 		if (this.extensionBisectService.isDisabledByBisect(extension)) {
-			return EnablementState.DisabledByEnvironemt;
+			return EnablementState.DisabledByEnvironment;
 		}
 		if (this._isDisabledInEnv(extension)) {
-			return EnablementState.DisabledByEnvironemt;
+			return EnablementState.DisabledByEnvironment;
 		}
 		if (this._isDisabledByExtensionKind(extension)) {
 			return EnablementState.DisabledByExtensionKind;
@@ -97,7 +97,7 @@ export class ExtensionEnablementService extends Disposable implements IWorkbench
 			return false;
 		}
 		const enablementState = this.getEnablementState(extension);
-		if (enablementState === EnablementState.DisabledByEnvironemt || enablementState === EnablementState.DisabledByExtensionKind) {
+		if (enablementState === EnablementState.DisabledByEnvironment || enablementState === EnablementState.DisabledByExtensionKind) {
 			return false;
 		}
 		return true;
@@ -215,14 +215,16 @@ export class ExtensionEnablementService extends Disposable implements IWorkbench
 					}
 				}
 				if (extensionKind === 'web') {
-					const enableLocalWebWorker = this.configurationService.getValue<boolean>(webWorkerExtHostConfig);
-					if (enableLocalWebWorker) {
-						// Web extensions are enabled on all configurations
-						return false;
-					}
-					if (this.extensionManagementServerService.localExtensionManagementServer === null) {
-						// Web extensions run only in the web
-						return false;
+					if (this.extensionManagementServerService.webExtensionManagementServer) {
+						if (server === this.extensionManagementServerService.webExtensionManagementServer) {
+							return false;
+						}
+					} else if (server === this.extensionManagementServerService.localExtensionManagementServer) {
+						const enableLocalWebWorker = this.configurationService.getValue<boolean>(webWorkerExtHostConfig);
+						if (enableLocalWebWorker) {
+							// Web extensions are enabled on all configurations
+							return false;
+						}
 					}
 				}
 			}

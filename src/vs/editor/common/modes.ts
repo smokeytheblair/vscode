@@ -211,9 +211,9 @@ export interface ITokenizationSupport {
 	getInitialState(): IState;
 
 	// add offsetDelta to each of the returned indices
-	tokenize(line: string, state: IState, offsetDelta: number): TokenizationResult;
+	tokenize(line: string, hasEOL: boolean, state: IState, offsetDelta: number): TokenizationResult;
 
-	tokenize2(line: string, state: IState, offsetDelta: number): TokenizationResult2;
+	tokenize2(line: string, hasEOL: boolean, state: IState, offsetDelta: number): TokenizationResult2;
 }
 
 /**
@@ -819,24 +819,24 @@ export interface DocumentHighlightProvider {
 }
 
 /**
- * The rename range provider interface defines the contract between extensions and
- * the live-rename feature.
+ * The linked editing range provider interface defines the contract between extensions and
+ * the linked editing feature.
  */
-export interface OnTypeRenameRangeProvider {
+export interface LinkedEditingRangeProvider {
 
 	/**
-	 * Provide a list of ranges that can be live-renamed together.
+	 * Provide a list of ranges that can be edited together.
 	 */
-	provideOnTypeRenameRanges(model: model.ITextModel, position: Position, token: CancellationToken): ProviderResult<OnTypeRenameRanges>;
+	provideLinkedEditingRanges(model: model.ITextModel, position: Position, token: CancellationToken): ProviderResult<LinkedEditingRanges>;
 }
 
 /**
- * Represents a list of ranges that can be renamed together along with a word pattern to describe valid range contents.
+ * Represents a list of ranges that can be edited together along with a word pattern to describe valid contents.
  */
-export interface OnTypeRenameRanges {
+export interface LinkedEditingRanges {
 	/**
-	 * A list of ranges that can be renamed together. The ranges must have
-	 * identical length and contain identical text content. The ranges cannot overlap
+	 * A list of ranges that can be edited together. The ranges must have
+	 * identical length and text content. The ranges cannot overlap
 	 */
 	ranges: IRange[];
 
@@ -1387,6 +1387,8 @@ export interface WorkspaceFileEditOptions {
 	recursive?: boolean;
 	copy?: boolean;
 	folder?: boolean;
+	skipTrashBin?: boolean;
+	maxSize?: number;
 }
 
 export interface WorkspaceFileEdit {
@@ -1657,6 +1659,19 @@ export interface CodeLensProvider {
 	resolveCodeLens?(model: model.ITextModel, codeLens: CodeLens, token: CancellationToken): ProviderResult<CodeLens>;
 }
 
+export interface InlineHint {
+	text: string;
+	range: IRange;
+	description?: string | IMarkdownString;
+	whitespaceBefore?: boolean;
+	whitespaceAfter?: boolean;
+}
+
+export interface InlineHintsProvider {
+	onDidChangeInlineHints?: Event<void> | undefined;
+	provideInlineHints(model: model.ITextModel, range: Range, token: CancellationToken): ProviderResult<InlineHint[]>;
+}
+
 export interface SemanticTokensLegend {
 	readonly tokenTypes: string[];
 	readonly tokenModifiers: string[];
@@ -1735,7 +1750,7 @@ export const DocumentHighlightProviderRegistry = new LanguageFeatureRegistry<Doc
 /**
  * @internal
  */
-export const OnTypeRenameRangeProviderRegistry = new LanguageFeatureRegistry<OnTypeRenameRangeProvider>();
+export const LinkedEditingRangeProviderRegistry = new LanguageFeatureRegistry<LinkedEditingRangeProvider>();
 
 /**
  * @internal
@@ -1761,6 +1776,11 @@ export const TypeDefinitionProviderRegistry = new LanguageFeatureRegistry<TypeDe
  * @internal
  */
 export const CodeLensProviderRegistry = new LanguageFeatureRegistry<CodeLensProvider>();
+
+/**
+ * @internal
+ */
+export const InlineHintsProviderRegistry = new LanguageFeatureRegistry<InlineHintsProvider>();
 
 /**
  * @internal
@@ -1874,3 +1894,14 @@ export interface ITokenizationRegistry {
  * @internal
  */
 export const TokenizationRegistry = new TokenizationRegistryImpl();
+
+
+/**
+ * @internal
+ */
+export enum ExternalUriOpenerPriority {
+	None = 0,
+	Option = 1,
+	Default = 2,
+	Preferred = 3,
+}
