@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as fs from 'fs';
 import * as semver from 'vs/base/common/semver/semver';
 import { Disposable } from 'vs/base/common/lifecycle';
 import * as pfs from 'vs/base/node/pfs';
@@ -11,7 +12,7 @@ import { ILogService } from 'vs/platform/log/common/log';
 import { ILocalExtension, IGalleryMetadata, ExtensionManagementError } from 'vs/platform/extensionManagement/common/extensionManagement';
 import { ExtensionType, IExtensionManifest, IExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
 import { areSameExtensions, ExtensionIdentifierWithVersion, groupByExtension, getGalleryExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
-import { Limiter, Queue } from 'vs/base/common/async';
+import { Limiter, Promises, Queue } from 'vs/base/common/async';
 import { URI } from 'vs/base/common/uri';
 import { INativeEnvironmentService } from 'vs/platform/environment/common/environment';
 import { localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls';
@@ -23,6 +24,8 @@ import { isWindows } from 'vs/base/common/platform';
 import { flatten } from 'vs/base/common/arrays';
 import { IStringDictionary } from 'vs/base/common/collections';
 import { FileAccess } from 'vs/base/common/network';
+import { IFileService } from 'vs/platform/files/common/files';
+import { basename } from 'vs/base/common/resources';
 
 const ERROR_SCANNING_SYS_EXTENSIONS = 'scanningSystem';
 const ERROR_SCANNING_USER_EXTENSIONS = 'scanningUser';
@@ -43,6 +46,7 @@ export class ExtensionsScanner extends Disposable {
 
 	constructor(
 		private readonly beforeRemovingExtension: (e: ILocalExtension) => Promise<void>,
+		@IFileService private readonly fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
 		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService,
 		@IProductService private readonly productService: IProductService,
@@ -122,7 +126,7 @@ export class ExtensionsScanner extends Disposable {
 
 		let local: ILocalExtension | null = null;
 		try {
-			local = await this.scanExtension(folderName, this.extensionsPath, ExtensionType.User);
+			local = await this.scanExtension(URI.file(path.join(this.extensionsPath, folderName)), ExtensionType.User);
 		} catch (e) { /*ignore */ }
 
 		if (local) {
@@ -138,7 +142,7 @@ export class ExtensionsScanner extends Disposable {
 		metadata.isMachineScoped = metadata.isMachineScoped || undefined;
 		metadata.isBuiltin = metadata.isBuiltin || undefined;
 		const manifestPath = path.join(local.location.fsPath, 'package.json');
-		const raw = await pfs.readFile(manifestPath, 'utf8');
+		const raw = await fs.promises.readFile(manifestPath, 'utf8');
 		const { manifest } = await this.parseManifest(raw);
 		(manifest as ILocalExtensionManifest).__metadata = metadata;
 		await pfs.writeFile(manifestPath, JSON.stringify(manifest, null, '\t'));
@@ -153,7 +157,7 @@ export class ExtensionsScanner extends Disposable {
 		return this.uninstalledFileLimiter.queue(async () => {
 			let raw: string | undefined;
 			try {
-				raw = await pfs.readFile(this.uninstalledPath, 'utf8');
+				raw = await fs.promises.readFile(this.uninstalledPath, 'utf8');
 			} catch (err) {
 				if (err.code !== 'ENOENT') {
 					throw err;
@@ -211,7 +215,7 @@ export class ExtensionsScanner extends Disposable {
 
 	private async rename(identifier: IExtensionIdentifier, extractPath: string, renamePath: string, retryUntil: number): Promise<void> {
 		try {
-			await pfs.rename(extractPath, renamePath);
+			await fs.promises.rename(extractPath, renamePath);
 		} catch (error) {
 			if (isWindows && error && error.code === 'EPERM' && Date.now() < retryUntil) {
 				this.logService.info(`Failed renaming ${extractPath} to ${renamePath} with 'EPERM' error. Trying again...`, identifier.id);
@@ -236,33 +240,38 @@ export class ExtensionsScanner extends Disposable {
 
 	private async scanExtensionsInDir(dir: string, type: ExtensionType): Promise<ILocalExtension[]> {
 		const limiter = new Limiter<any>(10);
-		const extensionsFolders = await pfs.readdir(dir);
-		const extensions = await Promise.all<ILocalExtension>(extensionsFolders.map(extensionFolder => limiter.queue(() => this.scanExtension(extensionFolder, dir, type))));
-		return extensions.filter(e => e && e.identifier);
+		const stat = await this.fileService.resolve(URI.file(dir));
+		if (stat.children) {
+			const extensions = await Promise.all<ILocalExtension>(stat.children.filter(c => c.isDirectory)
+				.map(c => limiter.queue(() => this.scanExtension(c.resource, type))));
+			return extensions.filter(e => e && e.identifier);
+		}
+		return [];
 	}
 
-	private async scanExtension(folderName: string, root: string, type: ExtensionType): Promise<ILocalExtension | null> {
-		if (type === ExtensionType.User && folderName.indexOf('.') === 0) { // Do not consider user extension folder starting with `.`
+	private async scanExtension(extensionLocation: URI, type: ExtensionType): Promise<ILocalExtension | null> {
+		if (type === ExtensionType.User && basename(extensionLocation).indexOf('.') === 0) { // Do not consider user extension folder starting with `.`
 			return null;
 		}
-		const extensionPath = path.join(root, folderName);
 		try {
-			const children = await pfs.readdir(extensionPath);
-			const { manifest, metadata } = await this.readManifest(extensionPath);
-			const readme = children.filter(child => /^readme(\.txt|\.md|)$/i.test(child))[0];
-			const readmeUrl = readme ? URI.file(path.join(extensionPath, readme)) : undefined;
-			const changelog = children.filter(child => /^changelog(\.txt|\.md|)$/i.test(child))[0];
-			const changelogUrl = changelog ? URI.file(path.join(extensionPath, changelog)) : undefined;
-			const identifier = { id: getGalleryExtensionId(manifest.publisher, manifest.name) };
-			const local = <ILocalExtension>{ type, identifier, manifest, location: URI.file(extensionPath), readmeUrl, changelogUrl, publisherDisplayName: null, publisherId: null, isMachineScoped: false, isBuiltin: type === ExtensionType.System };
-			if (metadata) {
-				this.setMetadata(local, metadata);
+			const stat = await this.fileService.resolve(extensionLocation);
+			if (stat.children) {
+				const { manifest, metadata } = await this.readManifest(extensionLocation.fsPath);
+				const readmeUrl = stat.children.find(({ name }) => /^readme(\.txt|\.md|)$/i.test(name))?.resource;
+				const changelogUrl = stat.children.find(({ name }) => /^changelog(\.txt|\.md|)$/i.test(name))?.resource;
+				const identifier = { id: getGalleryExtensionId(manifest.publisher, manifest.name) };
+				const local = <ILocalExtension>{ type, identifier, manifest, location: extensionLocation, readmeUrl, changelogUrl, publisherDisplayName: null, publisherId: null, isMachineScoped: false, isBuiltin: type === ExtensionType.System };
+				if (metadata) {
+					this.setMetadata(local, metadata);
+				}
+				return local;
 			}
-			return local;
 		} catch (e) {
-			this.logService.trace(e);
-			return null;
+			if (type !== ExtensionType.System) {
+				this.logService.trace(e);
+			}
 		}
+		return null;
 	}
 
 	private async scanDefaultSystemExtensions(): Promise<ILocalExtension[]> {
@@ -300,14 +309,14 @@ export class ExtensionsScanner extends Disposable {
 			}
 		}
 		const byExtension: ILocalExtension[][] = groupByExtension(extensions, e => e.identifier);
-		await Promise.all(byExtension.map(async e => {
+		await Promises.settled(byExtension.map(async e => {
 			const latest = e.sort((a, b) => semver.rcompare(a.manifest.version, b.manifest.version))[0];
 			if (!installed.has(latest.identifier.id.toLowerCase())) {
 				await this.beforeRemovingExtension(latest);
 			}
 		}));
 		const toRemove: ILocalExtension[] = extensions.filter(e => uninstalled[new ExtensionIdentifierWithVersion(e.identifier, e.manifest.version).key()]);
-		await Promise.all(toRemove.map(e => this.removeUninstalledExtension(e)));
+		await Promises.settled(toRemove.map(e => this.removeUninstalledExtension(e)));
 	}
 
 	private async removeOutdatedExtensions(): Promise<void> {
@@ -318,7 +327,7 @@ export class ExtensionsScanner extends Disposable {
 		const byExtension: ILocalExtension[][] = groupByExtension(extensions, e => e.identifier);
 		toRemove.push(...flatten(byExtension.map(p => p.sort((a, b) => semver.rcompare(a.manifest.version, b.manifest.version)).slice(1))));
 
-		await Promise.all(toRemove.map(extension => this.removeExtension(extension, 'outdated')));
+		await Promises.settled(toRemove.map(extension => this.removeExtension(extension, 'outdated')));
 	}
 
 	private getDevSystemExtensionsList(): string[] {
@@ -345,9 +354,9 @@ export class ExtensionsScanner extends Disposable {
 
 	private async readManifest(extensionPath: string): Promise<{ manifest: IExtensionManifest; metadata: IMetadata | null; }> {
 		const promises = [
-			pfs.readFile(path.join(extensionPath, 'package.json'), 'utf8')
+			fs.promises.readFile(path.join(extensionPath, 'package.json'), 'utf8')
 				.then(raw => this.parseManifest(raw)),
-			pfs.readFile(path.join(extensionPath, 'package.nls.json'), 'utf8')
+			fs.promises.readFile(path.join(extensionPath, 'package.nls.json'), 'utf8')
 				.then(undefined, err => err.code !== 'ENOENT' ? Promise.reject<string>(err) : '{}')
 				.then(raw => JSON.parse(raw))
 		];

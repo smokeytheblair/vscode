@@ -8,29 +8,33 @@ import { URI } from 'vs/base/common/uri';
 export const TEST_DATA_SCHEME = 'vscode-test-data';
 
 export const enum TestUriType {
-	Message,
-	ActualOutput,
-	ExpectedOutput,
+	ResultMessage,
+	ResultActualOutput,
+	ResultExpectedOutput,
 }
 
-interface IGenericTestUri {
-	providerId: string;
-	testId: string;
+interface IResultTestUri {
+	resultId: string;
+	testExtId: string;
 }
 
-interface ITestMessageReference extends IGenericTestUri {
-	type: TestUriType.Message;
+interface IResultTestMessageReference extends IResultTestUri {
+	type: TestUriType.ResultMessage;
 	messageIndex: number;
 }
 
-interface ITestOutputReference extends IGenericTestUri {
-	type: TestUriType.ActualOutput | TestUriType.ExpectedOutput;
+interface IResultTestOutputReference extends IResultTestUri {
+	type: TestUriType.ResultActualOutput | TestUriType.ResultExpectedOutput;
 	messageIndex: number;
 }
 
-export type ParsedTestUri = ITestMessageReference | ITestOutputReference;
+export type ParsedTestUri =
+	| IResultTestMessageReference
+	| IResultTestOutputReference;
 
 const enum TestUriParts {
+	Results = 'results',
+
 	Messages = 'message',
 	Text = 'text',
 	ActualOutput = 'actualOutput',
@@ -38,21 +42,22 @@ const enum TestUriParts {
 }
 
 export const parseTestUri = (uri: URI): ParsedTestUri | undefined => {
-	const providerId = uri.authority;
-	const [testId, ...request] = uri.path.slice(1).split('/');
+	const type = uri.authority;
+	const [locationId, ...request] = uri.path.slice(1).split('/');
 
 	if (request[0] === TestUriParts.Messages) {
 		const index = Number(request[1]);
 		const part = request[2];
-		switch (part) {
-			case TestUriParts.Text:
-				return { providerId, testId, messageIndex: index, type: TestUriType.Message };
-			case TestUriParts.ActualOutput:
-				return { providerId, testId, messageIndex: index, type: TestUriType.ActualOutput };
-			case TestUriParts.ExpectedOutput:
-				return { providerId, testId, messageIndex: index, type: TestUriType.ExpectedOutput };
-			default:
-				return undefined;
+		const testExtId = uri.query;
+		if (type === TestUriParts.Results) {
+			switch (part) {
+				case TestUriParts.Text:
+					return { resultId: locationId, testExtId, messageIndex: index, type: TestUriType.ResultMessage };
+				case TestUriParts.ActualOutput:
+					return { resultId: locationId, testExtId, messageIndex: index, type: TestUriType.ResultActualOutput };
+				case TestUriParts.ExpectedOutput:
+					return { resultId: locationId, testExtId, messageIndex: index, type: TestUriType.ResultExpectedOutput };
+			}
 		}
 	}
 
@@ -60,17 +65,24 @@ export const parseTestUri = (uri: URI): ParsedTestUri | undefined => {
 };
 
 export const buildTestUri = (parsed: ParsedTestUri): URI => {
-	const uriParts = { scheme: TEST_DATA_SCHEME, authority: parsed.testId };
-	const msgRef = (index: number, ...remaining: string[]) =>
-		URI.from({ ...uriParts, path: ['', parsed.testId, TestUriParts.Messages, index, ...remaining].join('/') });
+	const uriParts = {
+		scheme: TEST_DATA_SCHEME,
+		authority: TestUriParts.Results
+	};
+	const msgRef = (locationId: string, index: number, ...remaining: string[]) =>
+		URI.from({
+			...uriParts,
+			query: parsed.testExtId,
+			path: ['', locationId, TestUriParts.Messages, index, ...remaining].join('/'),
+		});
 
 	switch (parsed.type) {
-		case TestUriType.ActualOutput:
-			return msgRef(parsed.messageIndex, TestUriParts.ActualOutput);
-		case TestUriType.ExpectedOutput:
-			return msgRef(parsed.messageIndex, TestUriParts.ExpectedOutput);
-		case TestUriType.Message:
-			return msgRef(parsed.messageIndex, TestUriParts.Text);
+		case TestUriType.ResultActualOutput:
+			return msgRef(parsed.resultId, parsed.messageIndex, TestUriParts.ActualOutput);
+		case TestUriType.ResultExpectedOutput:
+			return msgRef(parsed.resultId, parsed.messageIndex, TestUriParts.ExpectedOutput);
+		case TestUriType.ResultMessage:
+			return msgRef(parsed.resultId, parsed.messageIndex, TestUriParts.Text);
 		default:
 			throw new Error('Invalid test uri');
 	}

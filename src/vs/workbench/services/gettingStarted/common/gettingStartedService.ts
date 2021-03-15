@@ -11,14 +11,21 @@ import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storag
 import { Memento } from 'vs/workbench/common/memento';
 import { Action2, registerAction2 } from 'vs/platform/actions/common/actions';
 import { ICommandService } from 'vs/platform/commands/common/commands';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { ContextKeyExpr, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { IUserDataAutoSyncEnablementService } from 'vs/platform/userDataSync/common/userDataSync';
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
+import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import { URI } from 'vs/base/common/uri';
+import { joinPath } from 'vs/base/common/resources';
+import { FileAccess } from 'vs/base/common/network';
+import { DefaultIconPath } from 'vs/platform/extensionManagement/common/extensionManagement';
+import { IProductService } from 'vs/platform/product/common/productService';
 
 export const IGettingStartedService = createDecorator<IGettingStartedService>('gettingStartedService');
 
-type TaskProgress = { done: boolean; };
-export interface IGettingStartedTaskWithProgress extends IGettingStartedTask, TaskProgress { }
+type TaskProgress = { done?: boolean; };
+export interface IGettingStartedTaskWithProgress extends IGettingStartedTask, Required<TaskProgress> { }
 
 export interface IGettingStartedCategoryWithProgress extends Omit<IGettingStartedCategory, 'content'> {
 	content:
@@ -29,7 +36,7 @@ export interface IGettingStartedCategoryWithProgress extends Omit<IGettingStarte
 		stepsComplete: number
 		stepsTotal: number
 	}
-	| { type: 'command', command: string }
+	| { type: 'startEntry', command: string }
 }
 
 export interface IGettingStartedService {
@@ -43,6 +50,7 @@ export interface IGettingStartedService {
 	getCategories(): IGettingStartedCategoryWithProgress[]
 
 	progressByEvent(eventName: string): void;
+	progressTask(id: string): void;
 }
 
 export class GettingStartedService extends Disposable implements IGettingStartedService {
@@ -63,11 +71,15 @@ export class GettingStartedService extends Disposable implements IGettingStarted
 	private commandListeners = new Map<string, string[]>();
 	private eventListeners = new Map<string, string[]>();
 
+	private trackedExtensions = new Set<string>();
+
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IContextKeyService private readonly contextService: IContextKeyService,
 		@IUserDataAutoSyncEnablementService  readonly userDataAutoSyncEnablementService: IUserDataAutoSyncEnablementService,
+		@IExtensionService private readonly extensionService: IExtensionService,
+		@IProductService private readonly productService: IProductService
 	) {
 		super();
 
@@ -80,7 +92,20 @@ export class GettingStartedService extends Disposable implements IGettingStarted
 			}
 		});
 
-		this._register(this.registry.onDidAddCategory(category => this._onDidAddCategory.fire(this.getCategoryProgress(category))));
+		this.extensionService.getExtensions().then(extensions => {
+			extensions.forEach(extension => this.registerExtensionContributions(extension));
+		});
+
+		this.extensionService.onDidChangeExtensions(() => {
+			this.extensionService.getExtensions().then(extensions => {
+				extensions.forEach(extension => this.registerExtensionContributions(extension));
+			});
+		});
+
+		this._register(this.registry.onDidAddCategory(category =>
+			this._onDidAddCategory.fire(this.getCategoryProgress(category))
+		));
+
 		this._register(this.registry.onDidAddTask(task => {
 			this.registerDoneListeners(task);
 			this._onDidAddTask.fire(this.getTaskProgress(task));
@@ -91,6 +116,76 @@ export class GettingStartedService extends Disposable implements IGettingStarted
 		this._register(userDataAutoSyncEnablementService.onDidChangeEnablement(() => {
 			if (userDataAutoSyncEnablementService.isEnabled()) { this.progressByEvent('sync-enabled'); }
 		}));
+	}
+
+	private registerExtensionContributions(extension: IExtensionDescription) {
+		const convertPaths = (path: string | { hc: string, dark: string, light: string }): { hc: URI, dark: URI, light: URI } => {
+			const convertPath = (path: string) => path.startsWith('https://')
+				? URI.parse(path, true)
+				: FileAccess.asBrowserUri(joinPath(extension.extensionLocation, path));
+
+			if (typeof path === 'string') {
+				const converted = convertPath(path);
+				return { hc: converted, dark: converted, light: converted };
+			} else {
+				return {
+					hc: convertPath(path.hc),
+					light: convertPath(path.light),
+					dark: convertPath(path.dark)
+				};
+			}
+		};
+
+		if (!this.trackedExtensions.has(ExtensionIdentifier.toKey(extension.identifier))) {
+			this.trackedExtensions.add(ExtensionIdentifier.toKey(extension.identifier));
+
+			if ((extension.contributes?.welcomeCategories || extension.contributes?.welcomeItems) && this.productService.quality === 'stable') {
+				console.warn('Extension', extension.identifier.value, 'contributes welcome page content but this is a Stable build and extension contributions are only available in Insiders. The contributed content will be disregarded.');
+				return;
+			}
+
+			const contributedCategories = new Map();
+
+			extension.contributes?.welcomeCategories?.forEach(category => {
+				const categoryID = extension.identifier.value + '.' + category.id;
+				contributedCategories.set(category.id, categoryID);
+				this.registry.registerCategory({
+					content: { type: 'items' },
+					description: category.description,
+					title: category.title,
+					id: categoryID,
+					icon: {
+						type: 'image',
+						path: extension.icon
+							? FileAccess.asBrowserUri(joinPath(extension.extensionLocation, extension.icon)).toString(true)
+							: DefaultIconPath
+					},
+					when: ContextKeyExpr.deserialize(category.when) ?? ContextKeyExpr.true(),
+				});
+			});
+
+			Object.entries(extension.contributes?.welcomeItems ?? {}).forEach(([category, items]) =>
+				items.forEach((item, index) =>
+					this.registry.registerTask({
+						button: item.button,
+						description: item.description,
+						media: { type: 'image', altText: item.media.altText, path: convertPaths(item.media.path) },
+						doneOn: item.doneOn?.event
+							? { eventFired: item.doneOn.event }
+							: item.doneOn?.command ?
+								{ commandExecuted: item.doneOn.command }
+								: item.button.command
+									? { commandExecuted: item.button.command }
+									: { eventFired: `linkOpened:${item.button.link}` },
+						id: extension.identifier.value + '.' + item.id,
+						title: item.title,
+						when: ContextKeyExpr.deserialize(item.when) ?? ContextKeyExpr.true(),
+						category: contributedCategories.get(category) ?? category,
+						order: index,
+					})
+				)
+			);
+		}
 	}
 
 	private registerDoneListeners(task: IGettingStartedTask) {
@@ -132,7 +227,7 @@ export class GettingStartedService extends Disposable implements IGettingStarted
 	}
 
 	private getCategoryProgress(category: IGettingStartedCategory): IGettingStartedCategoryWithProgress {
-		if (category.content.type === 'command') {
+		if (category.content.type === 'startEntry') {
 			return { ...category, content: category.content };
 		}
 
@@ -154,11 +249,12 @@ export class GettingStartedService extends Disposable implements IGettingStarted
 	private getTaskProgress(task: IGettingStartedTask): IGettingStartedTaskWithProgress {
 		return {
 			...task,
+			done: false,
 			...this.taskProgress[task.id]
 		};
 	}
 
-	private progressTask(id: string) {
+	progressTask(id: string) {
 		const oldProgress = this.taskProgress[id];
 		if (!oldProgress || oldProgress.done !== true) {
 			this.taskProgress[id] = { done: true };

@@ -3,13 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationToken } from 'vs/base/common/cancellation';
 import { Emitter } from 'vs/base/common/event';
+import { Iterable } from 'vs/base/common/iterator';
 import { Disposable, DisposableStore, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
 import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkspaceContextService, IWorkspaceFolder, IWorkspaceFoldersChangeEvent } from 'vs/platform/workspace/common/workspace';
 import { ExtHostTestingResource } from 'vs/workbench/api/common/extHost.protocol';
 import { IncrementalTestCollectionItem, TestsDiff } from 'vs/workbench/contrib/testing/common/testCollection';
-import { IMainThreadTestCollection, ITestService } from 'vs/workbench/contrib/testing/common/testService';
+import { IMainThreadTestCollection, ITestService, waitForAllRoots } from 'vs/workbench/contrib/testing/common/testService';
 
 export interface ITestSubscriptionFolder {
 	folder: IWorkspaceFolder;
@@ -38,6 +40,10 @@ export class TestSubscriptionListener extends Disposable {
 	constructor(public readonly subscription: TestSubscription, public readonly onDispose: () => void) {
 		super();
 		this._register(toDisposable(onDispose));
+	}
+
+	public async waitForAllRoots(token?: CancellationToken) {
+		await Promise.all(this.subscription.workspaceFolderCollections.map(([, c]) => waitForAllRoots(c, token)));
 	}
 
 	public publishFolderChange(evt: IWorkspaceFoldersChangeEvent) {
@@ -148,6 +154,19 @@ class TestSubscription extends Disposable {
 		return [...this.collectionsForWorkspaces.values()].map(v => [v.folder, v.collection] as const);
 	}
 
+	/**
+	 * Returns whether there are any subscriptions with non-empty providers.
+	 */
+	public get isEmpty() {
+		for (const { collection } of this.collectionsForWorkspaces.values()) {
+			if (Iterable.some(collection.all, t => !!t.parent)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	constructor(
 		@IWorkspaceContextService workspaceContext: IWorkspaceContextService,
 		@ITestService private readonly testService: ITestService,
@@ -195,8 +214,8 @@ class TestSubscription extends Disposable {
 		const folderNode: ITestSubscriptionFolder = {
 			folder,
 			getChildren: function* () {
-				for (const rootId of listener.collection.rootIds) {
-					const node = listener.collection.getNodeById(rootId);
+				for (const rootId of ref.object.rootIds) {
+					const node = ref.object.getNodeById(rootId);
 					if (node) {
 						yield node;
 					}
@@ -204,7 +223,7 @@ class TestSubscription extends Disposable {
 			},
 		};
 
-		const listener = this.testService.subscribeToDiffs(
+		const ref = this.testService.subscribeToDiffs(
 			ExtHostTestingResource.Workspace,
 			folder.uri,
 			diff => {
@@ -215,16 +234,15 @@ class TestSubscription extends Disposable {
 		);
 
 		const disposable = new DisposableStore();
-		disposable.add(listener);
-		disposable.add(listener.collection.onBusyProvidersChange(
+		disposable.add(ref);
+		disposable.add(ref.object.onBusyProvidersChange(
 			() => this.pendingRootChangeEmitter.fire(this.pendingRootProviders)));
-		disposable.add(listener.collection.onBusyProvidersChange(
+		disposable.add(ref.object.onBusyProvidersChange(
 			() => this.busyProvidersChangeEmitter.fire(this.busyProviders)));
-
 
 		this.collectionsForWorkspaces.set(folder.uri.toString(), {
 			listener: disposable,
-			collection: listener.collection,
+			collection: ref.object,
 			folder: folderNode,
 		});
 	}

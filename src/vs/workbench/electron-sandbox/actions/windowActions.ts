@@ -6,7 +6,7 @@
 import 'vs/css!./media/actions';
 import { URI } from 'vs/base/common/uri';
 import { Action } from 'vs/base/common/actions';
-import * as nls from 'vs/nls';
+import { localize } from 'vs/nls';
 import { applyZoom } from 'vs/platform/windows/electron-sandbox/window';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { getZoomLevel } from 'vs/base/browser/browser';
@@ -20,11 +20,12 @@ import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { INativeHostService } from 'vs/platform/native/electron-sandbox/native';
 import { Codicon } from 'vs/base/common/codicons';
+import { isSingleFolderWorkspaceIdentifier, isWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
 
 export class CloseCurrentWindowAction extends Action {
 
 	static readonly ID = 'workbench.action.closeWindow';
-	static readonly LABEL = nls.localize('closeWindow', "Close Window");
+	static readonly LABEL = localize('closeWindow', "Close Window");
 
 	constructor(
 		id: string,
@@ -70,7 +71,7 @@ export abstract class BaseZoomAction extends Action {
 export class ZoomInAction extends BaseZoomAction {
 
 	static readonly ID = 'workbench.action.zoomIn';
-	static readonly LABEL = nls.localize('zoomIn', "Zoom In");
+	static readonly LABEL = localize('zoomIn', "Zoom In");
 
 	constructor(
 		id: string,
@@ -88,7 +89,7 @@ export class ZoomInAction extends BaseZoomAction {
 export class ZoomOutAction extends BaseZoomAction {
 
 	static readonly ID = 'workbench.action.zoomOut';
-	static readonly LABEL = nls.localize('zoomOut', "Zoom Out");
+	static readonly LABEL = localize('zoomOut', "Zoom Out");
 
 	constructor(
 		id: string,
@@ -106,7 +107,7 @@ export class ZoomOutAction extends BaseZoomAction {
 export class ZoomResetAction extends BaseZoomAction {
 
 	static readonly ID = 'workbench.action.zoomReset';
-	static readonly LABEL = nls.localize('zoomReset', "Reset Zoom");
+	static readonly LABEL = localize('zoomReset', "Reset Zoom");
 
 	constructor(
 		id: string,
@@ -125,12 +126,12 @@ export abstract class BaseSwitchWindow extends Action {
 
 	private readonly closeWindowAction: IQuickInputButton = {
 		iconClass: Codicon.removeClose.classNames,
-		tooltip: nls.localize('close', "Close Window")
+		tooltip: localize('close', "Close Window")
 	};
 
 	private readonly closeDirtyWindowAction: IQuickInputButton = {
 		iconClass: 'dirty-window ' + Codicon.closeDirty,
-		tooltip: nls.localize('close', "Close Window"),
+		tooltip: localize('close', "Close Window"),
 		alwaysVisible: true
 	};
 
@@ -152,16 +153,16 @@ export abstract class BaseSwitchWindow extends Action {
 		const currentWindowId = this.nativeHostService.windowId;
 
 		const windows = await this.nativeHostService.getWindows();
-		const placeHolder = nls.localize('switchWindowPlaceHolder', "Select a window to switch to");
+		const placeHolder = localize('switchWindowPlaceHolder', "Select a window to switch to");
 		const picks = windows.map(window => {
-			const resource = window.filename ? URI.file(window.filename) : window.folderUri ? window.folderUri : window.workspace ? window.workspace.configPath : undefined;
-			const fileKind = window.filename ? FileKind.FILE : window.workspace ? FileKind.ROOT_FOLDER : window.folderUri ? FileKind.FOLDER : FileKind.FILE;
+			const resource = window.filename ? URI.file(window.filename) : isSingleFolderWorkspaceIdentifier(window.workspace) ? window.workspace.uri : isWorkspaceIdentifier(window.workspace) ? window.workspace.configPath : undefined;
+			const fileKind = window.filename ? FileKind.FILE : isSingleFolderWorkspaceIdentifier(window.workspace) ? FileKind.FOLDER : isWorkspaceIdentifier(window.workspace) ? FileKind.ROOT_FOLDER : FileKind.FILE;
 			return {
 				payload: window.id,
 				label: window.title,
-				ariaLabel: window.dirty ? nls.localize('windowDirtyAriaLabel', "{0}, dirty window", window.title) : window.title,
+				ariaLabel: window.dirty ? localize('windowDirtyAriaLabel', "{0}, dirty window", window.title) : window.title,
 				iconClasses: getIconClasses(this.modelService, this.modeService, resource, fileKind),
-				description: (currentWindowId === window.id) ? nls.localize('current', "Current Window") : undefined,
+				description: (currentWindowId === window.id) ? localize('current', "Current Window") : undefined,
 				buttons: currentWindowId !== window.id ? window.dirty ? [this.closeDirtyWindowAction] : [this.closeWindowAction] : undefined
 			};
 		});
@@ -187,7 +188,7 @@ export abstract class BaseSwitchWindow extends Action {
 export class SwitchWindow extends BaseSwitchWindow {
 
 	static readonly ID = 'workbench.action.switchWindow';
-	static readonly LABEL = nls.localize('switchWindow', "Switch Window...");
+	static readonly LABEL = localize('switchWindow', "Switch Window...");
 
 	constructor(
 		id: string,
@@ -209,7 +210,7 @@ export class SwitchWindow extends BaseSwitchWindow {
 export class QuickSwitchWindow extends BaseSwitchWindow {
 
 	static readonly ID = 'workbench.action.quickSwitchWindow';
-	static readonly LABEL = nls.localize('quickSwitchWindow', "Quick Switch Window...");
+	static readonly LABEL = localize('quickSwitchWindow', "Quick Switch Window...");
 
 	constructor(
 		id: string,

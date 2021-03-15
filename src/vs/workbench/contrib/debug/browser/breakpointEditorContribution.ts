@@ -172,6 +172,24 @@ export class BreakpointEditorContribution implements IBreakpointEditorContributi
 		this.setDecorationsScheduler.schedule();
 	}
 
+	/**
+	 * Returns context menu actions at the line number if breakpoints can be
+	 * set. This is used by the {@link TestingDecorations} to allow breakpoint
+	 * setting on lines where breakpoint "run" actions are present.
+	 */
+	public getContextMenuActionsAtPosition(lineNumber: number, model: ITextModel) {
+		if (!this.debugService.getAdapterManager().hasDebuggers()) {
+			return [];
+		}
+
+		if (!this.debugService.canSetBreakpointsIn(model)) {
+			return [];
+		}
+
+		const breakpoints = this.debugService.getModel().getBreakpoints({ lineNumber, uri: model.uri });
+		return this.getContextMenuActions(breakpoints, model.uri, lineNumber);
+	}
+
 	private registerListeners(): void {
 		this.toDispose.push(this.editor.onMouseDown(async (e: IEditorMouseEvent) => {
 			if (!this.debugService.getAdapterManager().hasDebuggers()) {
@@ -376,7 +394,8 @@ export class BreakpointEditorContribution implements IBreakpointEditorContributi
 		const decorations = this.editor.getLineDecorations(line);
 		if (decorations) {
 			for (const { options } of decorations) {
-				if (options.glyphMarginClassName && options.glyphMarginClassName.indexOf('codicon-') === -1) {
+				const clz = options.glyphMarginClassName;
+				if (clz && (!clz.includes('codicon-') || clz.includes('codicon-testing-'))) {
 					return false;
 				}
 			}
@@ -697,5 +716,5 @@ registerThemingParticipant((theme, collector) => {
 const debugIconBreakpointForeground = registerColor('debugIcon.breakpointForeground', { dark: '#E51400', light: '#E51400', hc: '#E51400' }, nls.localize('debugIcon.breakpointForeground', 'Icon color for breakpoints.'));
 const debugIconBreakpointDisabledForeground = registerColor('debugIcon.breakpointDisabledForeground', { dark: '#848484', light: '#848484', hc: '#848484' }, nls.localize('debugIcon.breakpointDisabledForeground', 'Icon color for disabled breakpoints.'));
 const debugIconBreakpointUnverifiedForeground = registerColor('debugIcon.breakpointUnverifiedForeground', { dark: '#848484', light: '#848484', hc: '#848484' }, nls.localize('debugIcon.breakpointUnverifiedForeground', 'Icon color for unverified breakpoints.'));
-const debugIconBreakpointCurrentStackframeForeground = registerColor('debugIcon.breakpointCurrentStackframeForeground', { dark: '#FFCC00', light: '#FFCC00', hc: '#FFCC00' }, nls.localize('debugIcon.breakpointCurrentStackframeForeground', 'Icon color for the current breakpoint stack frame.'));
+const debugIconBreakpointCurrentStackframeForeground = registerColor('debugIcon.breakpointCurrentStackframeForeground', { dark: '#FFCC00', light: '#BE8700', hc: '#FFCC00' }, nls.localize('debugIcon.breakpointCurrentStackframeForeground', 'Icon color for the current breakpoint stack frame.'));
 const debugIconBreakpointStackframeForeground = registerColor('debugIcon.breakpointStackframeForeground', { dark: '#89D185', light: '#89D185', hc: '#89D185' }, nls.localize('debugIcon.breakpointStackframeForeground', 'Icon color for all breakpoint stack frames.'));

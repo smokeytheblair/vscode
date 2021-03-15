@@ -12,7 +12,7 @@ import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
 import { EditorAction, registerEditorAction, Command, MultiCommand } from 'vs/editor/browser/editorExtensions';
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
 import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
-import { MenuId } from 'vs/platform/actions/common/actions';
+import { MenuRegistry, MenuId } from 'vs/platform/actions/common/actions';
 import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 import { KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
 import { EditorOption } from 'vs/editor/common/config/editorOptions';
@@ -23,11 +23,10 @@ const CLIPBOARD_CONTEXT_MENU_GROUP = '9_cutcopypaste';
 
 const supportsCut = (platform.isNative || document.queryCommandSupported('cut'));
 const supportsCopy = (platform.isNative || document.queryCommandSupported('copy'));
-// IE and Edge have trouble with setting html content in clipboard
-const supportsCopyWithSyntaxHighlighting = (supportsCopy && !browser.isEdge);
 // Firefox only supports navigator.clipboard.readText() in browser extensions.
 // See https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText#Browser_compatibility
-const supportsPaste = (browser.isFirefox ? document.queryCommandSupported('paste') : true);
+// When loading over http, navigator.clipboard can be undefined. See https://github.com/microsoft/monaco-editor/issues/2313
+const supportsPaste = (typeof navigator.clipboard === 'undefined' || browser.isFirefox) ? document.queryCommandSupported('paste') : true;
 
 function registerCommand<T extends Command>(command: T): T {
 	command.register();
@@ -95,6 +94,9 @@ export const CopyAction = supportsCopy ? registerCommand(new MultiCommand({
 	}]
 })) : undefined;
 
+MenuRegistry.appendMenuItem(MenuId.MenubarEditMenu, { submenu: MenuId.MenubarCopy, title: { value: nls.localize('copy as', "Copy As..."), original: 'Copy As...', }, group: '2_ccp', order: 3 });
+MenuRegistry.appendMenuItem(MenuId.EditorContext, { submenu: MenuId.EditorContextCopy, title: { value: nls.localize('copy as', "Copy As..."), original: 'Copy As...', }, group: CLIPBOARD_CONTEXT_MENU_GROUP, order: 3 });
+
 export const PasteAction = supportsPaste ? registerCommand(new MultiCommand({
 	id: 'editor.action.clipboardPasteAction',
 	precondition: undefined,
@@ -112,13 +114,13 @@ export const PasteAction = supportsPaste ? registerCommand(new MultiCommand({
 		menuId: MenuId.MenubarEditMenu,
 		group: '2_ccp',
 		title: nls.localize({ key: 'miPaste', comment: ['&& denotes a mnemonic'] }, "&&Paste"),
-		order: 3
+		order: 4
 	}, {
 		menuId: MenuId.EditorContext,
 		group: CLIPBOARD_CONTEXT_MENU_GROUP,
 		title: nls.localize('actions.clipboard.pasteLabel', "Paste"),
 		when: EditorContextKeys.writable,
-		order: 3,
+		order: 4,
 	}, {
 		menuId: MenuId.CommandPalette,
 		group: '',
@@ -239,6 +241,6 @@ if (PasteAction) {
 	});
 }
 
-if (supportsCopyWithSyntaxHighlighting) {
+if (supportsCopy) {
 	registerEditorAction(ExecCommandCopyWithSyntaxHighlightingAction);
 }

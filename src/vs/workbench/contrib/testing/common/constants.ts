@@ -4,13 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from 'vs/nls';
-import { TestRunState } from 'vs/workbench/api/common/extHostTypes';
+import { TestResult } from 'vs/workbench/api/common/extHostTypes';
 
 export const enum Testing {
 	// marked as "extension" so that any existing test extensions are assigned to it.
 	ViewletId = 'workbench.view.extension.test',
 	ExplorerViewId = 'workbench.view.testing',
 	OutputPeekContributionId = 'editor.contrib.testingOutputPeek',
+	DecorationsContributionId = 'editor.contrib.testingDecorations',
+	FilterActionId = 'workbench.actions.treeView.testExplorer.filter',
 }
 
 export const enum TestExplorerViewMode {
@@ -18,17 +20,23 @@ export const enum TestExplorerViewMode {
 	Tree = 'true'
 }
 
-export const enum TestExplorerViewGrouping {
+export const enum TestExplorerViewSorting {
 	ByLocation = 'location',
-	ByStatus = 'status',
+	ByName = 'name',
 }
 
-export const testStateNames: { [K in TestRunState]: string } = {
-	[TestRunState.Errored]: localize('testState.errored', 'Errored'),
-	[TestRunState.Failed]: localize('testState.failed', 'Failed'),
-	[TestRunState.Passed]: localize('testState.passed', 'Passed'),
-	[TestRunState.Queued]: localize('testState.queued', 'Queued'),
-	[TestRunState.Running]: localize('testState.running', 'Running'),
-	[TestRunState.Skipped]: localize('testState.skipped', 'Skipped'),
-	[TestRunState.Unset]: localize('testState.unset', 'Unset'),
+export const enum TestExplorerStateFilter {
+	OnlyFailed = 'failed',
+	OnlyExecuted = 'excuted',
+	All = 'all',
+}
+
+export const testStateNames: { [K in TestResult]: string } = {
+	[TestResult.Errored]: localize('testState.errored', 'Errored'),
+	[TestResult.Failed]: localize('testState.failed', 'Failed'),
+	[TestResult.Passed]: localize('testState.passed', 'Passed'),
+	[TestResult.Queued]: localize('testState.queued', 'Queued'),
+	[TestResult.Running]: localize('testState.running', 'Running'),
+	[TestResult.Skipped]: localize('testState.skipped', 'Skipped'),
+	[TestResult.Unset]: localize('testState.unset', 'Unset'),
 };

@@ -8,7 +8,7 @@ import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/commo
 import { URI } from 'vs/base/common/uri';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IJSONEditingService } from 'vs/workbench/services/configuration/common/jsonEditing';
-import { IWorkspacesService, isUntitledWorkspace, IWorkspaceIdentifier, hasWorkspaceFileExtension } from 'vs/platform/workspaces/common/workspaces';
+import { IWorkspacesService, isUntitledWorkspace, IWorkspaceIdentifier, hasWorkspaceFileExtension, isWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
 import { WorkspaceService } from 'vs/workbench/services/configuration/browser/configurationService';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
@@ -65,9 +65,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 	private registerListeners(): void {
 		this.lifecycleService.onBeforeShutdown(e => {
 			const saveOperation = this.saveUntitledBeforeShutdown(e.reason);
-			if (saveOperation) {
-				e.veto(saveOperation, 'veto.untitledWorkspace');
-			}
+			e.veto(saveOperation, 'veto.untitledWorkspace');
 		});
 	}
 
@@ -126,7 +124,8 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 					const newWorkspaceIdentifier = await this.workspacesService.getWorkspaceIdentifier(newWorkspacePath);
 					await this.workspacesService.addRecentlyOpened([{
 						label: this.labelService.getWorkspaceLabel(newWorkspaceIdentifier, { verbose: true }),
-						workspace: newWorkspaceIdentifier
+						workspace: newWorkspaceIdentifier,
+						remoteAuthority: this.environmentService.remoteAuthority
 					}]);
 
 					// Delete the untitled one
@@ -144,7 +143,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 		const windows = await this.nativeHostService.getWindows();
 
 		// Prevent overwriting a workspace that is currently opened in another window
-		if (windows.some(window => !!window.workspace && this.uriIdentityService.extUri.isEqual(window.workspace.configPath, path))) {
+		if (windows.some(window => isWorkspaceIdentifier(window.workspace) && this.uriIdentityService.extUri.isEqual(window.workspace.configPath, path))) {
 			await this.dialogService.show(
 				Severity.Info,
 				localize('workspaceOpenedMessage', "Unable to save workspace '{0}'", basename(path)),

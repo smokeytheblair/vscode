@@ -9,38 +9,46 @@ import { URI } from 'vs/base/common/uri';
 import { createTextBufferFactory } from 'vs/editor/common/model/textModel';
 import { DefaultEndOfLine } from 'vs/editor/common/model';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService';
 import { IBackupFileService } from 'vs/workbench/services/backup/common/backup';
 import { Schemas } from 'vs/base/common/network';
 import { isEqual } from 'vs/base/common/resources';
-import { InMemoryTestBackupFileService, TestServiceAccessor, workbenchInstantiationService } from 'vs/workbench/test/browser/workbenchTestServices';
+import { createEditorPart, InMemoryTestBackupFileService, registerTestResourceEditor, TestServiceAccessor, workbenchInstantiationService } from 'vs/workbench/test/browser/workbenchTestServices';
 import { BackupRestorer } from 'vs/workbench/contrib/backup/common/backupRestorer';
 import { BrowserBackupTracker } from 'vs/workbench/contrib/backup/browser/backupTracker';
-
-class TestBackupRestorer extends BackupRestorer {
-	async doRestoreBackups(): Promise<URI[] | undefined> {
-		return super.doRestoreBackups();
-	}
-}
+import { DisposableStore } from 'vs/base/common/lifecycle';
 
 suite('BackupRestorer', () => {
+
+	class TestBackupRestorer extends BackupRestorer {
+		async doRestoreBackups(): Promise<URI[] | undefined> {
+			return super.doRestoreBackups();
+		}
+	}
+
 	let accessor: TestServiceAccessor;
+	let disposables = new DisposableStore();
 
 	const fooFile = URI.file(isWindows ? 'c:\\Foo' : '/Foo');
 	const barFile = URI.file(isWindows ? 'c:\\Bar' : '/Bar');
 	const untitledFile1 = URI.from({ scheme: Schemas.untitled, path: 'Untitled-1' });
 	const untitledFile2 = URI.from({ scheme: Schemas.untitled, path: 'Untitled-2' });
 
+	setup(() => {
+		disposables.add(registerTestResourceEditor());
+	});
+
+	teardown(() => {
+		disposables.clear();
+	});
+
 	test('Restore backups', async function () {
 		const backupFileService = new InMemoryTestBackupFileService();
 		const instantiationService = workbenchInstantiationService();
 		instantiationService.stub(IBackupFileService, backupFileService);
 
-		const part = instantiationService.createInstance(EditorPart);
-		part.create(document.createElement('div'));
-		part.layout(400, 300);
+		const part = createEditorPart(instantiationService, disposables);
 
 		instantiationService.stub(IEditorGroupsService, part);
 
@@ -51,7 +59,7 @@ suite('BackupRestorer', () => {
 
 		await part.whenRestored;
 
-		const tracker = instantiationService.createInstance(BrowserBackupTracker);
+		disposables.add(instantiationService.createInstance(BrowserBackupTracker));
 		const restorer = instantiationService.createInstance(TestBackupRestorer);
 
 		// Backup 2 normal files and 2 untitled file
@@ -62,7 +70,7 @@ suite('BackupRestorer', () => {
 
 		// Verify backups restored and opened as dirty
 		await restorer.doRestoreBackups();
-		assert.equal(editorService.count, 4);
+		assert.strictEqual(editorService.count, 4);
 		assert.ok(editorService.editors.every(editor => editor.isDirty()));
 
 		let counter = 0;
@@ -101,9 +109,6 @@ suite('BackupRestorer', () => {
 			}
 		}
 
-		assert.equal(counter, 4);
-
-		part.dispose();
-		tracker.dispose();
+		assert.strictEqual(counter, 4);
 	});
 });

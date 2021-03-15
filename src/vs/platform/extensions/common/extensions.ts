@@ -113,6 +113,25 @@ export interface IAuthenticationContribution {
 	readonly label: string;
 }
 
+export interface IWelcomeItem {
+	readonly id: string;
+	readonly title: string;
+	readonly description: string;
+	readonly button: { title: string } & ({ command?: never, link: string } | { command: string, link?: never }),
+	readonly media: { path: string | { hc: string, light: string, dark: string }, altText: string },
+	readonly doneOn?:
+	| { event: string; command?: never }
+	| { event?: never; command: string };
+	readonly when?: string;
+}
+
+export interface IWelcomeCategory {
+	readonly id: string,
+	readonly title: string;
+	readonly description: string;
+	readonly when?: string;
+}
+
 export interface IExtensionContributions {
 	commands?: ICommand[];
 	configuration?: IConfiguration | IConfiguration[];
@@ -132,9 +151,13 @@ export interface IExtensionContributions {
 	readonly customEditors?: readonly IWebviewEditor[];
 	readonly codeActions?: readonly ICodeActionContribution[];
 	authentication?: IAuthenticationContribution[];
+	welcomeItems?: { [category: string]: IWelcomeItem[] };
+	welcomeCategories?: IWelcomeCategory[];
 }
 
 export type ExtensionKind = 'ui' | 'workspace' | 'web';
+
+export type ExtensionWorkspaceTrustRequirement = false | 'onStart' | 'onDemand';
 
 export function isIExtensionIdentifier(thing: any): thing is IExtensionIdentifier {
 	return thing
@@ -153,6 +176,7 @@ export const EXTENSION_CATEGORIES = [
 	'Data Science',
 	'Debuggers',
 	'Extension Packs',
+	'Education',
 	'Formatters',
 	'Keymaps',
 	'Language Packs',
@@ -162,8 +186,8 @@ export const EXTENSION_CATEGORIES = [
 	'Programming Languages',
 	'SCM Providers',
 	'Snippets',
-	'Themes',
 	'Testing',
+	'Themes',
 	'Visualization',
 	'Other',
 ];
@@ -173,7 +197,7 @@ export interface IExtensionManifest {
 	readonly displayName?: string;
 	readonly publisher: string;
 	readonly version: string;
-	readonly engines: { vscode: string };
+	readonly engines: { readonly vscode: string };
 	readonly description?: string;
 	readonly main?: string;
 	readonly browser?: string;
@@ -190,6 +214,7 @@ export interface IExtensionManifest {
 	readonly enableProposedApi?: boolean;
 	readonly api?: string;
 	readonly scripts?: { [key: string]: string; };
+	readonly requiresWorkspaceTrust?: ExtensionWorkspaceTrustRequirement;
 }
 
 export const enum ExtensionType {

@@ -8,6 +8,7 @@ import { assertIsDefined, withNullAsUndefined } from 'vs/base/common/types';
 import { URI } from 'vs/base/common/uri';
 import 'vs/css!./media/searchEditor';
 import { ICodeEditor, isDiffEditor } from 'vs/editor/browser/editorBrowser';
+import { IEditorOptions } from 'vs/editor/common/config/editorOptions';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 import { ILabelService } from 'vs/platform/label/common/label';
@@ -82,6 +83,7 @@ export async function openSearchEditor(accessor: ServicesAccessor): Promise<void
 	if (searchView) {
 		await instantiationService.invokeFunction(openNewSearchEditor, {
 			filesToInclude: searchView.searchIncludePattern.getValue(),
+			onlyOpenEditors: searchView.searchIncludePattern.onlySearchInOpenEditors(),
 			filesToExclude: searchView.searchExcludePattern.getValue(),
 			isRegexp: searchView.searchAndReplaceWidget.searchInput.getRegex(),
 			isCaseSensitive: searchView.searchAndReplaceWidget.searchInput.getCaseSensitive(),
@@ -108,6 +110,7 @@ export const openNewSearchEditor =
 		const activeWorkspaceRootUri = historyService.getLastActiveWorkspaceRoot(Schemas.file);
 		const lastActiveWorkspaceRoot = activeWorkspaceRootUri ? withNullAsUndefined(workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri)) : undefined;
 
+
 		const activeEditorControl = editorService.activeTextEditorControl;
 		let activeModel: ICodeEditor | undefined;
 		let selected = '';
@@ -132,9 +135,12 @@ export const openNewSearchEditor =
 
 		telemetryService.publicLog2('searchEditor/openNewSearchEditor');
 
-		const args: OpenSearchEditorArgs = { query: selected || undefined };
+		const seedSearchStringFromSelection = _args.location === 'new' || configurationService.getValue<IEditorOptions>('editor').find!.seedSearchStringFromSelection;
+		const args: OpenSearchEditorArgs = { query: seedSearchStringFromSelection ? selected : undefined };
 		Object.entries(_args).forEach(([name, value]) => {
-			(args as any)[name as any] = (typeof value === 'string') ? configurationResolverService.resolve(lastActiveWorkspaceRoot, value) : value;
+			if (value !== undefined) {
+				(args as any)[name as any] = (typeof value === 'string') ? configurationResolverService.resolve(lastActiveWorkspaceRoot, value) : value;
+			}
 		});
 		const existing = editorService.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).find(id => id.editor.getTypeId() === SearchEditorInput.ID);
 		let editor: SearchEditor;
@@ -161,7 +167,7 @@ export const openNewSearchEditor =
 	};
 
 export const createEditorFromSearchResult =
-	async (accessor: ServicesAccessor, searchResult: SearchResult, rawIncludePattern: string, rawExcludePattern: string) => {
+	async (accessor: ServicesAccessor, searchResult: SearchResult, rawIncludePattern: string, rawExcludePattern: string, onlySearchInOpenEditors: boolean) => {
 		if (!searchResult.query) {
 			console.error('Expected searchResult.query to be defined. Got', searchResult);
 			return;
@@ -180,6 +186,7 @@ export const createEditorFromSearchResult =
 		const labelFormatter = (uri: URI): string => labelService.getUriLabel(uri, { relative: true });
 
 		const { text, matchRanges, config } = serializeSearchResultForEditor(searchResult, rawIncludePattern, rawExcludePattern, 0, labelFormatter, sortOrder);
+		config.onlyOpenEditors = onlySearchInOpenEditors;
 		const contextLines = configurationService.getValue<ISearchConfigurationProperties>('search').searchEditor.defaultNumberOfContextLines;
 
 		if (searchResult.isDirty || contextLines === 0 || contextLines === null) {
