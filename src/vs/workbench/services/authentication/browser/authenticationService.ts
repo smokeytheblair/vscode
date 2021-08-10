@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from 'vs/nls';
+import { flatten } from 'vs/base/common/arrays';
 import { Emitter, Event } from 'vs/base/common/event';
+import { IJSONSchema } from 'vs/base/common/jsonSchema';
 import { Disposable, IDisposable, MutableDisposable } from 'vs/base/common/lifecycle';
-import { AuthenticationSession, AuthenticationSessionsChangeEvent, AuthenticationProviderInformation } from 'vs/editor/common/modes';
+import { isWeb } from 'vs/base/common/platform';
+import { isFalsyOrWhitespace } from 'vs/base/common/strings';
+import { isString } from 'vs/base/common/types';
+import { AuthenticationProviderInformation, AuthenticationSession, AuthenticationSessionsChangeEvent } from 'vs/editor/common/modes';
+import * as nls from 'vs/nls';
+import { MenuId, MenuRegistry } from 'vs/platform/actions/common/actions';
+import { CommandsRegistry } from 'vs/platform/commands/common/commands';
+import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
+import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { MainThreadAuthenticationProvider } from 'vs/workbench/api/browser/mainThreadAuthentication';
-import { MenuRegistry, MenuId } from 'vs/platform/actions/common/actions';
-import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
-import { CommandsRegistry } from 'vs/platform/commands/common/commands';
-import { IActivityService, NumberBadge } from 'vs/workbench/services/activity/common/activity';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
-import { IProductService } from 'vs/platform/product/common/productService';
-import { isString } from 'vs/base/common/types';
-import { ExtensionsRegistry } from 'vs/workbench/services/extensions/common/extensionsRegistry';
-import { IJSONSchema } from 'vs/base/common/jsonSchema';
-import { flatten } from 'vs/base/common/arrays';
-import { isFalsyOrWhitespace } from 'vs/base/common/strings';
-import { ActivationKind, IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
-import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
 import { Severity } from 'vs/platform/notification/common/notification';
+import { IProductService } from 'vs/platform/product/common/productService';
 import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { MainThreadAuthenticationProvider } from 'vs/workbench/api/browser/mainThreadAuthentication';
+import { IActivityService, NumberBadge } from 'vs/workbench/services/activity/common/activity';
+import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
+import { ActivationKind, IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
+import { ExtensionsRegistry } from 'vs/workbench/services/extensions/common/extensionsRegistry';
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService';
-import { isWeb } from 'vs/base/common/platform';
 
 export function getAuthenticationProviderActivationEvent(id: string): string { return `onAuthenticationRequest:${id}`; }
 
@@ -37,7 +37,7 @@ export interface IAccountUsage {
 	lastUsed: number;
 }
 
-const VSO_ALLOWED_EXTENSIONS = ['github.vscode-pull-request-github', 'github.vscode-pull-request-github-insiders', 'vscode.git', 'ms-vsonline.vsonline', 'vscode.github-browser', 'ms-vscode.github-browser', 'github.codespaces'];
+const VSO_ALLOWED_EXTENSIONS = ['github.vscode-pull-request-github', 'github.vscode-pull-request-github-insiders', 'vscode.git', 'ms-vsonline.vsonline', 'ms-vscode.remotehub', 'ms-vscode.remotehub-insiders', 'github.remotehub', 'github.remotehub-insiders', 'github.codespaces'];
 
 export function readAccountUsages(storageService: IStorageService, providerId: string, accountName: string,): IAccountUsage[] {
 	const accountKey = `${providerId}-${accountName}-usages`;
@@ -338,7 +338,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 		}
 
 		Object.keys(existingRequestsForProvider).forEach(requestedScopes => {
-			if (addedSessions.some(session => session.scopes.slice().sort().join('') === requestedScopes)) {
+			if (addedSessions.some(session => session.scopes.slice().join('') === requestedScopes)) {
 				const sessionRequest = existingRequestsForProvider[requestedScopes];
 				sessionRequest?.disposables.forEach(item => item.dispose());
 
@@ -565,9 +565,11 @@ export class AuthenticationService extends Disposable implements IAuthentication
 				id: `${providerId}${extensionId}Access`,
 				title: nls.localize({
 					key: 'accessRequest',
-					comment: ['The placeholder {0} will be replaced with an extension name. (1) is to indicate that this menu item contributes to a badge count']
+					comment: [`The placeholder {0} will be replaced with an authentication provider''s label. {1} will be replaced with an extension name. (1) is to indicate that this menu item contributes to a badge count`]
 				},
-					"Grant access to {0}... (1)", extensionName)
+					"Grant access to {0} for {1}... (1)",
+					this.getLabel(providerId),
+					extensionName)
 			}
 		});
 
@@ -602,7 +604,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 
 		if (provider) {
 			const providerRequests = this._signInRequestItems.get(providerId);
-			const scopesList = scopes.sort().join('');
+			const scopesList = scopes.join('');
 			const extensionHasExistingRequest = providerRequests
 				&& providerRequests[scopesList]
 				&& providerRequests[scopesList].requestingExtensionIds.includes(extensionId);
@@ -615,12 +617,12 @@ export class AuthenticationService extends Disposable implements IAuthentication
 				group: '2_signInRequests',
 				command: {
 					id: `${extensionId}signIn`,
-					title: nls.localize(
-						{
-							key: 'signInRequest',
-							comment: ['The placeholder {0} will be replaced with an extension name. (1) is to indicate that this menu item contributes to a badge count.']
-						},
-						"Sign in to use {0} (1)",
+					title: nls.localize({
+						key: 'signInRequest',
+						comment: [`The placeholder {0} will be replaced with an authentication provider's label. {1} will be replaced with an extension name. (1) is to indicate that this menu item contributes to a badge count.`]
+					},
+						"Sign in with {0} to use {1} (1)",
+						provider.label,
 						extensionName)
 				}
 			});
@@ -711,19 +713,19 @@ export class AuthenticationService extends Disposable implements IAuthentication
 	}
 
 	async getSessions(id: string, scopes?: string[], activateImmediate: boolean = false): Promise<ReadonlyArray<AuthenticationSession>> {
-		try {
-			const authProvider = this._authenticationProviders.get(id) || await this.tryActivateProvider(id, activateImmediate);
+		const authProvider = this._authenticationProviders.get(id) || await this.tryActivateProvider(id, activateImmediate);
+		if (authProvider) {
 			return await authProvider.getSessions(scopes);
-		} catch (_) {
+		} else {
 			throw new Error(`No authentication provider '${id}' is currently registered.`);
 		}
 	}
 
 	async createSession(id: string, scopes: string[], activateImmediate: boolean = false): Promise<AuthenticationSession> {
-		try {
-			const authProvider = this._authenticationProviders.get(id) || await this.tryActivateProvider(id, activateImmediate);
+		const authProvider = this._authenticationProviders.get(id) || await this.tryActivateProvider(id, activateImmediate);
+		if (authProvider) {
 			return await authProvider.createSession(scopes);
-		} catch (_) {
+		} else {
 			throw new Error(`No authentication provider '${id}' is currently registered.`);
 		}
 	}

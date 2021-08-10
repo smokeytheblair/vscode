@@ -10,7 +10,7 @@ import { dispose, DisposableStore } from 'vs/base/common/lifecycle';
 import { IMarker, MarkerSeverity, IRelatedInformation } from 'vs/platform/markers/common/markers';
 import { Range } from 'vs/editor/common/core/range';
 import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
-import { registerColor, oneOf, textLinkForeground, editorErrorForeground, editorErrorBorder, editorWarningForeground, editorWarningBorder, editorInfoForeground, editorInfoBorder } from 'vs/platform/theme/common/colorRegistry';
+import { registerColor, oneOf, textLinkForeground, editorErrorForeground, editorErrorBorder, editorWarningForeground, editorWarningBorder, editorInfoForeground, editorInfoBorder, textLinkActiveForeground } from 'vs/platform/theme/common/colorRegistry';
 import { IThemeService, IColorTheme, registerThemingParticipant } from 'vs/platform/theme/common/themeService';
 import { Color } from 'vs/base/common/color';
 import { ScrollableElement } from 'vs/base/browser/ui/scrollbar/scrollableElement';
@@ -144,7 +144,7 @@ class MessageWidget {
 					this._codeLink.setAttribute('href', `${code.target.toString()}`);
 
 					this._codeLink.onclick = (e) => {
-						this._openerService.open(code.target);
+						this._openerService.open(code.target, { allowCommands: true });
 						e.preventDefault();
 						e.stopPropagation();
 					};
@@ -280,14 +280,14 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 		}); // style() will trigger _applyStyles
 	}
 
-	protected _applyStyles(): void {
+	protected override _applyStyles(): void {
 		if (this._parentContainer) {
 			this._parentContainer.style.backgroundColor = this._backgroundColor ? this._backgroundColor.toString() : '';
 		}
 		super._applyStyles();
 	}
 
-	dispose(): void {
+	override dispose(): void {
 		this._callOnDispose.dispose();
 		super.dispose();
 	}
@@ -296,7 +296,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 		this._parentContainer.focus();
 	}
 
-	protected _fillHead(container: HTMLElement): void {
+	protected override _fillHead(container: HTMLElement): void {
 		super._fillHead(container);
 
 		this._disposables.add(this._actionbarWidget!.actionRunner.onBeforeRun(e => this.editor.focus()));
@@ -308,7 +308,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 		menu.dispose();
 	}
 
-	protected _fillTitleIcon(container: HTMLElement): void {
+	protected override _fillTitleIcon(container: HTMLElement): void {
 		this._icon = dom.append(container, dom.$(''));
 	}
 
@@ -325,7 +325,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 		this._disposables.add(this._message);
 	}
 
-	show(): void {
+	override show(): void {
 		throw new Error('call showAtMarker');
 	}
 
@@ -369,18 +369,18 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 		this._relayout();
 	}
 
-	protected _doLayoutBody(heightInPixel: number, widthInPixel: number): void {
+	protected override _doLayoutBody(heightInPixel: number, widthInPixel: number): void {
 		super._doLayoutBody(heightInPixel, widthInPixel);
 		this._heightInPixel = heightInPixel;
 		this._message.layout(heightInPixel, widthInPixel);
 		this._container.style.height = `${heightInPixel}px`;
 	}
 
-	public _onWidth(widthInPixel: number): void {
+	public override _onWidth(widthInPixel: number): void {
 		this._message.layout(this._heightInPixel, widthInPixel);
 	}
 
-	protected _relayout(): void {
+	protected override _relayout(): void {
 		super._relayout(this.computeRequiredHeight());
 	}
 
@@ -403,7 +403,10 @@ export const editorMarkerNavigationBackground = registerColor('editorMarkerNavig
 registerThemingParticipant((theme, collector) => {
 	const linkFg = theme.getColor(textLinkForeground);
 	if (linkFg) {
-		collector.addRule(`.monaco-editor .marker-widget a { color: ${linkFg}; }`);
-		collector.addRule(`.monaco-editor .marker-widget a.code-link span:hover { color: ${linkFg}; }`);
+		collector.addRule(`.monaco-editor .marker-widget a.code-link span { color: ${linkFg}; }`);
+	}
+	const activeLinkFg = theme.getColor(textLinkActiveForeground);
+	if (activeLinkFg) {
+		collector.addRule(`.monaco-editor .marker-widget a.code-link span:hover { color: ${activeLinkFg}; }`);
 	}
 });

@@ -3,35 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!./media/quickInput';
-import { IQuickPickItem, IPickOptions, IInputOptions, IQuickNavigateConfiguration, IQuickPick, IQuickInput, IQuickInputButton, IInputBox, IQuickPickItemButtonEvent, QuickPickInput, IQuickPickSeparator, IKeyMods, IQuickPickAcceptEvent, NO_KEY_MODS, ItemActivation, QuickInputHideReason, IQuickInputHideEvent } from 'vs/base/parts/quickinput/common/quickInput';
 import * as dom from 'vs/base/browser/dom';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { QuickInputList, QuickInputListFocus } from './quickInputList';
-import { QuickInputBox } from './quickInputBox';
-import { KeyCode } from 'vs/base/common/keyCodes';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { localize } from 'vs/nls';
-import { CountBadge, ICountBadgetyles } from 'vs/base/browser/ui/countBadge/countBadge';
-import { ProgressBar, IProgressBarStyles } from 'vs/base/browser/ui/progressbar/progressbar';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Button, IButtonStyles } from 'vs/base/browser/ui/button/button';
-import { dispose, Disposable, DisposableStore } from 'vs/base/common/lifecycle';
-import Severity from 'vs/base/common/severity';
 import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
+import { ActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems';
+import { Button, IButtonStyles } from 'vs/base/browser/ui/button/button';
+import { CountBadge, ICountBadgetyles } from 'vs/base/browser/ui/countBadge/countBadge';
+import { renderLabelWithIcons } from 'vs/base/browser/ui/iconLabel/iconLabels';
+import { IInputBoxStyles } from 'vs/base/browser/ui/inputbox/inputBox';
+import { IKeybindingLabelStyles } from 'vs/base/browser/ui/keybindingLabel/keybindingLabel';
+import { IListRenderer, IListVirtualDelegate } from 'vs/base/browser/ui/list/list';
+import { IListOptions, IListStyles, List } from 'vs/base/browser/ui/list/listWidget';
+import { IProgressBarStyles, ProgressBar } from 'vs/base/browser/ui/progressbar/progressbar';
 import { Action } from 'vs/base/common/actions';
 import { equals } from 'vs/base/common/arrays';
 import { TimeoutTimer } from 'vs/base/common/async';
-import { getIconClass } from 'vs/base/parts/quickinput/browser/quickInputUtils';
-import { IListVirtualDelegate, IListRenderer } from 'vs/base/browser/ui/list/list';
-import { List, IListOptions, IListStyles } from 'vs/base/browser/ui/list/listWidget';
-import { IInputBoxStyles } from 'vs/base/browser/ui/inputbox/inputBox';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { Codicon, registerCodicon } from 'vs/base/common/codicons';
 import { Color } from 'vs/base/common/color';
-import { registerCodicon, Codicon } from 'vs/base/common/codicons';
-import { ActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems';
-import { escape } from 'vs/base/common/strings';
-import { renderLabelWithIcons } from 'vs/base/browser/ui/iconLabel/iconLabels';
+import { Emitter, Event } from 'vs/base/common/event';
+import { KeyCode } from 'vs/base/common/keyCodes';
+import { Disposable, DisposableStore, dispose } from 'vs/base/common/lifecycle';
+import { isIOS } from 'vs/base/common/platform';
+import Severity from 'vs/base/common/severity';
 import { isString } from 'vs/base/common/types';
+import { getIconClass } from 'vs/base/parts/quickinput/browser/quickInputUtils';
+import { IInputBox, IInputOptions, IKeyMods, IPickOptions, IQuickInput, IQuickInputButton, IQuickInputHideEvent, IQuickNavigateConfiguration, IQuickPick, IQuickPickDidAcceptEvent, IQuickPickItem, IQuickPickItemButtonEvent, IQuickPickSeparator, IQuickPickWillAcceptEvent, ItemActivation, NO_KEY_MODS, QuickInputHideReason, QuickPickInput } from 'vs/base/parts/quickinput/common/quickInput';
+import 'vs/css!./media/quickInput';
+import { localize } from 'vs/nls';
+import { QuickInputBox } from './quickInputBox';
+import { QuickInputList, QuickInputListFocus } from './quickInputList';
 
 export interface IQuickInputOptions {
 	idPrefix: string;
@@ -57,6 +58,7 @@ export interface IQuickInputStyles {
 	countBadge: ICountBadgetyles;
 	button: IButtonStyles;
 	progressBar: IProgressBarStyles;
+	keybindingLabel: IKeybindingLabelStyles;
 	list: IListStyles & { pickerGroupBorder?: Color; pickerGroupForeground?: Color; };
 }
 
@@ -234,8 +236,11 @@ class QuickInput extends Disposable implements IQuickInput {
 	}
 
 	set ignoreFocusOut(ignoreFocusOut: boolean) {
-		this._ignoreFocusOut = ignoreFocusOut;
-		this.update();
+		const shouldUpdate = this._ignoreFocusOut !== ignoreFocusOut && !isIOS;
+		this._ignoreFocusOut = ignoreFocusOut && !isIOS;
+		if (shouldUpdate) {
+			this.update();
+		}
 	}
 
 	get buttons() {
@@ -357,7 +362,7 @@ class QuickInput extends Disposable implements IQuickInput {
 		const validationMessage = this.validationMessage || this.noValidationMessage;
 		if (this._lastValidationMessage !== validationMessage) {
 			this._lastValidationMessage = validationMessage;
-			dom.reset(this.ui.message, ...renderLabelWithIcons(escape(validationMessage)));
+			dom.reset(this.ui.message, ...renderLabelWithIcons(validationMessage));
 		}
 		if (this._lastSeverity !== this.severity) {
 			this._lastSeverity = this.severity;
@@ -410,7 +415,7 @@ class QuickInput extends Disposable implements IQuickInput {
 
 	readonly onDispose = this.onDisposeEmitter.event;
 
-	dispose(): void {
+	override dispose(): void {
 		this.hide();
 		this.onDisposeEmitter.fire();
 
@@ -426,7 +431,8 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 	private _ariaLabel: string | undefined;
 	private _placeholder: string | undefined;
 	private readonly onDidChangeValueEmitter = this._register(new Emitter<string>());
-	private readonly onDidAcceptEmitter = this._register(new Emitter<IQuickPickAcceptEvent>());
+	private readonly onWillAcceptEmitter = this._register(new Emitter<IQuickPickWillAcceptEvent>());
+	private readonly onDidAcceptEmitter = this._register(new Emitter<IQuickPickDidAcceptEvent>());
 	private readonly onDidCustomEmitter = this._register(new Emitter<void>());
 	private _items: Array<T | IQuickPickSeparator> = [];
 	private itemsUpdated = false;
@@ -471,8 +477,11 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 	}
 
 	set value(value: string) {
-		this._value = value || '';
-		this.update();
+		if (this._value !== value) {
+			this._value = value || '';
+			this.update();
+			this.onDidChangeValueEmitter.fire(this._value);
+		}
 	}
 
 	filterValue = (value: string) => value;
@@ -497,6 +506,7 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 
 	onDidChangeValue = this.onDidChangeValueEmitter.event;
 
+	onWillAccept = this.onWillAcceptEmitter.event;
 	onDidAccept = this.onDidAcceptEmitter.event;
 
 	onDidCustom = this.onDidCustomEmitter.event;
@@ -694,7 +704,7 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 		}
 	}
 
-	show() {
+	override show() {
 		if (!this.visible) {
 			this.visibleDisposables.add(
 				this.ui.inputBox.onDidChange(value => {
@@ -759,7 +769,7 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 						if (this.activeItems[0]) {
 							this._selectedItems = [this.activeItems[0]];
 							this.onDidChangeSelectionEmitter.fire(this.selectedItems);
-							this.onDidAcceptEmitter.fire({ inBackground: true });
+							this.handleAccept(true);
 						}
 
 						break;
@@ -782,7 +792,7 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 					this._selectedItems = [this.activeItems[0]];
 					this.onDidChangeSelectionEmitter.fire(this.selectedItems);
 				}
-				this.onDidAcceptEmitter.fire({ inBackground: false });
+				this.handleAccept(false);
 			}));
 			this.visibleDisposables.add(this.ui.onDidCustom(() => {
 				this.onDidCustomEmitter.fire();
@@ -810,7 +820,7 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 				this._selectedItems = selectedItems as T[];
 				this.onDidChangeSelectionEmitter.fire(selectedItems as T[]);
 				if (selectedItems.length) {
-					this.onDidAcceptEmitter.fire({ inBackground: event instanceof MouseEvent && event.button === 1 /* mouse middle click */ });
+					this.handleAccept(event instanceof MouseEvent && event.button === 1 /* mouse middle click */);
 				}
 			}));
 			this.visibleDisposables.add(this.ui.list.onChangedCheckedElements(checkedItems => {
@@ -828,6 +838,18 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 			this.valueSelectionUpdated = true;
 		}
 		super.show(); // TODO: Why have show() bubble up while update() trickles down? (Could move setComboboxAccessibility() here.)
+	}
+
+	private handleAccept(inBackground: boolean): void {
+
+		// Figure out veto via `onWillAccept` event
+		let veto = false;
+		this.onWillAcceptEmitter.fire({ veto: () => veto = true });
+
+		// Continue with `onDidAccpet` if no veto
+		if (!veto) {
+			this.onDidAcceptEmitter.fire({ inBackground });
+		}
 	}
 
 	private registerQuickNavigation() {
@@ -874,7 +896,7 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 				if (this.activeItems[0]) {
 					this._selectedItems = [this.activeItems[0]];
 					this.onDidChangeSelectionEmitter.fire(this.selectedItems);
-					this.onDidAcceptEmitter.fire({ inBackground: false });
+					this.handleAccept(false);
 				}
 				// Unset quick navigate after press. It is only valid once
 				// and should not result in any behaviour change afterwards
@@ -884,20 +906,11 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 		});
 	}
 
-	protected update() {
+	protected override update() {
 		if (!this.visible) {
 			return;
 		}
-		let hideInput = false;
-		let inputShownJustForScreenReader = false;
-		if (!!this._hideInput && this._items.length > 0) {
-			if (this.ui.isScreenReaderOptimized()) {
-				// Always show input if screen reader attached https://github.com/microsoft/vscode/issues/94360
-				inputShownJustForScreenReader = true;
-			} else {
-				hideInput = true;
-			}
-		}
+		const hideInput = !!this._hideInput && this._items.length > 0;
 		this.ui.container.classList.toggle('hidden-input', hideInput && !this.description);
 		const visibilities: Visibilities = {
 			title: !!this.title || !!this.step || !!this.buttons.length,
@@ -925,13 +938,9 @@ class QuickPick<T extends IQuickPickItem> extends QuickInput implements IQuickPi
 		if (this.ui.inputBox.placeholder !== (this.placeholder || '')) {
 			this.ui.inputBox.placeholder = (this.placeholder || '');
 		}
-		if (inputShownJustForScreenReader) {
-			this.ui.inputBox.ariaLabel = '';
-		} else {
-			const ariaLabel = this.ariaLabel || this.placeholder || QuickPick.DEFAULT_ARIA_LABEL;
-			if (this.ui.inputBox.ariaLabel !== ariaLabel) {
-				this.ui.inputBox.ariaLabel = ariaLabel;
-			}
+		const ariaLabel = this.ariaLabel || this.placeholder || QuickPick.DEFAULT_ARIA_LABEL;
+		if (this.ui.inputBox.ariaLabel !== ariaLabel) {
+			this.ui.inputBox.ariaLabel = ariaLabel;
 		}
 		this.ui.list.matchOnDescription = this.matchOnDescription;
 		this.ui.list.matchOnDetail = this.matchOnDetail;
@@ -1063,7 +1072,7 @@ class InputBox extends QuickInput implements IInputBox {
 
 	readonly onDidAccept = this.onDidAcceptEmitter.event;
 
-	show() {
+	override show() {
 		if (!this.visible) {
 			this.visibleDisposables.add(
 				this.ui.inputBox.onDidChange(value => {
@@ -1079,7 +1088,7 @@ class InputBox extends QuickInput implements IInputBox {
 		super.show();
 	}
 
-	protected update() {
+	protected override update() {
 		if (!this.visible) {
 			return;
 		}
@@ -1220,9 +1229,6 @@ export class QuickInputController extends Disposable {
 
 		const message = dom.append(extraContainer, $(`#${this.idPrefix}message.quick-input-message`));
 
-		const progressBar = new ProgressBar(container);
-		progressBar.getContainer().classList.add('quick-input-progress');
-
 		const list = this._register(new QuickInputList(container, this.idPrefix + 'list', this.options));
 		this._register(list.onChangedAllVisibleChecked(checked => {
 			checkAll.checked = checked;
@@ -1247,6 +1253,9 @@ export class QuickInputController extends Disposable {
 				this.getUI().inputBox.setAttribute('aria-activedescendant', this.getUI().list.getActiveDescendant() || '');
 			}
 		}));
+
+		const progressBar = new ProgressBar(container);
+		progressBar.getContainer().classList.add('quick-input-progress');
 
 		const focusTracker = dom.trackFocus(container);
 		this._register(focusTracker);
@@ -1318,8 +1327,8 @@ export class QuickInputController extends Disposable {
 			message,
 			customButtonContainer,
 			customButton,
-			progressBar,
 			list,
+			progressBar,
 			onDidAccept: this.onDidAcceptEmitter.event,
 			onDidCustom: this.onDidCustomEmitter.event,
 			onDidTriggerButton: this.onDidTriggerButtonEmitter.event,
@@ -1388,8 +1397,12 @@ export class QuickInputController extends Disposable {
 						const index = input.items.indexOf(event.item);
 						if (index !== -1) {
 							const items = input.items.slice();
-							items.splice(index, 1);
+							const removed = items.splice(index, 1);
+							const activeItems = input.activeItems.filter((ai) => ai !== removed[0]);
 							input.items = items;
+							if (activeItems) {
+								input.activeItems = activeItems;
+							}
 						}
 					}
 				})),
@@ -1406,6 +1419,7 @@ export class QuickInputController extends Disposable {
 					resolve(undefined);
 				}),
 			];
+			input.title = options.title;
 			input.canSelectMany = !!options.canPickMany;
 			input.placeholder = options.placeHolder;
 			input.ignoreFocusOut = !!options.ignoreFocusLost;
@@ -1499,6 +1513,8 @@ export class QuickInputController extends Disposable {
 					resolve(undefined);
 				}),
 			];
+
+			input.title = options.title;
 			input.value = options.value || '';
 			input.valueSelection = options.valueSelection;
 			input.prompt = options.prompt;
@@ -1726,6 +1742,34 @@ export class QuickInputController extends Disposable {
 			if (this.styles.list.pickerGroupForeground) {
 				content.push(`.quick-input-list .quick-input-list-separator { color:  ${this.styles.list.pickerGroupForeground}; }`);
 			}
+
+			if (
+				this.styles.keybindingLabel.keybindingLabelBackground ||
+				this.styles.keybindingLabel.keybindingLabelBorder ||
+				this.styles.keybindingLabel.keybindingLabelBottomBorder ||
+				this.styles.keybindingLabel.keybindingLabelShadow ||
+				this.styles.keybindingLabel.keybindingLabelForeground
+			) {
+				content.push('.quick-input-list .monaco-keybinding > .monaco-keybinding-key {');
+				if (this.styles.keybindingLabel.keybindingLabelBackground) {
+					content.push(`background-color: ${this.styles.keybindingLabel.keybindingLabelBackground};`);
+				}
+				if (this.styles.keybindingLabel.keybindingLabelBorder) {
+					// Order matters here. `border-color` must come before `border-bottom-color`.
+					content.push(`border-color: ${this.styles.keybindingLabel.keybindingLabelBorder};`);
+				}
+				if (this.styles.keybindingLabel.keybindingLabelBottomBorder) {
+					content.push(`border-bottom-color: ${this.styles.keybindingLabel.keybindingLabelBottomBorder};`);
+				}
+				if (this.styles.keybindingLabel.keybindingLabelShadow) {
+					content.push(`box-shadow: inset 0 -1px 0 ${this.styles.keybindingLabel.keybindingLabelShadow};`);
+				}
+				if (this.styles.keybindingLabel.keybindingLabelForeground) {
+					content.push(`color: ${this.styles.keybindingLabel.keybindingLabelForeground};`);
+				}
+				content.push('}');
+			}
+
 			const newStyles = content.join('\n');
 			if (newStyles !== this.ui.styleSheet.textContent) {
 				this.ui.styleSheet.textContent = newStyles;

@@ -6,7 +6,6 @@
 .monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item {
 	display: block;
 	position: relative;
-	margin-bottom: 4px;
 }
 
 .monaco-workbench .activitybar > .content .composite-bar > .monaco-action-bar .action-item::before,
@@ -57,6 +56,7 @@
 	z-index: 1;
 	display: flex;
 	overflow: hidden;
+	width: 48px;
 	height: 48px;
 	margin-right: 0;
 	box-sizing: border-box;
@@ -154,7 +154,8 @@
 .monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .badge .codicon.badge-content {
 	font-size: 12px;
 	font-weight: unset;
-	padding: 0 2px;
+	padding: 0;
+	justify-content: center;
 }
 
 .monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .badge .codicon.badge-content::before {
