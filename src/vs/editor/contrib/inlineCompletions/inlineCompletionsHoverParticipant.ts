@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from 'vs/nls';
-import { HoverAnchor, HoverAnchorType, HoverForeignElementAnchor, IEditorHover, IEditorHoverParticipant, IEditorHoverStatusBar, IHoverPart } from 'vs/editor/contrib/hover/hoverTypes';
+import * as dom from 'vs/base/browser/dom';
+import { MarkdownString } from 'vs/base/common/htmlContent';
+import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
+import { ITextContentData, IViewZoneData } from 'vs/editor/browser/controller/mouseTarget';
+import { MarkdownRenderer } from 'vs/editor/browser/core/markdownRenderer';
 import { ICodeEditor, IEditorMouseEvent, MouseTargetType } from 'vs/editor/browser/editorBrowser';
 import { Range } from 'vs/editor/common/core/range';
 import { IModelDecoration } from 'vs/editor/common/model';
-import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
+import { ILanguageService } from 'vs/editor/common/services/languageService';
+import { HoverAnchor, HoverAnchorType, HoverForeignElementAnchor, IEditorHover, IEditorHoverParticipant, IEditorHoverStatusBar, IHoverPart } from 'vs/editor/contrib/hover/hoverTypes';
 import { commitInlineSuggestionAction, GhostTextController, ShowNextInlineSuggestionAction, ShowPreviousInlineSuggestionAction } from 'vs/editor/contrib/inlineCompletions/ghostTextController';
-import { ICommandService } from 'vs/platform/commands/common/commands';
-import { IMenuService, MenuId, MenuItemAction } from 'vs/platform/actions/common/actions';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { ITextContentData, IViewZoneData } from 'vs/editor/browser/controller/mouseTarget';
-import * as dom from 'vs/base/browser/dom';
-import { MarkdownRenderer } from 'vs/editor/browser/core/markdownRenderer';
-import { MarkdownString } from 'vs/base/common/htmlContent';
-import { IModeService } from 'vs/editor/common/services/modeService';
-import { IOpenerService } from 'vs/platform/opener/common/opener';
+import * as nls from 'vs/nls';
 import { IAccessibilityService } from 'vs/platform/accessibility/common/accessibility';
+import { IMenuService, MenuId, MenuItemAction } from 'vs/platform/actions/common/actions';
+import { ICommandService } from 'vs/platform/commands/common/commands';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IOpenerService } from 'vs/platform/opener/common/opener';
 
 export class InlineCompletionsHover implements IHoverPart {
 	constructor(
@@ -48,7 +48,7 @@ export class InlineCompletionsHoverParticipant implements IEditorHoverParticipan
 		@ICommandService private readonly _commandService: ICommandService,
 		@IMenuService private readonly _menuService: IMenuService,
 		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IModeService private readonly _modeService: IModeService,
+		@ILanguageService private readonly _languageService: ILanguageService,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
 	) { }
@@ -147,14 +147,14 @@ export class InlineCompletionsHoverParticipant implements IEditorHoverParticipan
 		const $ = dom.$;
 		const markdownHoverElement = $('div.hover-row.markdown-hover');
 		const hoverContentsElement = dom.append(markdownHoverElement, $('div.hover-contents'));
-		const renderer = disposableStore.add(new MarkdownRenderer({ editor: this._editor }, this._modeService, this._openerService));
+		const renderer = disposableStore.add(new MarkdownRenderer({ editor: this._editor }, this._languageService, this._openerService));
 		const render = (code: string) => {
 			disposableStore.add(renderer.onDidRenderAsync(() => {
 				hoverContentsElement.className = 'hover-contents code-hover-contents';
 				this._hover.onContentsChanged();
 			}));
 
-			const inlineSuggestionAvailable = nls.localize('inlineSuggestionFollows', "Inline Suggestion:");
+			const inlineSuggestionAvailable = nls.localize('inlineSuggestionFollows', "Suggestion:");
 			const renderedContents = disposableStore.add(renderer.render(new MarkdownString().appendText(inlineSuggestionAvailable).appendCodeblock('text', code)));
 			hoverContentsElement.replaceChildren(renderedContents.element);
 		};

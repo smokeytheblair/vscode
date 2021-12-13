@@ -5,7 +5,7 @@
 
 import { localize } from 'vs/nls';
 import { language } from 'vs/base/common/platform';
-import { IModeService } from 'vs/editor/common/services/modeService';
+import { ILanguageService } from 'vs/editor/common/services/languageService';
 import { IWorkbenchContributionsRegistry, IWorkbenchContribution, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -29,7 +29,7 @@ class LanguageSurvey extends Disposable {
 		storageService: IStorageService,
 		notificationService: INotificationService,
 		telemetryService: ITelemetryService,
-		modeService: IModeService,
+		languageService: ILanguageService,
 		textFileService: ITextFileService,
 		openerService: IOpenerService,
 		productService: IProductService
@@ -93,12 +93,9 @@ class LanguageSurvey extends Disposable {
 			return;
 		}
 
-		// __GDPR__TODO__ Need to move away from dynamic event names as those cannot be registered statically
-		telemetryService.publicLog(`${data.surveyId}.survey/userAsked`);
-
 		notificationService.prompt(
 			Severity.Info,
-			localize('helpUs', "Help us improve our support for {0}", modeService.getLanguageName(data.languageId) ?? data.languageId),
+			localize('helpUs', "Help us improve our support for {0}", languageService.getLanguageName(data.languageId) ?? data.languageId),
 			[{
 				label: localize('takeShortSurvey', "Take Short Survey"),
 				run: () => {
@@ -138,7 +135,7 @@ class LanguageSurveysContribution implements IWorkbenchContribution {
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IProductService private readonly productService: IProductService,
-		@IModeService private readonly modeService: IModeService,
+		@ILanguageService private readonly languageService: ILanguageService,
 		@IExtensionService private readonly extensionService: IExtensionService
 	) {
 		this.handleSurveys();
@@ -157,7 +154,7 @@ class LanguageSurveysContribution implements IWorkbenchContribution {
 		// Handle surveys
 		this.productService.surveys
 			.filter(surveyData => surveyData.surveyId && surveyData.editCount && surveyData.languageId && surveyData.surveyUrl && surveyData.userProbability)
-			.map(surveyData => new LanguageSurvey(surveyData, this.storageService, this.notificationService, this.telemetryService, this.modeService, this.textFileService, this.openerService, this.productService));
+			.map(surveyData => new LanguageSurvey(surveyData, this.storageService, this.notificationService, this.telemetryService, this.languageService, this.textFileService, this.openerService, this.productService));
 	}
 }
 

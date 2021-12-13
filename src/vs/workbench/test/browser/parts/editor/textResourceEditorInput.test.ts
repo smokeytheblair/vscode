@@ -11,20 +11,27 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { workbenchInstantiationService, TestServiceAccessor } from 'vs/workbench/test/browser/workbenchTestServices';
 import { snapshotToString } from 'vs/workbench/services/textfile/common/textfiles';
 import { ModesRegistry, PLAINTEXT_MODE_ID } from 'vs/editor/common/modes/modesRegistry';
+import { DisposableStore } from 'vs/base/common/lifecycle';
 
 suite('TextResourceEditorInput', () => {
 
+	let disposables: DisposableStore;
 	let instantiationService: IInstantiationService;
 	let accessor: TestServiceAccessor;
 
 	setup(() => {
-		instantiationService = workbenchInstantiationService();
+		disposables = new DisposableStore();
+		instantiationService = workbenchInstantiationService(undefined, disposables);
 		accessor = instantiationService.createInstance(TestServiceAccessor);
+	});
+
+	teardown(() => {
+		disposables.dispose();
 	});
 
 	test('basics', async () => {
 		const resource = URI.from({ scheme: 'inmemory', authority: null!, path: 'thePath' });
-		accessor.modelService.createModel('function test() {}', accessor.modeService.create('text'), resource);
+		accessor.modelService.createModel('function test() {}', accessor.languageService.createById(PLAINTEXT_MODE_ID), resource);
 
 		const input = instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', undefined, undefined);
 
@@ -40,19 +47,19 @@ suite('TextResourceEditorInput', () => {
 		});
 
 		const resource = URI.from({ scheme: 'inmemory', authority: null!, path: 'thePath' });
-		accessor.modelService.createModel('function test() {}', accessor.modeService.create('text'), resource);
+		accessor.modelService.createModel('function test() {}', accessor.languageService.createById(PLAINTEXT_MODE_ID), resource);
 
 		const input = instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', 'resource-input-test', undefined);
 
 		const model = await input.resolve();
 		assert.ok(model);
-		assert.strictEqual(model.textEditorModel?.getModeId(), 'resource-input-test');
+		assert.strictEqual(model.textEditorModel?.getLanguageId(), 'resource-input-test');
 
 		input.setMode('text');
-		assert.strictEqual(model.textEditorModel?.getModeId(), PLAINTEXT_MODE_ID);
+		assert.strictEqual(model.textEditorModel?.getLanguageId(), PLAINTEXT_MODE_ID);
 
 		await input.resolve();
-		assert.strictEqual(model.textEditorModel?.getModeId(), PLAINTEXT_MODE_ID);
+		assert.strictEqual(model.textEditorModel?.getLanguageId(), PLAINTEXT_MODE_ID);
 	});
 
 	test('preferred mode (via setPreferredMode)', async () => {
@@ -61,19 +68,19 @@ suite('TextResourceEditorInput', () => {
 		});
 
 		const resource = URI.from({ scheme: 'inmemory', authority: null!, path: 'thePath' });
-		accessor.modelService.createModel('function test() {}', accessor.modeService.create('text'), resource);
+		accessor.modelService.createModel('function test() {}', accessor.languageService.createById(PLAINTEXT_MODE_ID), resource);
 
 		const input = instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', undefined, undefined);
 		input.setPreferredMode('resource-input-test');
 
 		const model = await input.resolve();
 		assert.ok(model);
-		assert.strictEqual(model.textEditorModel?.getModeId(), 'resource-input-test');
+		assert.strictEqual(model.textEditorModel?.getLanguageId(), 'resource-input-test');
 	});
 
 	test('preferred contents (via ctor)', async () => {
 		const resource = URI.from({ scheme: 'inmemory', authority: null!, path: 'thePath' });
-		accessor.modelService.createModel('function test() {}', accessor.modeService.create('text'), resource);
+		accessor.modelService.createModel('function test() {}', accessor.languageService.createById(PLAINTEXT_MODE_ID), resource);
 
 		const input = instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', undefined, 'My Resource Input Contents');
 
@@ -90,7 +97,7 @@ suite('TextResourceEditorInput', () => {
 
 	test('preferred contents (via setPreferredContents)', async () => {
 		const resource = URI.from({ scheme: 'inmemory', authority: null!, path: 'thePath' });
-		accessor.modelService.createModel('function test() {}', accessor.modeService.create('text'), resource);
+		accessor.modelService.createModel('function test() {}', accessor.languageService.createById(PLAINTEXT_MODE_ID), resource);
 
 		const input = instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', undefined, undefined);
 		input.setPreferredContents('My Resource Input Contents');

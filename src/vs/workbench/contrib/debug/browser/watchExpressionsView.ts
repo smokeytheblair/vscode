@@ -23,7 +23,7 @@ import { ElementsDragAndDropData } from 'vs/base/browser/ui/list/listView';
 import { FuzzyScore } from 'vs/base/common/filters';
 import { IHighlight } from 'vs/base/browser/ui/highlightedlabel/highlightedLabel';
 import { VariablesRenderer } from 'vs/workbench/contrib/debug/browser/variablesView';
-import { IContextKeyService, ContextKeyEqualsExpr, IContextKey } from 'vs/platform/contextkey/common/contextkey';
+import { IContextKeyService, ContextKeyExpr, IContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { dispose } from 'vs/base/common/lifecycle';
 import { IViewDescriptorService } from 'vs/workbench/common/views';
 import { IOpenerService } from 'vs/platform/opener/common/opener';
@@ -34,6 +34,7 @@ import { registerAction2, MenuId, Action2, IMenuService, IMenu } from 'vs/platfo
 import { localize } from 'vs/nls';
 import { Codicon } from 'vs/base/common/codicons';
 import { createAndFillInContextMenuActions } from 'vs/platform/actions/browser/menuEntryActionViewItem';
+import { LinkDetector } from 'vs/workbench/contrib/debug/browser/linkDetector';
 
 const MAX_VALUE_RENDER_LENGTH_IN_VIEWLET = 1024;
 let ignoreViewUpdates = false;
@@ -85,7 +86,8 @@ export class WatchExpressionsView extends ViewPane {
 		const treeContainer = renderViewTree(container);
 
 		const expressionsRenderer = this.instantiationService.createInstance(WatchExpressionsRenderer);
-		this.tree = <WorkbenchAsyncDataTree<IDebugService | IExpression, IExpression, FuzzyScore>>this.instantiationService.createInstance(WorkbenchAsyncDataTree, 'WatchExpressions', treeContainer, new WatchExpressionsDelegate(), [expressionsRenderer, this.instantiationService.createInstance(VariablesRenderer)],
+		const linkeDetector = this.instantiationService.createInstance(LinkDetector);
+		this.tree = <WorkbenchAsyncDataTree<IDebugService | IExpression, IExpression, FuzzyScore>>this.instantiationService.createInstance(WorkbenchAsyncDataTree, 'WatchExpressions', treeContainer, new WatchExpressionsDelegate(), [expressionsRenderer, this.instantiationService.createInstance(VariablesRenderer, linkeDetector)],
 			new WatchExpressionsDataSource(), {
 			accessibilityProvider: new WatchExpressionsAccessibilityProvider(),
 			identityProvider: { getId: (element: IExpression) => element.getId() },
@@ -379,7 +381,7 @@ registerAction2(class Collapse extends ViewAction<WatchExpressionsView> {
 				id: MenuId.ViewTitle,
 				order: 30,
 				group: 'navigation',
-				when: ContextKeyEqualsExpr.create('view', WATCH_VIEW_ID)
+				when: ContextKeyExpr.equals('view', WATCH_VIEW_ID)
 			}
 		});
 	}
@@ -402,7 +404,7 @@ registerAction2(class AddWatchExpressionAction extends Action2 {
 			menu: {
 				id: MenuId.ViewTitle,
 				group: 'navigation',
-				when: ContextKeyEqualsExpr.create('view', WATCH_VIEW_ID)
+				when: ContextKeyExpr.equals('view', WATCH_VIEW_ID)
 			}
 		});
 	}
@@ -427,7 +429,7 @@ registerAction2(class RemoveAllWatchExpressionsAction extends Action2 {
 				id: MenuId.ViewTitle,
 				order: 20,
 				group: 'navigation',
-				when: ContextKeyEqualsExpr.create('view', WATCH_VIEW_ID)
+				when: ContextKeyExpr.equals('view', WATCH_VIEW_ID)
 			}
 		});
 	}

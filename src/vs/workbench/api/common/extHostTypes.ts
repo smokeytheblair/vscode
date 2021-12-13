@@ -9,6 +9,7 @@ import { IRelativePattern } from 'vs/base/common/glob';
 import { MarkdownString as BaseMarkdownString } from 'vs/base/common/htmlContent';
 import { ResourceMap } from 'vs/base/common/map';
 import { Mimes, normalizeMimeType } from 'vs/base/common/mime';
+import { nextCharLength } from 'vs/base/common/strings';
 import { isArray, isStringArray } from 'vs/base/common/types';
 import { URI } from 'vs/base/common/uri';
 import { generateUuid } from 'vs/base/common/uuid';
@@ -1343,6 +1344,14 @@ export class MarkdownString implements vscode.MarkdownString {
 		this.#delegate.supportThemeIcons = value;
 	}
 
+	get supportHtml(): boolean | undefined {
+		return this.#delegate.supportHtml;
+	}
+
+	set supportHtml(value: boolean | undefined) {
+		this.#delegate.supportHtml = value;
+	}
+
 	appendText(value: string): vscode.MarkdownString {
 		this.#delegate.appendText(value);
 		return this;
@@ -1357,8 +1366,6 @@ export class MarkdownString implements vscode.MarkdownString {
 		this.#delegate.appendCodeblock(language ?? '', value);
 		return this;
 	}
-
-
 }
 
 @es5ClassCompat
@@ -1436,7 +1443,7 @@ export enum CompletionTriggerKind {
 
 export interface CompletionContext {
 	readonly triggerKind: CompletionTriggerKind;
-	readonly triggerCharacter?: string;
+	readonly triggerCharacter: string | undefined;
 }
 
 export enum CompletionItemKind {
@@ -1735,6 +1742,11 @@ export class TerminalLink implements vscode.TerminalLink {
 	}
 }
 
+export enum TerminalLocation {
+	Panel = 1,
+	Editor = 2,
+}
+
 export class TerminalProfile implements vscode.TerminalProfile {
 	constructor(
 		public options: vscode.TerminalOptions | vscode.ExtensionTerminalOptions
@@ -1762,9 +1774,9 @@ export enum TaskPanelKind {
 }
 
 @es5ClassCompat
-export class TaskGroup implements vscode.TaskGroup2 {
+export class TaskGroup implements vscode.TaskGroup {
 
-	isDefault?: boolean;
+	isDefault: boolean | undefined;
 	private _id: string;
 
 	public static Clean: TaskGroup = new TaskGroup('clean', 'Clean');
@@ -1790,11 +1802,11 @@ export class TaskGroup implements vscode.TaskGroup2 {
 		}
 	}
 
-	constructor(id: string, _label: string) {
+	constructor(id: string, public readonly label: string) {
 		if (typeof id !== 'string') {
 			throw illegalArgument('name');
 		}
-		if (typeof _label !== 'string') {
+		if (typeof label !== 'string') {
 			throw illegalArgument('name');
 		}
 		this._id = id;
@@ -2283,6 +2295,30 @@ export enum TreeItemCollapsibleState {
 	Collapsed = 1,
 	Expanded = 2
 }
+
+@es5ClassCompat
+export class TreeDataTransferItem {
+	async asString(): Promise<string> {
+		return JSON.stringify(this._value);
+	}
+
+	constructor(private readonly _value: any) { }
+}
+
+@es5ClassCompat
+export class TreeDataTransfer<T extends TreeDataTransferItem = TreeDataTransferItem> {
+	private readonly _items: Map<string, T> = new Map();
+	get(mimeType: string): T | undefined {
+		return this._items.get(mimeType);
+	}
+	set(mimeType: string, value: T): void {
+		this._items.set(mimeType, value);
+	}
+	forEach(callbackfn: (value: T, key: string) => void): void {
+		this._items.forEach(callbackfn);
+	}
+}
+
 
 @es5ClassCompat
 export class ThemeIcon {
@@ -2824,7 +2860,7 @@ export class SemanticTokensBuilder {
 }
 
 export class SemanticTokens {
-	readonly resultId?: string;
+	readonly resultId: string | undefined;
 	readonly data: Uint32Array;
 
 	constructor(data: Uint32Array, resultId?: string) {
@@ -2836,7 +2872,7 @@ export class SemanticTokens {
 export class SemanticTokensEdit {
 	readonly start: number;
 	readonly deleteCount: number;
-	readonly data?: Uint32Array;
+	readonly data: Uint32Array | undefined;
 
 	constructor(start: number, deleteCount: number, data?: Uint32Array) {
 		this.start = start;
@@ -2846,7 +2882,7 @@ export class SemanticTokensEdit {
 }
 
 export class SemanticTokensEdits {
-	readonly resultId?: string;
+	readonly resultId: string | undefined;
 	readonly edits: SemanticTokensEdit[];
 
 	constructor(edits: SemanticTokensEdit[], resultId?: string) {
@@ -2892,6 +2928,11 @@ export class QuickInputButtons {
 	private constructor() { }
 }
 
+export enum QuickPickItemKind {
+	Default = 1,
+	Separator = 2,
+}
+
 export enum ExtensionKind {
 	UI = 1,
 	Workspace = 2
@@ -2899,21 +2940,26 @@ export enum ExtensionKind {
 
 export class FileDecoration {
 
-	static validate(d: FileDecoration): void {
-		if (d.badge && d.badge.length !== 1 && d.badge.length !== 2) {
-			throw new Error(`The 'badge'-property must be undefined or a short character`);
+	static validate(d: FileDecoration): boolean {
+		if (d.badge) {
+			let len = nextCharLength(d.badge, 0);
+			if (len < d.badge.length) {
+				len += nextCharLength(d.badge, len);
+			}
+			if (d.badge.length > len) {
+				throw new Error(`The 'badge'-property must be undefined or a short character`);
+			}
 		}
 		if (!d.color && !d.badge && !d.tooltip) {
 			throw new Error(`The decoration is empty`);
 		}
+		return true;
 	}
 
 	badge?: string;
 	tooltip?: string;
 	color?: vscode.ThemeColor;
-	priority?: number;
 	propagate?: boolean;
-
 
 	constructor(badge?: string, tooltip?: string, color?: ThemeColor) {
 		this.badge = badge;
@@ -3302,13 +3348,6 @@ export enum TestResultState {
 	Errored = 6
 }
 
-export enum TestMessageSeverity {
-	Error = 0,
-	Warning = 1,
-	Information = 2,
-	Hint = 3
-}
-
 export enum TestRunProfileKind {
 	Run = 1,
 	Debug = 2,
@@ -3318,9 +3357,9 @@ export enum TestRunProfileKind {
 @es5ClassCompat
 export class TestRunRequest implements vscode.TestRunRequest {
 	constructor(
-		public readonly include?: vscode.TestItem[],
-		public readonly exclude?: vscode.TestItem[] | undefined,
-		public readonly profile?: vscode.TestRunProfile,
+		public readonly include: vscode.TestItem[] | undefined = undefined,
+		public readonly exclude: vscode.TestItem[] | undefined = undefined,
+		public readonly profile: vscode.TestRunProfile | undefined = undefined,
 	) { }
 }
 
@@ -3328,6 +3367,7 @@ export class TestRunRequest implements vscode.TestRunRequest {
 export class TestMessage implements vscode.TestMessage {
 	public expectedOutput?: string;
 	public actualOutput?: string;
+	public location?: vscode.Location;
 
 	public static diff(message: string | vscode.MarkdownString, expected: string, actual: string) {
 		const msg = new TestMessage(message);
@@ -3341,10 +3381,7 @@ export class TestMessage implements vscode.TestMessage {
 
 @es5ClassCompat
 export class TestTag implements vscode.TestTag {
-	constructor(
-		public readonly id: string,
-		public readonly label?: string,
-	) { }
+	constructor(public readonly id: string) { }
 }
 
 //#endregion

@@ -6,7 +6,6 @@
 import { asCSSPropertyValue, asCSSUrl } from 'vs/base/browser/dom';
 import { Emitter, Event } from 'vs/base/common/event';
 import { getIconRegistry, IconContribution, IconFontContribution } from 'vs/platform/theme/common/iconRegistry';
-import { ThemeIcon } from 'vs/platform/theme/common/themeService';
 
 
 export interface IIconsStyleSheet {
@@ -24,13 +23,9 @@ export function getIconsStyleSheet(): IIconsStyleSheet {
 		getCSS() {
 			const usedFontIds: { [id: string]: IconFontContribution } = {};
 			const formatIconRule = (contribution: IconContribution): string | undefined => {
-				let definition = contribution.defaults;
-				while (ThemeIcon.isThemeIcon(definition)) {
-					const c = iconRegistry.getIcon(definition.id);
-					if (!c) {
-						return undefined;
-					}
-					definition = c.defaults;
+				const definition = IconContribution.getDefinition(contribution, iconRegistry);
+				if (!definition) {
+					return undefined;
 				}
 				const fontId = definition.fontId;
 				if (fontId) {
@@ -53,7 +48,7 @@ export function getIconsStyleSheet(): IIconsStyleSheet {
 			for (let id in usedFontIds) {
 				const fontContribution = usedFontIds[id];
 				const src = fontContribution.definition.src.map(l => `${asCSSUrl(l.location)} format('${l.format}')`).join(', ');
-				rules.push(`@font-face { src: ${src}; font-family: ${asCSSPropertyValue(id)}; }`);
+				rules.push(`@font-face { src: ${src}; font-family: ${asCSSPropertyValue(id)}; font-display: block; }`);
 			}
 			return rules.join('\n');
 		}

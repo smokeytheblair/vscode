@@ -24,6 +24,36 @@ module.exports.all = [
 	'!**/node_modules/**',
 ];
 
+module.exports.unicodeFilter = [
+	'**',
+
+	'!**/ThirdPartyNotices.txt',
+	'!**/LICENSE.{txt,rtf}',
+	'!LICENSES.chromium.html',
+	'!**/LICENSE',
+
+	'!**/*.{dll,exe,png,bmp,jpg,scpt,cur,ttf,woff,eot,template,ico,icns}',
+	'!**/test/**',
+	'!**/*.test.ts',
+	'!**/*.{d.ts,json,md}',
+
+	'!build/win32/**',
+	'!extensions/markdown-language-features/notebook-out/*.js',
+	'!extensions/markdown-math/notebook-out/**',
+	'!extensions/php-language-features/src/features/phpGlobalFunctions.ts',
+	'!extensions/typescript-language-features/test-workspace/**',
+	'!extensions/vscode-api-tests/testWorkspace/**',
+	'!extensions/vscode-api-tests/testWorkspace2/**',
+	'!extensions/vscode-custom-editor-tests/test-workspace/**',
+	'!extensions/**/dist/**',
+	'!extensions/**/out/**',
+	'!extensions/**/snippets/**',
+	'!extensions/**/colorize-fixtures/**',
+
+	'!src/vs/base/browser/dompurify/**',
+	'!src/vs/workbench/services/keybinding/browser/keyboardLayouts/**',
+];
+
 module.exports.indentationFilter = [
 	'**',
 
@@ -37,7 +67,7 @@ module.exports.indentationFilter = [
 	'!src/vs/css.js',
 	'!src/vs/css.build.js',
 	'!src/vs/loader.js',
-	'!src/vs/base/common/insane/insane.js',
+	'!src/vs/base/browser/dompurify/*',
 	'!src/vs/base/common/marked/marked.js',
 	'!src/vs/base/common/semver/semver.js',
 	'!src/vs/base/node/terminateProcess.sh',
@@ -134,7 +164,7 @@ module.exports.jsHygieneFilter = [
 	'!src/vs/nls.js',
 	'!src/vs/css.build.js',
 	'!src/vs/nls.build.js',
-	'!src/**/insane.js',
+	'!src/**/dompurify.js',
 	'!src/**/marked.js',
 	'!src/**/semver.js',
 	'!**/test/**',

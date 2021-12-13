@@ -274,7 +274,7 @@ suite('Workbench - Test Results Service', () => {
 		const makeHydrated = async (completedAt = 42, state = TestResultState.Passed) => new HydratedTestResult({
 			completedAt,
 			id: 'some-id',
-			tasks: [{ id: 't', running: false, name: undefined }],
+			tasks: [{ id: 't', messages: [], name: undefined }],
 			name: 'hello world',
 			request: defaultOpts([]),
 			items: [{
@@ -311,7 +311,7 @@ suite('Workbench - Test Results Service', () => {
 		});
 	});
 
-	test('resultItemParents', () => {
+	test('resultItemParents', function () {
 		assert.deepStrictEqual([...resultItemParents(r, r.getStateById(new TestId(['ctrlId', 'id-a', 'id-aa']).toString())!)], [
 			r.getStateById(new TestId(['ctrlId', 'id-a', 'id-aa']).toString()),
 			r.getStateById(new TestId(['ctrlId', 'id-a']).toString()),

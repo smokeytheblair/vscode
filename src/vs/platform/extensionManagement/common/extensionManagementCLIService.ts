@@ -89,7 +89,7 @@ export class ExtensionManagementCLIService implements IExtensionManagementCLISer
 		}
 	}
 
-	public async installExtensions(extensions: (string | URI)[], builtinExtensionIds: string[], isMachineScoped: boolean, force: boolean, output: CLIOutput = console): Promise<void> {
+	public async installExtensions(extensions: (string | URI)[], builtinExtensionIds: string[], installOptions: InstallOptions, force: boolean, output: CLIOutput = console): Promise<void> {
 		const failed: string[] = [];
 		const installedExtensionsManifests: IExtensionManifest[] = [];
 		if (extensions.length) {
@@ -119,21 +119,21 @@ export class ExtensionManagementCLIService implements IExtensionManagementCLISer
 			} else {
 				const [id, version] = getIdAndVersion(extension);
 				if (checkIfNotInstalled(id, version)) {
-					installExtensionInfos.push({ id, version, installOptions: { isBuiltin: false, isMachineScoped } });
+					installExtensionInfos.push({ id, version, installOptions: { ...installOptions, isBuiltin: false } });
 				}
 			}
 		}
 		for (const extension of builtinExtensionIds) {
 			const [id, version] = getIdAndVersion(extension);
 			if (checkIfNotInstalled(id, version)) {
-				installExtensionInfos.push({ id, version, installOptions: { isBuiltin: true, isMachineScoped: false } });
+				installExtensionInfos.push({ id, version, installOptions: { ...installOptions, isBuiltin: true } });
 			}
 		}
 
 		if (vsixs.length) {
 			await Promise.all(vsixs.map(async vsix => {
 				try {
-					const manifest = await this.installVSIX(vsix, { isBuiltin: false, isMachineScoped }, force, output);
+					const manifest = await this.installVSIX(vsix, { ...installOptions, isBuiltin: false }, force, output);
 					if (manifest) {
 						installedExtensionsManifests.push(manifest);
 					}
@@ -199,23 +199,11 @@ export class ExtensionManagementCLIService implements IExtensionManagementCLISer
 	}
 
 	private async getGalleryExtensions(extensions: InstallExtensionInfo[]): Promise<Map<string, IGalleryExtension>> {
-		const extensionIds = extensions.filter(({ version }) => version === undefined).map(({ id }) => id);
-		const extensionsWithIdAndVersion = extensions.filter(({ version }) => version !== undefined);
-
 		const galleryExtensions = new Map<string, IGalleryExtension>();
-		await Promise.all([
-			(async () => {
-				const result = await this.extensionGalleryService.getExtensions(extensionIds, CancellationToken.None);
-				result.forEach(extension => galleryExtensions.set(extension.identifier.id.toLowerCase(), extension));
-			})(),
-			Promise.all(extensionsWithIdAndVersion.map(async ({ id, version }) => {
-				const extension = await this.extensionGalleryService.getCompatibleExtension({ id }, version);
-				if (extension) {
-					galleryExtensions.set(extension.identifier.id.toLowerCase(), extension);
-				}
-			}))
-		]);
-
+		const result = await this.extensionGalleryService.getExtensions(extensions, extensions.some(e => e.installOptions.installPreReleaseVersion), CancellationToken.None);
+		for (const extension of result) {
+			galleryExtensions.set(extension.identifier.id.toLowerCase(), extension);
+		}
 		return galleryExtensions;
 	}
 
@@ -241,7 +229,7 @@ export class ExtensionManagementCLIService implements IExtensionManagementCLISer
 				output.log(version ? localize('installing with version', "Installing extension '{0}' v{1}...", id, version) : localize('installing', "Installing extension '{0}'...", id));
 			}
 
-			await this.extensionManagementService.installFromGallery(galleryExtension, installOptions);
+			await this.extensionManagementService.installFromGallery(galleryExtension, { ...installOptions, installGivenVersion: !!version });
 			output.log(localize('successInstall', "Extension '{0}' v{1} was successfully installed.", id, galleryExtension.version));
 			return manifest;
 		} catch (error) {

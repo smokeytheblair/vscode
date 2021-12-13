@@ -13,9 +13,9 @@ import { IRange, Range } from 'vs/editor/common/core/range';
 import { IChange } from 'vs/editor/common/editorCommon';
 import { ITextModel } from 'vs/editor/common/model';
 import * as modes from 'vs/editor/common/modes';
-import { LanguageConfigurationRegistry } from 'vs/editor/common/modes/languageConfigurationRegistry';
+import { ILanguageConfigurationService } from 'vs/editor/common/modes/languageConfigurationRegistry';
 import { EditorSimpleWorker } from 'vs/editor/common/services/editorSimpleWorker';
-import { IDiffComputationResult, IEditorWorkerService } from 'vs/editor/common/services/editorWorkerService';
+import { IDiffComputationResult, IEditorWorkerService, IUnicodeHighlightsResult } from 'vs/editor/common/services/editorWorkerService';
 import { IModelService } from 'vs/editor/common/services/modelService';
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService';
 import { regExpFlags } from 'vs/base/common/strings';
@@ -23,6 +23,7 @@ import { isNonEmptyArray } from 'vs/base/common/arrays';
 import { ILogService } from 'vs/platform/log/common/log';
 import { StopWatch } from 'vs/base/common/stopwatch';
 import { canceled } from 'vs/base/common/errors';
+import { UnicodeHighlighterOptions } from 'vs/editor/common/modes/unicodeTextModelHighlighter';
 
 /**
  * Stop syncing a model to the worker if it was not needed for 1 min.
@@ -56,15 +57,16 @@ export class EditorWorkerServiceImpl extends Disposable implements IEditorWorker
 	constructor(
 		@IModelService modelService: IModelService,
 		@ITextResourceConfigurationService configurationService: ITextResourceConfigurationService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
+		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService
 	) {
 		super();
 		this._modelService = modelService;
-		this._workerManager = this._register(new WorkerManager(this._modelService));
+		this._workerManager = this._register(new WorkerManager(this._modelService, languageConfigurationService));
 		this._logService = logService;
 
 		// register default link-provider and default completions-provider
-		this._register(modes.LinkProviderRegistry.register('*', {
+		this._register(modes.LinkProviderRegistry.register({ language: '*', hasAccessToAllModels: true }, {
 			provideLinks: (model, token) => {
 				if (!canSyncModel(this._modelService, model.uri)) {
 					return Promise.resolve({ links: [] }); // File too large
@@ -74,15 +76,19 @@ export class EditorWorkerServiceImpl extends Disposable implements IEditorWorker
 				});
 			}
 		}));
-		this._register(modes.CompletionProviderRegistry.register('*', new WordBasedCompletionItemProvider(this._workerManager, configurationService, this._modelService)));
+		this._register(modes.CompletionProviderRegistry.register('*', new WordBasedCompletionItemProvider(this._workerManager, configurationService, this._modelService, languageConfigurationService)));
 	}
 
 	public override dispose(): void {
 		super.dispose();
 	}
 
-	public canComputeDiff(original: URI, modified: URI): boolean {
-		return (canSyncModel(this._modelService, original) && canSyncModel(this._modelService, modified));
+	public canComputeUnicodeHighlights(uri: URI): boolean {
+		return canSyncModel(this._modelService, uri);
+	}
+
+	public computedUnicodeHighlights(uri: URI, options: UnicodeHighlighterOptions, range?: IRange): Promise<IUnicodeHighlightsResult> {
+		return this._workerManager.withWorker().then(client => client.computedUnicodeHighlights(uri, options, range));
 	}
 
 	public computeDiff(original: URI, modified: URI, ignoreTrimWhitespace: boolean, maxComputationTime: number): Promise<IDiffComputationResult | null> {
@@ -140,7 +146,8 @@ class WordBasedCompletionItemProvider implements modes.CompletionItemProvider {
 	constructor(
 		workerManager: WorkerManager,
 		configurationService: ITextResourceConfigurationService,
-		modelService: IModelService
+		modelService: IModelService,
+		private readonly languageConfigurationService: ILanguageConfigurationService
 	) {
 		this._workerManager = workerManager;
 		this._configurationService = configurationService;
@@ -172,7 +179,7 @@ class WordBasedCompletionItemProvider implements modes.CompletionItemProvider {
 				if (candidate === model) {
 					models.unshift(candidate.uri);
 
-				} else if (config.wordBasedSuggestionsMode === 'allDocuments' || candidate.getLanguageIdentifier().id === model.getLanguageIdentifier().id) {
+				} else if (config.wordBasedSuggestionsMode === 'allDocuments' || candidate.getLanguageId() === model.getLanguageId()) {
 					models.push(candidate.uri);
 				}
 			}
@@ -182,7 +189,7 @@ class WordBasedCompletionItemProvider implements modes.CompletionItemProvider {
 			return undefined; // File too large, no other files
 		}
 
-		const wordDefRegExp = LanguageConfigurationRegistry.getWordDefinition(model.getLanguageIdentifier().id);
+		const wordDefRegExp = this.languageConfigurationService.getLanguageConfiguration(model.getLanguageId()).getWordDefinition();
 		const word = model.getWordAtPosition(position);
 		const replace = !word ? Range.fromPositions(position) : new Range(position.lineNumber, word.startColumn, position.lineNumber, word.endColumn);
 		const insert = replace.setEndPosition(position.lineNumber, position.column);
@@ -213,7 +220,7 @@ class WorkerManager extends Disposable {
 	private _editorWorkerClient: EditorWorkerClient | null;
 	private _lastWorkerUsedTime: number;
 
-	constructor(modelService: IModelService) {
+	constructor(modelService: IModelService, private readonly languageConfigurationService: ILanguageConfigurationService) {
 		super();
 		this._modelService = modelService;
 		this._editorWorkerClient = null;
@@ -267,7 +274,7 @@ class WorkerManager extends Disposable {
 	public withWorker(): Promise<EditorWorkerClient> {
 		this._lastWorkerUsedTime = (new Date()).getTime();
 		if (!this._editorWorkerClient) {
-			this._editorWorkerClient = new EditorWorkerClient(this._modelService, false, 'editorWorkerService');
+			this._editorWorkerClient = new EditorWorkerClient(this._modelService, false, 'editorWorkerService', this.languageConfigurationService);
 		}
 		return Promise.resolve(this._editorWorkerClient);
 	}
@@ -301,12 +308,12 @@ class EditorModelManager extends Disposable {
 		super.dispose();
 	}
 
-	public ensureSyncedResources(resources: URI[]): void {
+	public ensureSyncedResources(resources: URI[], forceLargeModels: boolean): void {
 		for (const resource of resources) {
 			let resourceStr = resource.toString();
 
 			if (!this._syncedModels[resourceStr]) {
-				this._beginModelSync(resource);
+				this._beginModelSync(resource, forceLargeModels);
 			}
 			if (this._syncedModels[resourceStr]) {
 				this._syncedModelsLastUsedTime[resourceStr] = (new Date()).getTime();
@@ -330,12 +337,12 @@ class EditorModelManager extends Disposable {
 		}
 	}
 
-	private _beginModelSync(resource: URI): void {
+	private _beginModelSync(resource: URI, forceLargeModels: boolean): void {
 		let model = this._modelService.getModel(resource);
 		if (!model) {
 			return;
 		}
-		if (model.isTooLargeForSyncing()) {
+		if (!forceLargeModels && model.isTooLargeForSyncing()) {
 			return;
 		}
 
@@ -415,7 +422,12 @@ export class EditorWorkerClient extends Disposable implements IEditorWorkerClien
 	private _modelManager: EditorModelManager | null;
 	private _disposed = false;
 
-	constructor(modelService: IModelService, keepIdleModels: boolean, label: string | undefined) {
+	constructor(
+		modelService: IModelService,
+		keepIdleModels: boolean,
+		label: string | undefined,
+		private readonly languageConfigurationService: ILanguageConfigurationService
+	) {
 		super();
 		this._modelService = modelService;
 		this._keepIdleModels = keepIdleModels;
@@ -460,18 +472,24 @@ export class EditorWorkerClient extends Disposable implements IEditorWorkerClien
 		return this._modelManager;
 	}
 
-	protected _withSyncedResources(resources: URI[]): Promise<EditorSimpleWorker> {
+	protected async _withSyncedResources(resources: URI[], forceLargeModels: boolean = false): Promise<EditorSimpleWorker> {
 		if (this._disposed) {
 			return Promise.reject(canceled());
 		}
 		return this._getProxy().then((proxy) => {
-			this._getOrCreateModelManager(proxy).ensureSyncedResources(resources);
+			this._getOrCreateModelManager(proxy).ensureSyncedResources(resources, forceLargeModels);
 			return proxy;
 		});
 	}
 
+	public computedUnicodeHighlights(uri: URI, options: UnicodeHighlighterOptions, range?: IRange): Promise<IUnicodeHighlightsResult> {
+		return this._withSyncedResources([uri]).then(proxy => {
+			return proxy.computeUnicodeHighlights(uri.toString(), options, range);
+		});
+	}
+
 	public computeDiff(original: URI, modified: URI, ignoreTrimWhitespace: boolean, maxComputationTime: number): Promise<IDiffComputationResult | null> {
-		return this._withSyncedResources([original, modified]).then(proxy => {
+		return this._withSyncedResources([original, modified], /* forceLargeModels */true).then(proxy => {
 			return proxy.computeDiff(original.toString(), modified.toString(), ignoreTrimWhitespace, maxComputationTime);
 		});
 	}
@@ -507,7 +525,7 @@ export class EditorWorkerClient extends Disposable implements IEditorWorkerClien
 			if (!model) {
 				return Promise.resolve(null);
 			}
-			let wordDefRegExp = LanguageConfigurationRegistry.getWordDefinition(model.getLanguageIdentifier().id);
+			const wordDefRegExp = this.languageConfigurationService.getLanguageConfiguration(model.getLanguageId()).getWordDefinition();
 			let wordDef = wordDefRegExp.source;
 			let wordDefFlags = regExpFlags(wordDefRegExp);
 			return proxy.computeWordRanges(resource.toString(), range, wordDef, wordDefFlags);
@@ -520,7 +538,7 @@ export class EditorWorkerClient extends Disposable implements IEditorWorkerClien
 			if (!model) {
 				return null;
 			}
-			let wordDefRegExp = LanguageConfigurationRegistry.getWordDefinition(model.getLanguageIdentifier().id);
+			const wordDefRegExp = this.languageConfigurationService.getLanguageConfiguration(model.getLanguageId()).getWordDefinition();
 			let wordDef = wordDefRegExp.source;
 			let wordDefFlags = regExpFlags(wordDefRegExp);
 			return proxy.navigateValueSet(resource.toString(), range, up, wordDef, wordDefFlags);

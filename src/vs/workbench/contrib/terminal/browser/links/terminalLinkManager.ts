@@ -17,13 +17,13 @@ import type { Terminal, IViewportRange, ILinkProvider } from 'xterm';
 import { Schemas } from 'vs/base/common/network';
 import { posix, win32 } from 'vs/base/common/path';
 import { ITerminalExternalLinkProvider, ITerminalInstance } from 'vs/workbench/contrib/terminal/browser/terminal';
-import { OperatingSystem, isMacintosh, OS, isWindows } from 'vs/base/common/platform';
+import { OperatingSystem, isMacintosh, OS } from 'vs/base/common/platform';
 import { IMarkdownString, MarkdownString } from 'vs/base/common/htmlContent';
 import { TerminalProtocolLinkProvider } from 'vs/workbench/contrib/terminal/browser/links/terminalProtocolLinkProvider';
 import { TerminalValidatedLocalLinkProvider, lineAndColumnClause, unixLocalLinkClause, winLocalLinkClause, winDrivePrefix, winLineAndColumnMatchIndex, unixLineAndColumnMatchIndex, lineAndColumnClauseGroupCount } from 'vs/workbench/contrib/terminal/browser/links/terminalValidatedLocalLinkProvider';
 import { TerminalWordLinkProvider } from 'vs/workbench/contrib/terminal/browser/links/terminalWordLinkProvider';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { XTermCore } from 'vs/workbench/contrib/terminal/browser/xterm-private';
+import { IXtermCore } from 'vs/workbench/contrib/terminal/browser/xterm-private';
 import { TerminalHover, ILinkHoverTargetOptions } from 'vs/workbench/contrib/terminal/browser/widgets/terminalHoverWidget';
 import { TerminalLink } from 'vs/workbench/contrib/terminal/browser/links/terminalLink';
 import { TerminalExternalLinkProviderAdapter } from 'vs/workbench/contrib/terminal/browser/links/terminalExternalLinkProviderAdapter';
@@ -45,7 +45,7 @@ export class TerminalLinkManager extends DisposableStore {
 	private _widgetManager: TerminalWidgetManager | undefined;
 	private _processCwd: string | undefined;
 	private _standardLinkProviders: ILinkProvider[] = [];
-	private _standardLinkProvidersDisposables: IDisposable[] = [];
+	private _linkProvidersDisposables: IDisposable[] = [];
 
 	constructor(
 		private _xterm: Terminal,
@@ -78,7 +78,15 @@ export class TerminalLinkManager extends DisposableStore {
 				wrappedTextLinkActivateCallback,
 				this._wrapLinkHandler.bind(this),
 				this._tooltipCallback.bind(this),
-				async (link, cb) => cb(await this._resolvePath(link)));
+				async (linkCandidates, cb) => {
+					for (const link of linkCandidates) {
+						const result = await this._resolvePath(link);
+						if (result) {
+							return cb(result);
+						}
+					}
+					return cb(undefined);
+				});
 			this._standardLinkProviders.push(validatedProvider);
 		}
 
@@ -94,7 +102,7 @@ export class TerminalLinkManager extends DisposableStore {
 			return;
 		}
 
-		const core = (this._xterm as any)._core as XTermCore;
+		const core = (this._xterm as any)._core as IXtermCore;
 		const cellDimensions = {
 			width: core._renderService.dimensions.actualCellWidth,
 			height: core._renderService.dimensions.actualCellHeight
@@ -137,18 +145,23 @@ export class TerminalLinkManager extends DisposableStore {
 		this._processCwd = processCwd;
 	}
 
+	private _clearLinkProviders(): void {
+		dispose(this._linkProvidersDisposables);
+		this._linkProvidersDisposables = [];
+	}
+
 	private _registerStandardLinkProviders(): void {
-		dispose(this._standardLinkProvidersDisposables);
-		this._standardLinkProvidersDisposables = [];
 		for (const p of this._standardLinkProviders) {
-			this._standardLinkProvidersDisposables.push(this._xterm.registerLinkProvider(p));
+			this._linkProvidersDisposables.push(this._xterm.registerLinkProvider(p));
 		}
 	}
 
 	registerExternalLinkProvider(instance: ITerminalInstance, linkProvider: ITerminalExternalLinkProvider): IDisposable {
+		// Clear and re-register the standard link providers so they are a lower priority that the new one
+		this._clearLinkProviders();
 		const wrappedLinkProvider = this._instantiationService.createInstance(TerminalExternalLinkProviderAdapter, this._xterm, instance, linkProvider, this._wrapLinkHandler.bind(this), this._tooltipCallback.bind(this));
 		const newLinkProvider = this._xterm.registerLinkProvider(wrappedLinkProvider);
-		// Re-register the standard link providers so they are a lower priority that the new one
+		this._linkProvidersDisposables.push(newLinkProvider);
 		this._registerStandardLinkProviders();
 		return newLinkProvider;
 	}
@@ -188,7 +201,10 @@ export class TerminalLinkManager extends DisposableStore {
 			startLineNumber: lineColumnInfo.lineNumber,
 			startColumn: lineColumnInfo.columnNumber
 		};
-		await this._editorService.openEditor({ resource: resolvedLink.uri, options: { pinned: true, selection } });
+		await this._editorService.openEditor({
+			resource: resolvedLink.uri,
+			options: { pinned: true, selection, revealIfOpened: true }
+		});
 	}
 
 	private _handleHypertextLink(url: string): void {
@@ -205,7 +221,7 @@ export class TerminalLinkManager extends DisposableStore {
 		if (uri.scheme === Schemas.file) {
 			// Just using fsPath here is unsafe: https://github.com/microsoft/vscode/issues/109076
 			const fsPath = uri.fsPath;
-			this._handleLocalLink(((this._osPath.sep === posix.sep) && isWindows) ? fsPath.replace(/\\/g, posix.sep) : fsPath);
+			this._handleLocalLink(((this._osPath.sep === posix.sep) && this._processManager.os === OperatingSystem.Windows) ? fsPath.replace(/\\/g, posix.sep) : fsPath);
 			return;
 		}
 
@@ -315,7 +331,7 @@ export class TerminalLinkManager extends DisposableStore {
 		return link;
 	}
 
-	private async _resolvePath(link: string): Promise<{ uri: URI, isDirectory: boolean } | undefined> {
+	private async _resolvePath(link: string): Promise<{ uri: URI, link: string, isDirectory: boolean } | undefined> {
 		if (!this._processManager) {
 			throw new Error('Process manager is required');
 		}
@@ -344,7 +360,7 @@ export class TerminalLinkManager extends DisposableStore {
 
 			try {
 				const stat = await this._fileService.resolve(uri);
-				return { uri, isDirectory: stat.isDirectory };
+				return { uri, link, isDirectory: stat.isDirectory };
 			}
 			catch (e) {
 				// Does not exist

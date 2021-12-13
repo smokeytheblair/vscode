@@ -36,6 +36,7 @@ import { registerColor } from 'vs/platform/theme/common/colorRegistry';
 import { ILabelService } from 'vs/platform/label/common/label';
 import * as icons from 'vs/workbench/contrib/debug/browser/debugIcons';
 import { onUnexpectedError } from 'vs/base/common/errors';
+import { noBreakWhitespace } from 'vs/base/common/strings';
 
 const $ = dom.$;
 
@@ -79,8 +80,8 @@ function getBreakpointDecorationOptions(model: ITextModel, breakpoint: IBreakpoi
 
 	if (message) {
 		if (breakpoint.condition || breakpoint.hitCondition) {
-			const modeId = model.getLanguageIdentifier().language;
-			glyphMarginHoverMessage = new MarkdownString().appendCodeblock(modeId, message);
+			const languageId = model.getLanguageId();
+			glyphMarginHoverMessage = new MarkdownString().appendCodeblock(languageId, message);
 		} else {
 			glyphMarginHoverMessage = new MarkdownString().appendText(message);
 		}
@@ -100,7 +101,11 @@ function getBreakpointDecorationOptions(model: ITextModel, breakpoint: IBreakpoi
 		glyphMarginClassName: ThemeIcon.asClassName(icon),
 		glyphMarginHoverMessage,
 		stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
-		beforeContentClassName: renderInline ? `debug-breakpoint-placeholder` : undefined,
+		before: renderInline ? {
+			content: noBreakWhitespace,
+			inlineClassName: `debug-breakpoint-placeholder`,
+			inlineClassNameAffectsLetterSpacing: true
+		} : undefined,
 		overviewRuler: overviewRulerDecoration
 	};
 }
@@ -133,7 +138,11 @@ async function createCandidateDecorations(model: ITextModel, breakpointDecoratio
 							options: {
 								description: 'breakpoint-placeholder-decoration',
 								stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
-								beforeContentClassName: breakpointAtPosition ? undefined : `debug-breakpoint-placeholder`
+								before: breakpointAtPosition ? undefined : {
+									content: noBreakWhitespace,
+									inlineClassName: `debug-breakpoint-placeholder`,
+									inlineClassNameAffectsLetterSpacing: true
+								},
 							},
 							breakpoint: breakpointAtPosition ? breakpointAtPosition.breakpoint : undefined
 						});
@@ -182,7 +191,7 @@ export class BreakpointEditorContribution implements IBreakpointEditorContributi
 	 * setting on lines where breakpoint "run" actions are present.
 	 */
 	public getContextMenuActionsAtPosition(lineNumber: number, model: ITextModel) {
-		if (!this.debugService.getAdapterManager().hasDebuggers()) {
+		if (!this.debugService.getAdapterManager().hasEnabledDebuggers()) {
 			return [];
 		}
 
@@ -196,7 +205,7 @@ export class BreakpointEditorContribution implements IBreakpointEditorContributi
 
 	private registerListeners(): void {
 		this.toDispose.push(this.editor.onMouseDown(async (e: IEditorMouseEvent) => {
-			if (!this.debugService.getAdapterManager().hasDebuggers()) {
+			if (!this.debugService.getAdapterManager().hasEnabledDebuggers()) {
 				return;
 			}
 
@@ -279,7 +288,7 @@ export class BreakpointEditorContribution implements IBreakpointEditorContributi
 			 * 2. When users click on line numbers, the breakpoint hint displays immediately, however it doesn't create the breakpoint unless users click on the left gutter. On a touch screen, it's hard to click on that small area.
 			 */
 			this.toDispose.push(this.editor.onMouseMove((e: IEditorMouseEvent) => {
-				if (!this.debugService.getAdapterManager().hasDebuggers()) {
+				if (!this.debugService.getAdapterManager().hasEnabledDebuggers()) {
 					return;
 				}
 
@@ -397,9 +406,8 @@ export class BreakpointEditorContribution implements IBreakpointEditorContributi
 			));
 		}
 
-		actions.push(new Separator());
-
 		if (this.debugService.state === State.Stopped) {
+			actions.push(new Separator());
 			actions.push(new Action(
 				'runToLine',
 				nls.localize('runToLine', "Run to Line"),
@@ -467,7 +475,7 @@ export class BreakpointEditorContribution implements IBreakpointEditorContributi
 			this.breakpointDecorations = decorationIds.map((decorationId, index) => {
 				let inlineWidget: InlineBreakpointWidget | undefined = undefined;
 				const breakpoint = breakpoints[index];
-				if (desiredBreakpointDecorations[index].options.beforeContentClassName) {
+				if (desiredBreakpointDecorations[index].options.before) {
 					const contextMenuActions = () => this.getContextMenuActions([breakpoint], activeCodeEditor.getModel().uri, breakpoint.lineNumber, breakpoint.column);
 					inlineWidget = new InlineBreakpointWidget(activeCodeEditor, decorationId, desiredBreakpointDecorations[index].options.glyphMarginClassName, breakpoint, this.debugService, this.contextMenuService, contextMenuActions);
 				}
@@ -719,7 +727,7 @@ registerThemingParticipant((theme, collector) => {
 	if (debugIconBreakpointCurrentStackframeForegroundColor) {
 		collector.addRule(`
 		.monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugStackframe)},
-		.monaco-editor .debug-top-stack-frame-column::before {
+		.monaco-editor .debug-top-stack-frame-column {
 			color: ${debugIconBreakpointCurrentStackframeForegroundColor} !important;
 		}
 		`);

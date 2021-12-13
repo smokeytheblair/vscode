@@ -112,6 +112,8 @@ export interface ITextFileService extends IDisposable {
 	/**
 	 * Returns a stream of strings that uses the appropriate encoding. This method should
 	 * be used whenever a `VSBufferReadableStream` is being loaded from the file system.
+	 *
+	 * Will throw an error if `acceptTextOnly: true` for resources that seem to be binary.
 	 */
 	getDecodedStream(resource: URI, value: VSBufferReadableStream, options?: IReadTextFileEncodingOptions): Promise<ReadableStream<string>>;
 }
@@ -128,9 +130,6 @@ export interface IReadTextFileEncodingOptions {
 	 * The optional guessEncoding parameter allows to guess encoding from content of the file.
 	 */
 	readonly autoGuessEncoding?: boolean;
-}
-
-export interface IReadTextFileOptions extends IReadTextFileEncodingOptions, IReadFileStreamOptions {
 
 	/**
 	 * The optional acceptTextOnly parameter allows to fail this request early if the file
@@ -138,6 +137,8 @@ export interface IReadTextFileOptions extends IReadTextFileEncodingOptions, IRea
 	 */
 	readonly acceptTextOnly?: boolean;
 }
+
+export interface IReadTextFileOptions extends IReadTextFileEncodingOptions, IReadFileStreamOptions { }
 
 export interface IWriteTextFileOptions extends IWriteFileOptions {
 
@@ -290,14 +291,15 @@ export interface ITextFileEditorModelResolveOrCreateOptions {
 
 	/**
 	 * If the model was already resolved before, allows to trigger
-	 * a reload of it to fetch the latest contents:
-	 * - async: resolve() will return immediately and trigger
-	 * a reload that will run in the background.
-	 * - sync: resolve() will only return resolved when the
-	 * model has finished reloading.
+	 * a reload of it to fetch the latest contents.
 	 */
 	readonly reload?: {
-		readonly async: boolean
+
+		/**
+		 * Controls whether the reload happens in the background
+		 * or whether `resolve` will await the reload to happen.
+		 */
+		readonly async: boolean;
 	};
 
 	/**
@@ -335,6 +337,9 @@ export interface ITextFileEditorModelManager {
 	readonly onDidCreate: Event<ITextFileEditorModel>;
 	readonly onDidResolve: Event<ITextFileResolveEvent>;
 	readonly onDidChangeDirty: Event<ITextFileEditorModel>;
+	readonly onDidChangeReadonly: Event<ITextFileEditorModel>;
+	readonly onDidRemove: Event<URI>;
+	readonly onDidChangeOrphaned: Event<ITextFileEditorModel>;
 	readonly onDidChangeEncoding: Event<ITextFileEditorModel>;
 	readonly onDidSaveError: Event<ITextFileEditorModel>;
 	readonly onDidSave: Event<ITextFileSaveEvent>;

@@ -8,7 +8,7 @@ import { ILanguageDetectionService, ILanguageDetectionStats, LanguageDetectionSt
 import { FileAccess } from 'vs/base/common/network';
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IModeService } from 'vs/editor/common/services/modeService';
+import { ILanguageService } from 'vs/editor/common/services/languageService';
 import { URI } from 'vs/base/common/uri';
 import { isWeb } from 'vs/base/common/platform';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
@@ -17,11 +17,12 @@ import { IModelService } from 'vs/editor/common/services/modelService';
 import { SimpleWorkerClient } from 'vs/base/common/worker/simpleWorker';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { EditorWorkerClient, EditorWorkerHost } from 'vs/editor/common/services/editorWorkerServiceImpl';
+import { ILanguageConfigurationService } from 'vs/editor/common/modes/languageConfigurationRegistry';
 
 const moduleLocation = '../../../../../../node_modules/@vscode/vscode-languagedetection';
 const moduleLocationAsar = '../../../../../../node_modules.asar/@vscode/vscode-languagedetection';
 export class LanguageDetectionService extends Disposable implements ILanguageDetectionService {
-	static readonly enablementSettingKey = 'workbench.editor.untitled.experimentalLanguageDetection';
+	static readonly enablementSettingKey = 'workbench.editor.languageDetection';
 
 	_serviceBrand: undefined;
 
@@ -29,10 +30,11 @@ export class LanguageDetectionService extends Disposable implements ILanguageDet
 
 	constructor(
 		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@IModeService private readonly _modeService: IModeService,
+		@ILanguageService private readonly _languageService: ILanguageService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
 		@IModelService modelService: IModelService,
 		@ITelemetryService telemetryService: ITelemetryService,
+		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService
 	) {
 		super();
 
@@ -48,18 +50,20 @@ export class LanguageDetectionService extends Disposable implements ILanguageDet
 				: FileAccess.asBrowserUri(`${moduleLocation}/model/model.json`, require).toString(true),
 			this._environmentService.isBuilt && !isWeb
 				? FileAccess.asBrowserUri(`${moduleLocationAsar}/model/group1-shard1of1.bin`, require).toString(true)
-				: FileAccess.asBrowserUri(`${moduleLocation}/model/group1-shard1of1.bin`, require).toString(true));
+				: FileAccess.asBrowserUri(`${moduleLocation}/model/group1-shard1of1.bin`, require).toString(true),
+			languageConfigurationService
+		);
 	}
 
-	public isEnabledForMode(modeId: string): boolean {
-		return !!modeId && this._configurationService.getValue<boolean>(LanguageDetectionService.enablementSettingKey, { overrideIdentifier: modeId });
+	public isEnabledForMode(languageId: string): boolean {
+		return !!languageId && this._configurationService.getValue<boolean>(LanguageDetectionService.enablementSettingKey, { overrideIdentifier: languageId });
 	}
 
 	private getModeId(language: string | undefined): string | undefined {
 		if (!language) {
 			return undefined;
 		}
-		return this._modeService.getModeIdByFilepathOrFirstLine(URI.file(`file.${language}`)) ?? undefined;
+		return this._languageService.getLanguageIdByFilepathOrFirstLine(URI.file(`file.${language}`)) ?? undefined;
 	}
 
 	async detectLanguage(resource: URI): Promise<string | undefined> {
@@ -68,16 +72,6 @@ export class LanguageDetectionService extends Disposable implements ILanguageDet
 			return this.getModeId(language);
 		}
 		return undefined;
-	}
-
-	async detectLanguages(resource: URI): Promise<string[]> {
-		const languages: Array<string | undefined> = await this._languageDetectionWorkerClient.detectLanguages(resource);
-		for (let i = 0; i < languages.length; i++) {
-			const modeId = this.getModeId(languages[i]);
-			languages[i] = modeId ? modeId : undefined;
-		}
-
-		return languages.filter(<T>(l?: T): l is T => Boolean(l));
 	}
 }
 
@@ -124,32 +118,37 @@ export class LanguageDetectionWorkerHost {
 }
 
 export class LanguageDetectionWorkerClient extends EditorWorkerClient {
-	private worker: IWorkerClient<LanguageDetectionSimpleWorker> | undefined;
+	private workerPromise: Promise<IWorkerClient<LanguageDetectionSimpleWorker>> | undefined;
 
 	constructor(
 		modelService: IModelService,
 		private readonly _telemetryService: ITelemetryService,
 		private readonly _indexJsUri: string,
 		private readonly _modelJsonUri: string,
-		private readonly _weightsUri: string
+		private readonly _weightsUri: string,
+		languageConfigurationService: ILanguageConfigurationService,
 	) {
-		super(modelService, true, 'languageDetectionWorkerService');
+		super(modelService, true, 'languageDetectionWorkerService', languageConfigurationService);
 	}
 
-	private _getOrCreateLanguageDetectionWorker(): IWorkerClient<LanguageDetectionSimpleWorker> {
-		if (!this.worker) {
+	private _getOrCreateLanguageDetectionWorker(): Promise<IWorkerClient<LanguageDetectionSimpleWorker>> {
+		if (this.workerPromise) {
+			return this.workerPromise;
+		}
 
-			this.worker = this._register(new SimpleWorkerClient<LanguageDetectionSimpleWorker, EditorWorkerHost>(
+		this.workerPromise = new Promise((resolve, reject) => {
+			resolve(this._register(new SimpleWorkerClient<LanguageDetectionSimpleWorker, EditorWorkerHost>(
 				this._workerFactory,
 				'vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker',
 				new EditorWorkerHost(this)
-			));
-		}
-		return this.worker;
+			)));
+		});
+
+		return this.workerPromise;
 	}
 
 	override async _getProxy(): Promise<LanguageDetectionSimpleWorker> {
-		return await this._getOrCreateLanguageDetectionWorker().getProxyObject();
+		return (await this._getOrCreateLanguageDetectionWorker()).getProxyObject();
 	}
 
 	// foreign host request
@@ -191,10 +190,6 @@ export class LanguageDetectionWorkerClient extends EditorWorkerClient {
 	public async detectLanguage(resource: URI): Promise<string | undefined> {
 		await this._withSyncedResources([resource]);
 		return (await this._getProxy()).detectLanguage(resource.toString());
-	}
-	public async detectLanguages(resource: URI): Promise<string[]> {
-		await this._withSyncedResources([resource]);
-		return (await this._getProxy()).detectLanguages(resource.toString());
 	}
 }
 

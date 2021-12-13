@@ -20,9 +20,14 @@ import { IEditorOptions } from 'vs/platform/editor/common/editor';
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService';
 import { GettingStartedInput, gettingStartedInputTypeId } from 'vs/workbench/contrib/welcome/gettingStarted/browser/gettingStartedInput';
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { getTelemetryLevel } from 'vs/platform/telemetry/common/telemetryUtils';
+import { TelemetryLevel } from 'vs/platform/telemetry/common/telemetry';
+import { IProductService } from 'vs/platform/product/common/productService';
 
 const configurationKey = 'workbench.startupEditor';
 const oldConfigurationKey = 'workbench.welcome.enabled';
+const telemetryOptOutStorageKey = 'workbench.telemetryOptOutShown';
 
 export class WelcomePageContribution implements IWorkbenchContribution {
 
@@ -35,13 +40,29 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IProductService private readonly productService: IProductService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService
+		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IStorageService private readonly storageService: IStorageService
 	) {
 		this.run().then(undefined, onUnexpectedError);
 	}
 
 	private async run() {
+
+		// Always open Welcome page for first-launch, no matter what is open or which startupEditor is set.
+		if (
+			this.productService.enableTelemetry
+			&& this.productService.showTelemetryOptOut
+			&& getTelemetryLevel(this.configurationService) !== TelemetryLevel.NONE
+			&& !this.environmentService.skipWelcome
+			&& !this.storageService.get(telemetryOptOutStorageKey, StorageScope.GLOBAL)
+		) {
+			this.storageService.store(telemetryOptOutStorageKey, true, StorageScope.GLOBAL, StorageTarget.USER);
+			await this.openWelcome(true);
+			return;
+		}
+
 		const enabled = isWelcomePageEnabled(this.configurationService, this.contextService, this.environmentService);
 		if (enabled && this.lifecycleService.startupKind !== StartupKind.ReloadedWindow) {
 			const hasBackups = await this.workingCopyBackupService.hasBackups();
@@ -90,7 +111,7 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 		}
 	}
 
-	private async openWelcome() {
+	private async openWelcome(showTelemetryNotice?: boolean) {
 		const startupEditorTypeID = gettingStartedInputTypeId;
 		const editor = this.editorService.activeEditor;
 
@@ -101,7 +122,7 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 
 		const options: IEditorOptions = editor ? { pinned: false, index: 0 } : { pinned: false };
 		if (startupEditorTypeID === gettingStartedInputTypeId) {
-			this.editorService.openEditor(this.instantiationService.createInstance(GettingStartedInput, {}), options);
+			this.editorService.openEditor(this.instantiationService.createInstance(GettingStartedInput, { showTelemetryNotice }), options);
 		}
 	}
 }

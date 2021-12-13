@@ -5,22 +5,30 @@
 
 import * as assert from 'assert';
 import { Terminal } from 'xterm';
-import { CommandTrackerAddon } from 'vs/workbench/contrib/terminal/browser/addons/commandTrackerAddon';
+import { CommandTrackerAddon } from 'vs/workbench/contrib/terminal/browser/xterm/commandTrackerAddon';
 import { isWindows } from 'vs/base/common/platform';
-import { XTermCore } from 'vs/workbench/contrib/terminal/browser/xterm-private';
+import { IXtermCore } from 'vs/workbench/contrib/terminal/browser/xterm-private';
+import { timeout } from 'vs/base/common/async';
 
 interface TestTerminal extends Terminal {
-	_core: XTermCore;
+	_core: IXtermCore;
 }
 
 const ROWS = 10;
 const COLS = 10;
 
 async function writeP(terminal: TestTerminal, data: string): Promise<void> {
-	return new Promise<void>(r => terminal.write(data, r));
+	return new Promise<void>((resolve, reject) => {
+		const failTimeout = timeout(2000);
+		failTimeout.then(() => reject('Writing to xterm is taking longer than 2 seconds'));
+		terminal.write(data, () => {
+			failTimeout.cancel();
+			resolve();
+		});
+	});
 }
 
-suite('Workbench - TerminalCommandTracker', () => {
+suite('Workbench - TerminalCommandTracker', function () {
 	let xterm: TestTerminal;
 	let commandTracker: CommandTrackerAddon;
 
@@ -30,9 +38,11 @@ suite('Workbench - TerminalCommandTracker', () => {
 			rows: ROWS
 		}));
 		// Fill initial viewport
+		let data = '';
 		for (let i = 0; i < ROWS - 1; i++) {
-			await writeP(xterm, `${i}\n`);
+			data += `${i}\n`;
 		}
+		await writeP(xterm, data);
 		commandTracker = new CommandTrackerAddon();
 		xterm.loadAddon(commandTracker);
 	});

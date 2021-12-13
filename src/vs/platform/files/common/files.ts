@@ -57,9 +57,22 @@ export interface IFileService {
 	activateProvider(scheme: string): Promise<void>;
 
 	/**
-	 * Checks if this file service can handle the given resource.
+	 * Checks if this file service can handle the given resource by
+	 * first activating any extension that wants to be activated
+	 * on the provided resource scheme to include extensions that
+	 * contribute file system providers for the given resource.
 	 */
-	canHandleResource(resource: URI): boolean;
+	canHandleResource(resource: URI): Promise<boolean>;
+
+	/**
+	 * Checks if the file service has a registered provider for the
+	 * provided resource.
+	 *
+	 * Note: this does NOT account for contributed providers from
+	 * extensions that have not been activated yet. To include those,
+	 * consider to call `await fileService.canHandleResource(resource)`.
+	 */
+	hasProvider(resource: URI): boolean;
 
 	/**
 	 * Checks if the provider for the provided resource has the provided file system capability.
@@ -123,12 +136,12 @@ export interface IFileService {
 	/**
 	 * Read the contents of the provided resource unbuffered.
 	 */
-	readFile(resource: URI, options?: IReadFileOptions): Promise<IFileContent>;
+	readFile(resource: URI, options?: IReadFileOptions, token?: CancellationToken): Promise<IFileContent>;
 
 	/**
 	 * Read the contents of the provided resource buffered as stream.
 	 */
-	readFileStream(resource: URI, options?: IReadFileStreamOptions): Promise<IFileStreamContent>;
+	readFileStream(resource: URI, options?: IReadFileStreamOptions, token?: CancellationToken): Promise<IFileStreamContent>;
 
 	/**
 	 * Updates the content replacing its previous value.
@@ -422,9 +435,8 @@ export interface IFileSystemProvider {
 	readonly capabilities: FileSystemProviderCapabilities;
 	readonly onDidChangeCapabilities: Event<void>;
 
-	readonly onDidErrorOccur?: Event<string>;
-
 	readonly onDidChangeFile: Event<readonly IFileChange[]>;
+	readonly onDidWatchError?: Event<string>;
 	watch(resource: URI, opts: IWatchOptions): IDisposable;
 
 	stat(resource: URI): Promise<IStat>;
@@ -663,25 +675,31 @@ export class FileChangesEvent {
 	private readonly deleted: TernarySearchTree<URI, IFileChange> | undefined = undefined;
 
 	constructor(changes: readonly IFileChange[], ignorePathCasing: boolean) {
+
+		const entriesByType = new Map<FileChangeType, [URI, IFileChange][]>();
+
 		for (const change of changes) {
-			switch (change.type) {
+			const array = entriesByType.get(change.type);
+			if (array) {
+				array.push([change.resource, change]);
+			} else {
+				entriesByType.set(change.type, [[change.resource, change]]);
+			}
+		}
+
+		for (const [key, value] of entriesByType) {
+			switch (key) {
 				case FileChangeType.ADDED:
-					if (!this.added) {
-						this.added = TernarySearchTree.forUris<IFileChange>(() => ignorePathCasing);
-					}
-					this.added.set(change.resource, change);
+					this.added = TernarySearchTree.forUris<IFileChange>(() => ignorePathCasing);
+					this.added.fill(value);
 					break;
 				case FileChangeType.UPDATED:
-					if (!this.updated) {
-						this.updated = TernarySearchTree.forUris<IFileChange>(() => ignorePathCasing);
-					}
-					this.updated.set(change.resource, change);
+					this.updated = TernarySearchTree.forUris<IFileChange>(() => ignorePathCasing);
+					this.updated.fill(value);
 					break;
 				case FileChangeType.DELETED:
-					if (!this.deleted) {
-						this.deleted = TernarySearchTree.forUris<IFileChange>(() => ignorePathCasing);
-					}
-					this.deleted.set(change.resource, change);
+					this.deleted = TernarySearchTree.forUris<IFileChange>(() => ignorePathCasing);
+					this.deleted.fill(value);
 					break;
 			}
 		}
@@ -1069,6 +1087,7 @@ export interface IFilesConfiguration {
 		associations: { [filepattern: string]: string };
 		exclude: IExpression;
 		watcherExclude: { [filepattern: string]: boolean };
+		watcherInclude: string[];
 		encoding: string;
 		autoGuessEncoding: boolean;
 		defaultLanguage: string;
@@ -1108,7 +1127,7 @@ export function etag(stat: { mtime: number | undefined, size: number | undefined
 }
 
 export async function whenProviderRegistered(file: URI, fileService: IFileService): Promise<void> {
-	if (fileService.canHandleResource(URI.from({ scheme: file.scheme }))) {
+	if (fileService.hasProvider(URI.from({ scheme: file.scheme }))) {
 		return;
 	}
 

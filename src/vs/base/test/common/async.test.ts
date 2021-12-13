@@ -511,11 +511,11 @@ suite('Async', () => {
 			});
 		});
 
-		test('events', function () {
+		test('events', async function () {
 			let queue = new async.Queue();
 
 			let finished = false;
-			const onFinished = Event.toPromise(queue.onFinished);
+			const onFinished = Event.toPromise(queue.onFinished).then(() => finished = true);
 
 			let res: number[] = [];
 
@@ -534,32 +534,55 @@ suite('Async', () => {
 				});
 			});
 
-			return onFinished;
+			await onFinished;
+			assert.ok(finished);
 		});
 	});
 
 	suite('ResourceQueue', () => {
-		test('simple', function () {
+		test('simple', async function () {
 			let queue = new async.ResourceQueue();
+
+			await queue.whenDrained(); // returns immediately since empty
 
 			const r1Queue = queue.queueFor(URI.file('/some/path'));
 
-			r1Queue.onFinished(() => console.log('DONE'));
+			await queue.whenDrained(); // returns immediately since empty
 
 			const r2Queue = queue.queueFor(URI.file('/some/other/path'));
+
+			await queue.whenDrained(); // returns immediately since empty
 
 			assert.ok(r1Queue);
 			assert.ok(r2Queue);
 			assert.strictEqual(r1Queue, queue.queueFor(URI.file('/some/path'))); // same queue returned
 
-			let syncPromiseFactory = () => Promise.resolve(undefined);
+			// schedule some work
+			const w1 = new async.DeferredPromise<void>();
+			r1Queue.queue(() => w1.p);
 
-			r1Queue.queue(syncPromiseFactory);
+			let drained = false;
+			queue.whenDrained().then(() => drained = true);
+			assert.strictEqual(drained, false);
+			await w1.complete();
+			await async.timeout(0);
+			assert.strictEqual(drained, true);
 
-			return new Promise<void>(c => setTimeout(() => c(), 0)).then(() => {
-				const r1Queue2 = queue.queueFor(URI.file('/some/path'));
-				assert.notStrictEqual(r1Queue, r1Queue2); // previous one got disposed after finishing
-			});
+			const r1Queue2 = queue.queueFor(URI.file('/some/path'));
+			assert.notStrictEqual(r1Queue, r1Queue2); // previous one got disposed after finishing
+
+			// schedule some work
+			const w2 = new async.DeferredPromise<void>();
+			const w3 = new async.DeferredPromise<void>();
+			r1Queue.queue(() => w2.p);
+			r2Queue.queue(() => w3.p);
+
+			drained = false;
+			queue.whenDrained().then(() => drained = true);
+
+			queue.dispose();
+			await async.timeout(0);
+			assert.strictEqual(drained, true);
 		});
 	});
 
@@ -740,17 +763,14 @@ suite('Async', () => {
 	});
 
 	test('IntervalCounter', async () => {
-		const counter = new async.IntervalCounter(1);
+		let now = 0;
+		const counter = new async.IntervalCounter(5, () => now);
+
 		assert.strictEqual(counter.increment(), 1);
 		assert.strictEqual(counter.increment(), 2);
 		assert.strictEqual(counter.increment(), 3);
 
-		const now = Date.now();
-		await async.timeout(5);
-		const ellapsed = Date.now() - now;
-		if (ellapsed < 1) {
-			return; // Firefox in Playwright seems to have a flaky timeout implementation (https://github.com/microsoft/vscode/issues/114028)
-		}
+		now = 10;
 
 		assert.strictEqual(counter.increment(), 1);
 		assert.strictEqual(counter.increment(), 2);
@@ -929,6 +949,44 @@ suite('Async', () => {
 			assert.strictEqual(error, p2Error);
 			assert.ok(p2Handled);
 			assert.ok(p3Handled);
+		});
+	});
+
+	suite('Promises.withAsyncBody', () => {
+		test('basics', async () => {
+
+			const p1 = async.Promises.withAsyncBody(async (resolve, reject) => {
+				resolve(1);
+			});
+
+			const p2 = async.Promises.withAsyncBody(async (resolve, reject) => {
+				reject(new Error('error'));
+			});
+
+			const p3 = async.Promises.withAsyncBody(async (resolve, reject) => {
+				throw new Error('error');
+			});
+
+			const r1 = await p1;
+			assert.strictEqual(r1, 1);
+
+			let e2: Error | undefined = undefined;
+			try {
+				await p2;
+			} catch (error) {
+				e2 = error;
+			}
+
+			assert.ok(e2 instanceof Error);
+
+			let e3: Error | undefined = undefined;
+			try {
+				await p3;
+			} catch (error) {
+				e3 = error;
+			}
+
+			assert.ok(e3 instanceof Error);
 		});
 	});
 

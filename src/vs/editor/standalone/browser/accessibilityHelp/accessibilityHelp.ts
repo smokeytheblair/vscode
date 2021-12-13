@@ -38,7 +38,7 @@ class AccessibilityHelpController extends Disposable
 	implements IEditorContribution {
 	public static readonly ID = 'editor.contrib.accessibilityHelpController';
 
-	public static get(editor: ICodeEditor): AccessibilityHelpController {
+	public static get(editor: ICodeEditor): AccessibilityHelpController | null {
 		return editor.getContribution<AccessibilityHelpController>(
 			AccessibilityHelpController.ID
 		);
@@ -141,7 +141,7 @@ class AccessibilityHelpWidget extends Widget implements IOverlayWidget {
 				return;
 			}
 
-			if (e.equals(KeyMod.CtrlCmd | KeyCode.KEY_E)) {
+			if (e.equals(KeyMod.CtrlCmd | KeyCode.KeyE)) {
 				alert(AccessibilityHelpNLS.emergencyConfOn);
 
 				this._editor.updateOptions({
@@ -156,7 +156,7 @@ class AccessibilityHelpWidget extends Widget implements IOverlayWidget {
 				e.stopPropagation();
 			}
 
-			if (e.equals(KeyMod.CtrlCmd | KeyCode.KEY_H)) {
+			if (e.equals(KeyMod.CtrlCmd | KeyCode.KeyH)) {
 				alert(AccessibilityHelpNLS.openingDocs);
 
 				let url = (<IStandaloneEditorConstructionOptions>this._editor.getRawOptions()).accessibilityHelpUrl;

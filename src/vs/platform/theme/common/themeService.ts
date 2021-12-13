@@ -51,6 +51,10 @@ export namespace ThemeIcon {
 		return { id: name };
 	}
 
+	export function fromId(id: string) : ThemeIcon {
+		return { id };
+	}
+
 	export function modify(icon: ThemeIcon, modifier: 'disabled' | 'spin' | undefined): ThemeIcon {
 		let id = icon.id;
 		const tildeIndex = id.lastIndexOf('~');
@@ -61,6 +65,14 @@ export namespace ThemeIcon {
 			id = `${id}~${modifier}`;
 		}
 		return { id };
+	}
+
+	export function getModifier(icon: ThemeIcon): string | undefined {
+		const tildeIndex = icon.id.lastIndexOf('~');
+		if (tildeIndex !== -1) {
+			return icon.id.substring(tildeIndex + 1);
+		}
+		return undefined;
 	}
 
 	export function isEqual(ti1: ThemeIcon, ti2: ThemeIcon): boolean {

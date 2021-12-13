@@ -8,8 +8,8 @@ import { TestInstantiationService } from 'vs/platform/instantiation/test/common/
 import { URI } from 'vs/base/common/uri';
 import { workbenchInstantiationService, TestEditorService } from 'vs/workbench/test/browser/workbenchTestServices';
 import { IModelService } from 'vs/editor/common/services/modelService';
-import { IModeService } from 'vs/editor/common/services/modeService';
-import { ModeServiceImpl } from 'vs/editor/common/services/modeServiceImpl';
+import { ILanguageService } from 'vs/editor/common/services/languageService';
+import { LanguageService } from 'vs/editor/common/services/languageServiceImpl';
 import { RangeHighlightDecorations } from 'vs/workbench/browser/codeeditor';
 import { TextModel } from 'vs/editor/common/model/textModel';
 import { createTestCodeEditor } from 'vs/editor/test/browser/testCodeEditor';
@@ -24,9 +24,11 @@ import { IEditorService } from 'vs/workbench/services/editor/common/editorServic
 import { createTextModel } from 'vs/editor/test/common/editorTestUtils';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { TestThemeService } from 'vs/platform/theme/test/common/testThemeService';
+import { DisposableStore } from 'vs/base/common/lifecycle';
 
 suite('Editor - Range decorations', () => {
 
+	let disposables: DisposableStore;
 	let instantiationService: TestInstantiationService;
 	let codeEditor: ICodeEditor;
 	let model: TextModel;
@@ -35,9 +37,10 @@ suite('Editor - Range decorations', () => {
 	let modelsToDispose: TextModel[] = [];
 
 	setup(() => {
-		instantiationService = <TestInstantiationService>workbenchInstantiationService();
+		disposables = new DisposableStore();
+		instantiationService = <TestInstantiationService>workbenchInstantiationService(undefined, disposables);
 		instantiationService.stub(IEditorService, new TestEditorService());
-		instantiationService.stub(IModeService, ModeServiceImpl);
+		instantiationService.stub(ILanguageService, LanguageService);
 		instantiationService.stub(IModelService, stubModelService(instantiationService));
 		text = 'LINE1' + '\n' + 'LINE2' + '\n' + 'LINE3' + '\n' + 'LINE4' + '\r\n' + 'LINE5';
 		model = aModel(URI.file('some_file'));
@@ -52,6 +55,7 @@ suite('Editor - Range decorations', () => {
 	teardown(() => {
 		codeEditor.dispose();
 		modelsToDispose.forEach(model => model.dispose());
+		disposables.dispose();
 	});
 
 	test('highlight range for the resource if it is an active editor', function () {

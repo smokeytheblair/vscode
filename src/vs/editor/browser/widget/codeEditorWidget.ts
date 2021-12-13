@@ -56,6 +56,7 @@ import { DOMLineBreaksComputerFactory } from 'vs/editor/browser/view/domLineBrea
 import { WordOperations } from 'vs/editor/common/controller/cursorWordOperations';
 import { IViewModel } from 'vs/editor/common/viewModel/viewModel';
 import { OutgoingViewModelEventKind } from 'vs/editor/common/viewModel/viewModelEventDispatcher';
+import { ILanguageConfigurationService } from 'vs/editor/common/modes/languageConfigurationRegistry';
 
 let EDITOR_ID = 0;
 
@@ -207,6 +208,9 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 
 	private readonly _onDidChangeViewZones: Emitter<void> = this._register(new Emitter<void>());
 	public readonly onDidChangeViewZones: Event<void> = this._onDidChangeViewZones.event;
+
+	private readonly _onDidChangeHiddenAreas: Emitter<void> = this._register(new Emitter<void>());
+	public readonly onDidChangeHiddenAreas: Event<void> = this._onDidChangeHiddenAreas.event;
 	//#endregion
 
 	public readonly isSimpleWidget: boolean;
@@ -241,6 +245,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 	private _decorationTypeKeysToIds: { [decorationTypeKey: string]: string[] };
 	private _decorationTypeSubtypes: { [decorationTypeKey: string]: { [subtype: string]: boolean } };
 
+	private _bannerDomNode: HTMLElement | null = null;
+
 	constructor(
 		domElement: HTMLElement,
 		_options: Readonly<editorBrowser.IEditorConstructionOptions>,
@@ -251,7 +257,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IThemeService themeService: IThemeService,
 		@INotificationService notificationService: INotificationService,
-		@IAccessibilityService accessibilityService: IAccessibilityService
+		@IAccessibilityService accessibilityService: IAccessibilityService,
+		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
 	) {
 		super();
 
@@ -971,7 +978,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 		this._focusTracker.refreshState();
 	}
 
-	public getContribution<T extends editorCommon.IEditorContribution>(id: string): T {
+	public getContribution<T extends editorCommon.IEditorContribution>(id: string): T | null {
 		return <T>(this._contributions[id] || null);
 	}
 
@@ -1101,7 +1108,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 		if (source === 'keyboard') {
 			this._onDidPaste.fire({
 				range: new Range(startPosition.lineNumber, startPosition.column, endPosition.lineNumber, endPosition.column),
-				mode: mode
+				languageId: mode
 			});
 		}
 	}
@@ -1487,6 +1494,19 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 		Configuration.applyFontInfoSlow(target, this._configuration.options.get(EditorOption.fontInfo));
 	}
 
+	public setBanner(domNode: HTMLElement | null, domNodeHeight: number): void {
+		if (this._bannerDomNode && this._domElement.contains(this._bannerDomNode)) {
+			this._domElement.removeChild(this._bannerDomNode);
+		}
+
+		this._bannerDomNode = domNode;
+		this._configuration.reserveHeight(domNode ? domNodeHeight : 0);
+
+		if (this._bannerDomNode) {
+			this._domElement.prepend(this._bannerDomNode);
+		}
+	}
+
 	protected _attachModel(model: ITextModel | null): void {
 		if (!model) {
 			this._modelData = null;
@@ -1495,7 +1515,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 
 		const listenersToRemove: IDisposable[] = [];
 
-		this._domElement.setAttribute('data-mode-id', model.getLanguageIdentifier().language);
+		this._domElement.setAttribute('data-mode-id', model.getLanguageId());
 		this._configuration.setIsDominatedByLongLines(model.isDominatedByLongLines());
 		this._configuration.setMaxLineNumber(model.getLineCount());
 
@@ -1507,12 +1527,13 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 			model,
 			DOMLineBreaksComputerFactory.create(),
 			MonospaceLineBreaksComputerFactory.create(this._configuration.options),
-			(callback) => dom.scheduleAtNextAnimationFrame(callback)
+			(callback) => dom.scheduleAtNextAnimationFrame(callback),
+			this.languageConfigurationService
 		);
 
 		listenersToRemove.push(model.onDidChangeDecorations((e) => this._onDidChangeModelDecorations.fire(e)));
 		listenersToRemove.push(model.onDidChangeLanguage((e) => {
-			this._domElement.setAttribute('data-mode-id', model.getLanguageIdentifier().language);
+			this._domElement.setAttribute('data-mode-id', model.getLanguageId());
 			this._onDidChangeModelLanguage.fire(e);
 		}));
 		listenersToRemove.push(model.onDidChangeLanguageConfiguration((e) => this._onDidChangeModelLanguageConfiguration.fire(e)));
@@ -1534,6 +1555,9 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 					break;
 				case OutgoingViewModelEventKind.ViewZonesChanged:
 					this._onDidChangeViewZones.fire();
+					break;
+				case OutgoingViewModelEventKind.HiddenAreasChanged:
+					this._onDidChangeHiddenAreas.fire();
 					break;
 				case OutgoingViewModelEventKind.ReadOnlyEditAttempt:
 					this._onDidAttemptReadOnlyEdit.fire();
@@ -1696,6 +1720,9 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 		this._domElement.removeAttribute('data-mode-id');
 		if (removeDomNode && this._domElement.contains(removeDomNode)) {
 			this._domElement.removeChild(removeDomNode);
+		}
+		if (this._bannerDomNode && this._domElement.contains(this._bannerDomNode)) {
+			this._domElement.removeChild(this._bannerDomNode);
 		}
 
 		return model;
@@ -1955,7 +1982,7 @@ export class EditorModeContext extends Disposable {
 			return;
 		}
 		this._contextKeyService.bufferChangeEvents(() => {
-			this._langId.set(model.getLanguageIdentifier().language);
+			this._langId.set(model.getLanguageId());
 			this._hasCompletionItemProvider.set(modes.CompletionProviderRegistry.has(model));
 			this._hasCodeActionsProvider.set(modes.CodeActionProviderRegistry.has(model));
 			this._hasCodeLensProvider.set(modes.CodeLensProviderRegistry.has(model));

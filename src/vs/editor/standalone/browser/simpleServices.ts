@@ -7,7 +7,7 @@ import * as strings from 'vs/base/common/strings';
 import * as dom from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { Emitter, Event } from 'vs/base/common/event';
-import { Keybinding, ResolvedKeybinding, SimpleKeybinding, createKeybinding } from 'vs/base/common/keyCodes';
+import { Keybinding, ResolvedKeybinding, SimpleKeybinding, createKeybinding } from 'vs/base/common/keybindings';
 import { IDisposable, IReference, ImmortalReference, toDisposable, DisposableStore, Disposable } from 'vs/base/common/lifecycle';
 import { OS, isLinux, isMacintosh } from 'vs/base/common/platform';
 import Severity from 'vs/base/common/severity';
@@ -38,7 +38,7 @@ import { USLayoutResolvedKeybinding } from 'vs/platform/keybinding/common/usLayo
 import { ILabelService, ResourceLabelFormatter, IFormatterChangeEvent } from 'vs/platform/label/common/label';
 import { INotification, INotificationHandle, INotificationService, IPromptChoice, IPromptOptions, NoOpNotification, IStatusMessageOptions, NotificationsFilter } from 'vs/platform/notification/common/notification';
 import { IProgressRunner, IEditorProgressService } from 'vs/platform/progress/common/progress';
-import { ITelemetryInfo, ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { ITelemetryInfo, ITelemetryService, TelemetryLevel } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkspace, IWorkspaceContextService, IWorkspaceFolder, IWorkspaceFoldersChangeEvent, IWorkspaceFoldersWillChangeEvent, WorkbenchState, WorkspaceFolder } from 'vs/platform/workspace/common/workspace';
 import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
@@ -47,6 +47,7 @@ import { ClassifiedEvent, StrictPropertyCheck, GDPRClassification } from 'vs/pla
 import { basename } from 'vs/base/common/resources';
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
 import { ILogService } from 'vs/platform/log/common/log';
+import { IWorkspaceTrustManagementService, IWorkspaceTrustTransitionParticipant, IWorkspaceTrustUriInfo } from 'vs/platform/workspace/common/workspaceTrust';
 
 export class SimpleModel implements IResolvedTextEditorModel {
 
@@ -94,7 +95,7 @@ export class SimpleModel implements IResolvedTextEditorModel {
 	}
 
 	public getMode(): string | undefined {
-		return this.model.getModeId();
+		return this.model.getLanguageId();
 	}
 }
 
@@ -341,7 +342,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 
 		if (keybinding) {
 			this._dynamicKeybindings.push({
-				keybinding: keybinding,
+				keybinding: keybinding.parts,
 				command: commandId,
 				when: when,
 				weight1: 1000,
@@ -397,7 +398,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 				// This might be a removal keybinding item in user settings => accept it
 				result[resultLen++] = new ResolvedKeybindingItem(undefined, item.command, item.commandArgs, when, isDefault, null, false);
 			} else {
-				const resolvedKeybindings = this.resolveKeybinding(keybinding);
+				const resolvedKeybindings = USLayoutResolvedKeybinding.resolveUserBinding(keybinding, OS);
 				for (const resolvedKeybinding of resolvedKeybindings) {
 					result[resultLen++] = new ResolvedKeybindingItem(resolvedKeybinding, item.command, item.commandArgs, when, isDefault, null, false);
 				}
@@ -574,7 +575,7 @@ export class SimpleResourcePropertiesService implements ITextResourcePropertiesS
 export class StandaloneTelemetryService implements ITelemetryService {
 	declare readonly _serviceBrand: undefined;
 
-	public isOptedIn = false;
+	public telemetryLevel = TelemetryLevel.NONE;
 	public sendErrorTelemetry = false;
 
 	public setEnabled(value: boolean): void {
@@ -797,4 +798,49 @@ export class SimpleLayoutService implements ILayoutService {
 	}
 
 	constructor(private _codeEditorService: ICodeEditorService, private _container: HTMLElement) { }
+}
+
+export class SimpleWorkspaceTrustManagementService implements IWorkspaceTrustManagementService {
+	_serviceBrand: undefined;
+
+	private _neverEmitter = new Emitter<never>();
+	public readonly onDidChangeTrust: Event<boolean> = this._neverEmitter.event;
+	onDidChangeTrustedFolders: Event<void> = this._neverEmitter.event;
+	public readonly workspaceResolved = Promise.resolve();
+	public readonly workspaceTrustInitialized = Promise.resolve();
+	public readonly acceptsOutOfWorkspaceFiles = true;
+
+	isWorkspaceTrusted(): boolean {
+		return true;
+	}
+	isWorkspaceTrustForced(): boolean {
+		return false;
+	}
+	canSetParentFolderTrust(): boolean {
+		return false;
+	}
+	async setParentFolderTrust(trusted: boolean): Promise<void> {
+		// noop
+	}
+	canSetWorkspaceTrust(): boolean {
+		return false;
+	}
+	async setWorkspaceTrust(trusted: boolean): Promise<void> {
+		// noop
+	}
+	getUriTrustInfo(uri: URI): Promise<IWorkspaceTrustUriInfo> {
+		throw new Error('Method not supported.');
+	}
+	async setUrisTrust(uri: URI[], trusted: boolean): Promise<void> {
+		// noop
+	}
+	getTrustedUris(): URI[] {
+		return [];
+	}
+	async setTrustedUris(uris: URI[]): Promise<void> {
+		// noop
+	}
+	addWorkspaceTrustTransitionParticipant(participant: IWorkspaceTrustTransitionParticipant): IDisposable {
+		throw new Error('Method not supported.');
+	}
 }
