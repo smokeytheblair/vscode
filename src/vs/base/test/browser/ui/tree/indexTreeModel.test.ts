@@ -6,6 +6,7 @@
 import * as assert from 'assert';
 import { IIndexTreeModelSpliceOptions, IIndexTreeNode, IList, IndexTreeModel } from 'vs/base/browser/ui/tree/indexTreeModel';
 import { ITreeElement, ITreeFilter, ITreeNode, TreeVisibility } from 'vs/base/browser/ui/tree/tree';
+import { timeout } from 'vs/base/common/async';
 
 function toList<T>(arr: T[]): IList<T> {
 	return {
@@ -357,7 +358,7 @@ suite('IndexTreeModel', () => {
 
 		assert.deepStrictEqual(list.length, 3);
 
-		model.setCollapsed([0], false);
+		model.expandTo([0, 1]);
 		assert.deepStrictEqual(list.length, 6);
 		assert.deepStrictEqual(list[0].element, 0);
 		assert.deepStrictEqual(list[0].collapsed, false);
@@ -399,7 +400,7 @@ suite('IndexTreeModel', () => {
 				const deleteCount = Math.ceil(Math.random() * (list.length - spliceIndex));
 				const insertCount = Math.floor(Math.random() * maxInserts + 1);
 
-				let inserts: ITreeElement<number>[] = [];
+				const inserts: ITreeElement<number>[] = [];
 				for (let i = 0; i < insertCount; i++) {
 					const element = elementCounter++;
 					inserts.push({ element, children: [] });
@@ -659,7 +660,7 @@ suite('IndexTreeModel', () => {
 		assert.deepStrictEqual(toArray(list), ['vscode', '.build', 'github', 'build.js', 'build']);
 	});
 
-	test('recursive filter updates when children change (#133272)', () => {
+	test('recursive filter updates when children change (#133272)', async () => {
 		const list: ITreeNode<string>[] = [];
 		let query = '';
 		const filter = new class implements ITreeFilter<string> {
@@ -689,6 +690,8 @@ suite('IndexTreeModel', () => {
 				element: 'visible', children: []
 			},
 		]);
+
+		await timeout(0); // wait for refilter microtask
 
 		assert.deepStrictEqual(toArray(list), ['a', 'b', 'visible']);
 	});

@@ -3,8 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { $, append, createStyleSheet } from 'vs/base/browser/dom';
+import 'vs/css!./media/processExplorer';
 import 'vs/base/browser/ui/codicons/codiconStyles'; // make sure codicon css is loaded
+import { localize } from 'vs/nls';
+import { $, append, createStyleSheet } from 'vs/base/browser/dom';
 import { IListVirtualDelegate } from 'vs/base/browser/ui/list/list';
 import { DataTree } from 'vs/base/browser/ui/tree/dataTree';
 import { IDataSource, ITreeNode, ITreeRenderer } from 'vs/base/browser/ui/tree/tree';
@@ -13,8 +15,6 @@ import { ProcessItem } from 'vs/base/common/processes';
 import { IContextMenuItem } from 'vs/base/parts/contextmenu/common/contextmenu';
 import { popup } from 'vs/base/parts/contextmenu/electron-sandbox/contextmenu';
 import { ipcRenderer } from 'vs/base/parts/sandbox/electron-sandbox/globals';
-import 'vs/css!./media/processExplorer';
-import { localize } from 'vs/nls';
 import { IRemoteDiagnosticError, isRemoteDiagnosticError } from 'vs/platform/diagnostics/common/diagnostics';
 import { ByteSize } from 'vs/platform/files/common/files';
 import { ElectronIPCMainProcessService } from 'vs/platform/ipc/electron-sandbox/mainProcessService';
@@ -22,7 +22,7 @@ import { ProcessExplorerData, ProcessExplorerStyles, ProcessExplorerWindowConfig
 import { INativeHostService } from 'vs/platform/native/electron-sandbox/native';
 import { NativeHostService } from 'vs/platform/native/electron-sandbox/nativeHostService';
 import { getIconsStyleSheet } from 'vs/platform/theme/browser/iconsStyleSheet';
-import { applyZoom, zoomIn, zoomOut } from 'vs/platform/windows/electron-sandbox/window';
+import { applyZoom, zoomIn, zoomOut } from 'vs/platform/window/electron-sandbox/window';
 
 const DEBUG_FLAGS_PATTERN = /\s--(inspect|debug)(-brk|port)?=(\d+)?/;
 const DEBUG_PORT_PATTERN = /\s--(inspect|debug)-port=(\d+)/;
@@ -201,7 +201,7 @@ class ProcessRenderer implements ITreeRenderer<ProcessItem, void, IProcessItemTe
 
 interface MachineProcessInformation {
 	name: string;
-	rootProcess: ProcessItem | IRemoteDiagnosticError
+	rootProcess: ProcessItem | IRemoteDiagnosticError;
 }
 
 interface ProcessInformation {
@@ -257,6 +257,7 @@ class ProcessExplorer {
 				await this.createProcessTree(processRoots);
 			} else {
 				this.tree.setInput({ processes: { processRoots } });
+				this.tree.layout(window.innerHeight, window.innerWidth);
 			}
 
 			this.requestProcessList(0);
@@ -265,8 +266,6 @@ class ProcessExplorer {
 		this.lastRequestTime = Date.now();
 		ipcRenderer.send('vscode:windowsInfoRequest');
 		ipcRenderer.send('vscode:listProcesses');
-
-
 	}
 
 	private setEventHandlers(data: ProcessExplorerData): void {
@@ -344,6 +343,13 @@ class ProcessExplorer {
 				this.showContextMenu(e.element, true);
 			}
 		});
+
+		container.style.height = `${window.innerHeight}px`;
+
+		window.addEventListener('resize', () => {
+			container.style.height = `${window.innerHeight}px`;
+			this.tree?.layout(window.innerHeight, window.innerWidth);
+		});
 	}
 
 	private isDebuggable(cmd: string): boolean {
@@ -416,6 +422,47 @@ class ProcessExplorer {
 
 		if (styles.listHoverOutline) {
 			content.push(`.monaco-list-row:hover { outline: 1px dashed ${styles.listHoverOutline}; outline-offset: -1px; }`);
+		}
+
+		// Scrollbars
+		if (styles.scrollbarShadowColor) {
+			content.push(`
+				.monaco-scrollable-element > .shadow.top {
+					box-shadow: ${styles.scrollbarShadowColor} 0 6px 6px -6px inset;
+				}
+
+				.monaco-scrollable-element > .shadow.left {
+					box-shadow: ${styles.scrollbarShadowColor} 6px 0 6px -6px inset;
+				}
+
+				.monaco-scrollable-element > .shadow.top.left {
+					box-shadow: ${styles.scrollbarShadowColor} 6px 6px 6px -6px inset;
+				}
+			`);
+		}
+
+		if (styles.scrollbarSliderBackgroundColor) {
+			content.push(`
+				.monaco-scrollable-element > .scrollbar > .slider {
+					background: ${styles.scrollbarSliderBackgroundColor};
+				}
+			`);
+		}
+
+		if (styles.scrollbarSliderHoverBackgroundColor) {
+			content.push(`
+				.monaco-scrollable-element > .scrollbar > .slider:hover {
+					background: ${styles.scrollbarSliderHoverBackgroundColor};
+				}
+			`);
+		}
+
+		if (styles.scrollbarSliderActiveBackgroundColor) {
+			content.push(`
+				.monaco-scrollable-element > .scrollbar > .slider.active {
+					background: ${styles.scrollbarSliderActiveBackgroundColor};
+				}
+			`);
 		}
 
 		styleElement.textContent = content.join('\n');
@@ -520,7 +567,7 @@ function createCodiconStyleSheet() {
 	const codiconStyleSheet = createStyleSheet();
 	codiconStyleSheet.id = 'codiconStyles';
 
-	const iconsStyleSheet = getIconsStyleSheet();
+	const iconsStyleSheet = getIconsStyleSheet(undefined);
 	function updateAll() {
 		codiconStyleSheet.textContent = iconsStyleSheet.getCSS();
 	}

@@ -8,10 +8,6 @@
   "engines": {
     "vscode": "*"
   },
-  "extensionKind": [
-    "ui",
-    "workspace"
-  ],
   "contributes": {
     "languages": [
       {
@@ -32,7 +28,6 @@
           "py"
         ],
         "filenames": [
-          "Snakefile",
           "SConstruct",
           "SConscript"
         ],

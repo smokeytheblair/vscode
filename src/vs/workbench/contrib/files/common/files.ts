@@ -12,8 +12,8 @@ import { ContextKeyExpr, RawContextKey } from 'vs/platform/contextkey/common/con
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService';
 import { Disposable, MutableDisposable } from 'vs/base/common/lifecycle';
 import { ITextModel } from 'vs/editor/common/model';
-import { IModelService } from 'vs/editor/common/services/modelService';
-import { ILanguageService, ILanguageSelection } from 'vs/editor/common/services/languageService';
+import { IModelService } from 'vs/editor/common/services/model';
+import { ILanguageService, ILanguageSelection } from 'vs/editor/common/languages/language';
 import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
 import { InputFocusedContextKey } from 'vs/platform/contextkey/common/contextkeys';
 import { IEditorGroup } from 'vs/workbench/services/editor/common/editorGroupsService';
@@ -56,6 +56,8 @@ export const ExplorerCompressedFocusContext = new RawContextKey<boolean>('explor
 export const ExplorerCompressedFirstFocusContext = new RawContextKey<boolean>('explorerViewletCompressedFirstFocus', true, { type: 'boolean', description: localize('explorerViewletCompressedFirstFocus', "True when the focus is inside a compact item's first part in the EXPLORER view.") });
 export const ExplorerCompressedLastFocusContext = new RawContextKey<boolean>('explorerViewletCompressedLastFocus', true, { type: 'boolean', description: localize('explorerViewletCompressedLastFocus', "True when the focus is inside a compact item's last part in the EXPLORER view.") });
 
+export const ViewHasSomeCollapsibleRootItemContext = new RawContextKey<boolean>('viewHasSomeCollapsibleItem', false, { type: 'boolean', description: localize('viewHasSomeCollapsibleItem', "True when a workspace in the EXPLORER view has some collapsible root child.") });
+
 export const FilesExplorerFocusCondition = ContextKeyExpr.and(ExplorerViewletVisibleContext, FilesExplorerFocusedContext, ContextKeyExpr.not(InputFocusedContextKey));
 export const ExplorerFocusCondition = ContextKeyExpr.and(ExplorerViewletVisibleContext, ExplorerFocusedContext, ContextKeyExpr.not(InputFocusedContextKey));
 
@@ -75,7 +77,7 @@ export const FILE_EDITOR_INPUT_ID = 'workbench.editors.files.fileEditorInput';
 export const BINARY_FILE_EDITOR_ID = 'workbench.editors.files.binaryFileEditor';
 
 /**
- * Language mode for binary files opened as text.
+ * Language identifier for binary files opened as text.
  */
 export const BINARY_TEXT_FILE_MODE = 'code-text-binary';
 
@@ -83,11 +85,13 @@ export interface IFilesConfiguration extends PlatformIFilesConfiguration, IWorkb
 	explorer: {
 		openEditors: {
 			visible: number;
-			sortOrder: 'editorOrder' | 'alphabetical';
+			sortOrder: 'editorOrder' | 'alphabetical' | 'fullPath';
 		};
 		autoReveal: boolean | 'focusNoScroll';
 		enableDragAndDrop: boolean;
 		confirmDelete: boolean;
+		enableUndo: boolean;
+		confirmUndo: UndoConfirmLevel;
 		expandSingleFolderWorkspaces: boolean;
 		sortOrder: SortOrder;
 		sortOrderLexicographicOptions: LexicographicOptions;
@@ -95,7 +99,13 @@ export interface IFilesConfiguration extends PlatformIFilesConfiguration, IWorkb
 			colors: boolean;
 			badges: boolean;
 		};
-		incrementalNaming: 'simple' | 'smart';
+		incrementalNaming: 'simple' | 'smart' | 'disabled';
+		excludeGitIgnore: boolean;
+		fileNesting: {
+			enabled: boolean;
+			expand: boolean;
+			patterns: { [parent: string]: string };
+		};
 	};
 	editor: IEditorOptions;
 }
@@ -110,7 +120,14 @@ export const enum SortOrder {
 	Mixed = 'mixed',
 	FilesFirst = 'filesFirst',
 	Type = 'type',
-	Modified = 'modified'
+	Modified = 'modified',
+	FoldersNestsFiles = 'foldersNestsFiles',
+}
+
+export const enum UndoConfirmLevel {
+	Verbose = 'verbose',
+	Default = 'default',
+	Light = 'light',
 }
 
 export const enum LexicographicOptions {
@@ -236,7 +253,7 @@ export class OpenEditor implements IEditorIdentifier {
 	}
 
 	isPreview(): boolean {
-		return this._group.previewEditor === this.editor;
+		return !this._group.isPinned(this.editor);
 	}
 
 	isSticky(): boolean {

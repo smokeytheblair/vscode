@@ -1,1410 +1,1274 @@
 [
 	{
-		"c": "@{",
-		"t": "text.html.cshtml keyword.control.cshtml",
+		"c": "@",
+		"t": "text.html.cshtml meta.structure.razor.codeblock keyword.control.cshtml.transition",
 		"r": {
 			"dark_plus": "keyword.control: #C586C0",
 			"light_plus": "keyword.control: #AF00DB",
 			"dark_vs": "keyword.control: #569CD6",
 			"light_vs": "keyword.control: #0000FF",
-			"hc_black": "keyword.control: #C586C0"
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
+		}
+	},
+	{
+		"c": "{",
+		"t": "text.html.cshtml meta.structure.razor.codeblock keyword.control.razor.directive.codeblock.open",
+		"r": {
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
 		}
 	},
 	{
 		"c": "    ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "var",
-		"t": "text.html.cshtml keyword.other.var.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs keyword.other.var.cs",
 		"r": {
 			"dark_plus": "keyword: #569CD6",
 			"light_plus": "keyword: #0000FF",
 			"dark_vs": "keyword: #569CD6",
 			"light_vs": "keyword: #0000FF",
-			"hc_black": "keyword: #569CD6"
+			"hc_black": "keyword: #569CD6",
+			"hc_light": "keyword: #0F4A85"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "total",
-		"t": "text.html.cshtml entity.name.variable.local.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs entity.name.variable.local.cs",
 		"r": {
 			"dark_plus": "entity.name.variable: #9CDCFE",
 			"light_plus": "entity.name.variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "entity.name.variable: #001080"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "=",
-		"t": "text.html.cshtml keyword.operator.assignment.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs keyword.operator.assignment.cs",
 		"r": {
 			"dark_plus": "keyword.operator: #D4D4D4",
 			"light_plus": "keyword.operator: #000000",
 			"dark_vs": "keyword.operator: #D4D4D4",
 			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
+			"hc_black": "keyword.operator: #D4D4D4",
+			"hc_light": "keyword.operator: #000000"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "0",
-		"t": "text.html.cshtml constant.numeric.decimal.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs constant.numeric.decimal.cs",
 		"r": {
 			"dark_plus": "constant.numeric: #B5CEA8",
 			"light_plus": "constant.numeric: #098658",
 			"dark_vs": "constant.numeric: #B5CEA8",
 			"light_vs": "constant.numeric: #098658",
-			"hc_black": "constant.numeric: #B5CEA8"
+			"hc_black": "constant.numeric: #B5CEA8",
+			"hc_light": "constant.numeric: #096D48"
 		}
 	},
 	{
 		"c": ";",
-		"t": "text.html.cshtml punctuation.terminator.statement.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs punctuation.terminator.statement.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "    ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "var",
-		"t": "text.html.cshtml keyword.other.var.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs keyword.other.var.cs",
 		"r": {
 			"dark_plus": "keyword: #569CD6",
 			"light_plus": "keyword: #0000FF",
 			"dark_vs": "keyword: #569CD6",
 			"light_vs": "keyword: #0000FF",
-			"hc_black": "keyword: #569CD6"
+			"hc_black": "keyword: #569CD6",
+			"hc_light": "keyword: #0F4A85"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "totalMessage",
-		"t": "text.html.cshtml entity.name.variable.local.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs entity.name.variable.local.cs",
 		"r": {
 			"dark_plus": "entity.name.variable: #9CDCFE",
 			"light_plus": "entity.name.variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "entity.name.variable: #001080"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "=",
-		"t": "text.html.cshtml keyword.operator.assignment.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs keyword.operator.assignment.cs",
 		"r": {
 			"dark_plus": "keyword.operator: #D4D4D4",
 			"light_plus": "keyword.operator: #000000",
 			"dark_vs": "keyword.operator: #D4D4D4",
 			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
+			"hc_black": "keyword.operator: #D4D4D4",
+			"hc_light": "keyword.operator: #000000"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "\"",
-		"t": "text.html.cshtml string.quoted.double.cs punctuation.definition.string.begin.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs string.quoted.double.cs punctuation.definition.string.begin.cs",
 		"r": {
 			"dark_plus": "string: #CE9178",
 			"light_plus": "string: #A31515",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
 		}
 	},
 	{
 		"c": "\"",
-		"t": "text.html.cshtml string.quoted.double.cs punctuation.definition.string.end.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs string.quoted.double.cs punctuation.definition.string.end.cs",
 		"r": {
 			"dark_plus": "string: #CE9178",
 			"light_plus": "string: #A31515",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
 		}
 	},
 	{
 		"c": ";",
-		"t": "text.html.cshtml punctuation.terminator.statement.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs punctuation.terminator.statement.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
-		"c": "    @",
-		"t": "text.html.cshtml",
+		"c": "    ",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "*",
-		"t": "text.html.cshtml keyword.operator.arithmetic.cs",
-		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "a",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "multiline",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": "      ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "razor",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "comment",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "embedded",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "in",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "csharp",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "*",
-		"t": "text.html.cshtml keyword.operator.arithmetic.cs",
-		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "@",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.comment.razor keyword.control.cshtml.transition",
 		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
+		}
+	},
+	{
+		"c": "*",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.comment.razor keyword.control.razor.comment.star",
+		"r": {
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
+		}
+	},
+	{
+		"c": " a multiline",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.comment.razor comment.block.razor",
+		"r": {
+			"dark_plus": "comment: #6A9955",
+			"light_plus": "comment: #008000",
+			"dark_vs": "comment: #6A9955",
+			"light_vs": "comment: #008000",
+			"hc_black": "comment: #7CA668",
+			"hc_light": "comment: #515151"
+		}
+	},
+	{
+		"c": "      razor comment embedded in csharp ",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.comment.razor comment.block.razor",
+		"r": {
+			"dark_plus": "comment: #6A9955",
+			"light_plus": "comment: #008000",
+			"dark_vs": "comment: #6A9955",
+			"light_vs": "comment: #008000",
+			"hc_black": "comment: #7CA668",
+			"hc_light": "comment: #515151"
+		}
+	},
+	{
+		"c": "*",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.comment.razor keyword.control.razor.comment.star",
+		"r": {
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
+		}
+	},
+	{
+		"c": "@",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.comment.razor keyword.control.cshtml.transition",
+		"r": {
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
 		}
 	},
 	{
 		"c": "    ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "if",
-		"t": "text.html.cshtml keyword.control.conditional.if.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor keyword.control.conditional.if.cs",
 		"r": {
 			"dark_plus": "keyword.control: #C586C0",
 			"light_plus": "keyword.control: #AF00DB",
 			"dark_vs": "keyword.control: #569CD6",
 			"light_vs": "keyword.control: #0000FF",
-			"hc_black": "keyword.control: #C586C0"
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "(",
-		"t": "text.html.cshtml punctuation.parenthesis.open.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor punctuation.parenthesis.open.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "IsPost",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor variable.other.readwrite.cs",
 		"r": {
 			"dark_plus": "variable: #9CDCFE",
 			"light_plus": "variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
+			"hc_black": "variable: #9CDCFE",
+			"hc_light": "variable: #001080"
 		}
 	},
 	{
 		"c": ")",
-		"t": "text.html.cshtml punctuation.parenthesis.close.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor punctuation.parenthesis.close.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "{",
-		"t": "text.html.cshtml punctuation.curlybrace.open.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.curlybrace.open.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "        ",
-		"t": "text.html.cshtml punctuation.whitespace.comment.leading.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.whitespace.comment.leading.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "//",
-		"t": "text.html.cshtml comment.line.double-slash.cs punctuation.definition.comment.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock comment.line.double-slash.cs punctuation.definition.comment.cs",
 		"r": {
 			"dark_plus": "comment: #6A9955",
 			"light_plus": "comment: #008000",
 			"dark_vs": "comment: #6A9955",
 			"light_vs": "comment: #008000",
-			"hc_black": "comment: #7CA668"
+			"hc_black": "comment: #7CA668",
+			"hc_light": "comment: #515151"
 		}
 	},
 	{
 		"c": " Retrieve the numbers that the user entered.",
-		"t": "text.html.cshtml comment.line.double-slash.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock comment.line.double-slash.cs",
 		"r": {
 			"dark_plus": "comment: #6A9955",
 			"light_plus": "comment: #008000",
 			"dark_vs": "comment: #6A9955",
 			"light_vs": "comment: #008000",
-			"hc_black": "comment: #7CA668"
+			"hc_black": "comment: #7CA668",
+			"hc_light": "comment: #515151"
 		}
 	},
 	{
 		"c": "        ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "var",
-		"t": "text.html.cshtml keyword.other.var.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock keyword.other.var.cs",
 		"r": {
 			"dark_plus": "keyword: #569CD6",
 			"light_plus": "keyword: #0000FF",
 			"dark_vs": "keyword: #569CD6",
 			"light_vs": "keyword: #0000FF",
-			"hc_black": "keyword: #569CD6"
+			"hc_black": "keyword: #569CD6",
+			"hc_light": "keyword: #0F4A85"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "num1",
-		"t": "text.html.cshtml entity.name.variable.local.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock entity.name.variable.local.cs",
 		"r": {
 			"dark_plus": "entity.name.variable: #9CDCFE",
 			"light_plus": "entity.name.variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "entity.name.variable: #001080"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "=",
-		"t": "text.html.cshtml keyword.operator.assignment.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock keyword.operator.assignment.cs",
 		"r": {
 			"dark_plus": "keyword.operator: #D4D4D4",
 			"light_plus": "keyword.operator: #000000",
 			"dark_vs": "keyword.operator: #D4D4D4",
 			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
+			"hc_black": "keyword.operator: #D4D4D4",
+			"hc_light": "keyword.operator: #000000"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "Request",
-		"t": "text.html.cshtml variable.other.object.property.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock variable.other.object.property.cs",
 		"r": {
 			"dark_plus": "variable: #9CDCFE",
 			"light_plus": "variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
+			"hc_black": "variable: #9CDCFE",
+			"hc_light": "variable: #001080"
 		}
 	},
 	{
 		"c": "[",
-		"t": "text.html.cshtml punctuation.squarebracket.open.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.squarebracket.open.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "\"",
-		"t": "text.html.cshtml string.quoted.double.cs punctuation.definition.string.begin.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock string.quoted.double.cs punctuation.definition.string.begin.cs",
 		"r": {
 			"dark_plus": "string: #CE9178",
 			"light_plus": "string: #A31515",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
 		}
 	},
 	{
 		"c": "text1",
-		"t": "text.html.cshtml string.quoted.double.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock string.quoted.double.cs",
 		"r": {
 			"dark_plus": "string: #CE9178",
 			"light_plus": "string: #A31515",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
 		}
 	},
 	{
 		"c": "\"",
-		"t": "text.html.cshtml string.quoted.double.cs punctuation.definition.string.end.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock string.quoted.double.cs punctuation.definition.string.end.cs",
 		"r": {
 			"dark_plus": "string: #CE9178",
 			"light_plus": "string: #A31515",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
 		}
 	},
 	{
 		"c": "]",
-		"t": "text.html.cshtml punctuation.squarebracket.close.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.squarebracket.close.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": ";",
-		"t": "text.html.cshtml punctuation.terminator.statement.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.terminator.statement.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "        ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "var",
-		"t": "text.html.cshtml keyword.other.var.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock keyword.other.var.cs",
 		"r": {
 			"dark_plus": "keyword: #569CD6",
 			"light_plus": "keyword: #0000FF",
 			"dark_vs": "keyword: #569CD6",
 			"light_vs": "keyword: #0000FF",
-			"hc_black": "keyword: #569CD6"
+			"hc_black": "keyword: #569CD6",
+			"hc_light": "keyword: #0F4A85"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "num2",
-		"t": "text.html.cshtml entity.name.variable.local.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock entity.name.variable.local.cs",
 		"r": {
 			"dark_plus": "entity.name.variable: #9CDCFE",
 			"light_plus": "entity.name.variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "entity.name.variable: #001080"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "=",
-		"t": "text.html.cshtml keyword.operator.assignment.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock keyword.operator.assignment.cs",
 		"r": {
 			"dark_plus": "keyword.operator: #D4D4D4",
 			"light_plus": "keyword.operator: #000000",
 			"dark_vs": "keyword.operator: #D4D4D4",
 			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
+			"hc_black": "keyword.operator: #D4D4D4",
+			"hc_light": "keyword.operator: #000000"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "Request",
-		"t": "text.html.cshtml variable.other.object.property.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock variable.other.object.property.cs",
 		"r": {
 			"dark_plus": "variable: #9CDCFE",
 			"light_plus": "variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
+			"hc_black": "variable: #9CDCFE",
+			"hc_light": "variable: #001080"
 		}
 	},
 	{
 		"c": "[",
-		"t": "text.html.cshtml punctuation.squarebracket.open.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.squarebracket.open.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "\"",
-		"t": "text.html.cshtml string.quoted.double.cs punctuation.definition.string.begin.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock string.quoted.double.cs punctuation.definition.string.begin.cs",
 		"r": {
 			"dark_plus": "string: #CE9178",
 			"light_plus": "string: #A31515",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
 		}
 	},
 	{
 		"c": "text2",
-		"t": "text.html.cshtml string.quoted.double.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock string.quoted.double.cs",
 		"r": {
 			"dark_plus": "string: #CE9178",
 			"light_plus": "string: #A31515",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
 		}
 	},
 	{
 		"c": "\"",
-		"t": "text.html.cshtml string.quoted.double.cs punctuation.definition.string.end.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock string.quoted.double.cs punctuation.definition.string.end.cs",
 		"r": {
 			"dark_plus": "string: #CE9178",
 			"light_plus": "string: #A31515",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
 		}
 	},
 	{
 		"c": "]",
-		"t": "text.html.cshtml punctuation.squarebracket.close.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.squarebracket.close.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": ";",
-		"t": "text.html.cshtml punctuation.terminator.statement.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.terminator.statement.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "        ",
-		"t": "text.html.cshtml punctuation.whitespace.comment.leading.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.whitespace.comment.leading.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "//",
-		"t": "text.html.cshtml comment.line.double-slash.cs punctuation.definition.comment.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock comment.line.double-slash.cs punctuation.definition.comment.cs",
 		"r": {
 			"dark_plus": "comment: #6A9955",
 			"light_plus": "comment: #008000",
 			"dark_vs": "comment: #6A9955",
 			"light_vs": "comment: #008000",
-			"hc_black": "comment: #7CA668"
+			"hc_black": "comment: #7CA668",
+			"hc_light": "comment: #515151"
 		}
 	},
 	{
 		"c": " Convert the entered strings into integers numbers and add.",
-		"t": "text.html.cshtml comment.line.double-slash.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock comment.line.double-slash.cs",
 		"r": {
 			"dark_plus": "comment: #6A9955",
 			"light_plus": "comment: #008000",
 			"dark_vs": "comment: #6A9955",
 			"light_vs": "comment: #008000",
-			"hc_black": "comment: #7CA668"
+			"hc_black": "comment: #7CA668",
+			"hc_light": "comment: #515151"
 		}
 	},
 	{
 		"c": "        ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "total",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock variable.other.readwrite.cs",
 		"r": {
 			"dark_plus": "variable: #9CDCFE",
 			"light_plus": "variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
+			"hc_black": "variable: #9CDCFE",
+			"hc_light": "variable: #001080"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "=",
-		"t": "text.html.cshtml keyword.operator.assignment.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock keyword.operator.assignment.cs",
 		"r": {
 			"dark_plus": "keyword.operator: #D4D4D4",
 			"light_plus": "keyword.operator: #000000",
 			"dark_vs": "keyword.operator: #D4D4D4",
 			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
+			"hc_black": "keyword.operator: #D4D4D4",
+			"hc_light": "keyword.operator: #000000"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "num1",
-		"t": "text.html.cshtml variable.other.object.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock variable.other.object.cs",
 		"r": {
 			"dark_plus": "variable: #9CDCFE",
 			"light_plus": "variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
+			"hc_black": "variable: #9CDCFE",
+			"hc_light": "variable: #001080"
 		}
 	},
 	{
 		"c": ".",
-		"t": "text.html.cshtml punctuation.accessor.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.accessor.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "AsInt",
-		"t": "text.html.cshtml entity.name.function.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock entity.name.function.cs",
 		"r": {
 			"dark_plus": "entity.name.function: #DCDCAA",
 			"light_plus": "entity.name.function: #795E26",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "entity.name.function: #DCDCAA"
+			"hc_black": "entity.name.function: #DCDCAA",
+			"hc_light": "entity.name.function: #5E2CBC"
 		}
 	},
 	{
 		"c": "(",
-		"t": "text.html.cshtml punctuation.parenthesis.open.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.parenthesis.open.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": ")",
-		"t": "text.html.cshtml punctuation.parenthesis.close.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.parenthesis.close.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "+",
-		"t": "text.html.cshtml keyword.operator.arithmetic.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock keyword.operator.arithmetic.cs",
 		"r": {
 			"dark_plus": "keyword.operator: #D4D4D4",
 			"light_plus": "keyword.operator: #000000",
 			"dark_vs": "keyword.operator: #D4D4D4",
 			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
+			"hc_black": "keyword.operator: #D4D4D4",
+			"hc_light": "keyword.operator: #000000"
 		}
 	},
 	{
 		"c": " ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "num2",
-		"t": "text.html.cshtml variable.other.object.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock variable.other.object.cs",
 		"r": {
 			"dark_plus": "variable: #9CDCFE",
 			"light_plus": "variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
+			"hc_black": "variable: #9CDCFE",
+			"hc_light": "variable: #001080"
 		}
 	},
 	{
 		"c": ".",
-		"t": "text.html.cshtml punctuation.accessor.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.accessor.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "AsInt",
-		"t": "text.html.cshtml entity.name.function.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock entity.name.function.cs",
 		"r": {
 			"dark_plus": "entity.name.function: #DCDCAA",
 			"light_plus": "entity.name.function: #795E26",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "entity.name.function: #DCDCAA"
+			"hc_black": "entity.name.function: #DCDCAA",
+			"hc_light": "entity.name.function: #5E2CBC"
 		}
 	},
 	{
 		"c": "(",
-		"t": "text.html.cshtml punctuation.parenthesis.open.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.parenthesis.open.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": ")",
-		"t": "text.html.cshtml punctuation.parenthesis.close.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.parenthesis.close.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": ";",
-		"t": "text.html.cshtml punctuation.terminator.statement.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.terminator.statement.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "\t\t",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "<",
-		"t": "text.html.cshtml keyword.operator.relational.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.definition.tag.begin.html",
 		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
 		"c": "italic",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock entity.name.tag.html",
 		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": "><",
-		"t": "text.html.cshtml keyword.operator.relational.cs",
-		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
-		}
-	},
-	{
-		"c": "bold",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
+			"dark_plus": "entity.name.tag: #569CD6",
+			"light_plus": "entity.name.tag: #800000",
+			"dark_vs": "entity.name.tag: #569CD6",
+			"light_vs": "entity.name.tag: #800000",
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
 		"c": ">",
-		"t": "text.html.cshtml keyword.operator.relational.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.definition.tag.end.html",
 		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
-		}
-	},
-	{
-		"c": "totalMessage",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "=",
-		"t": "text.html.cshtml keyword.operator.assignment.cs",
-		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "\"",
-		"t": "text.html.cshtml string.quoted.double.cs punctuation.definition.string.begin.cs",
-		"r": {
-			"dark_plus": "string: #CE9178",
-			"light_plus": "string: #A31515",
-			"dark_vs": "string: #CE9178",
-			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
-		}
-	},
-	{
-		"c": "Total = ",
-		"t": "text.html.cshtml string.quoted.double.cs",
-		"r": {
-			"dark_plus": "string: #CE9178",
-			"light_plus": "string: #A31515",
-			"dark_vs": "string: #CE9178",
-			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
-		}
-	},
-	{
-		"c": "\"",
-		"t": "text.html.cshtml string.quoted.double.cs punctuation.definition.string.end.cs",
-		"r": {
-			"dark_plus": "string: #CE9178",
-			"light_plus": "string: #A31515",
-			"dark_vs": "string: #CE9178",
-			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "+",
-		"t": "text.html.cshtml keyword.operator.arithmetic.cs",
-		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
-		}
-	},
-	{
-		"c": " ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "total",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": ";",
-		"t": "text.html.cshtml punctuation.terminator.statement.cs",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
 		"c": "<",
-		"t": "text.html.cshtml keyword.operator.relational.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.definition.tag.begin.html",
 		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
-		}
-	},
-	{
-		"c": "/",
-		"t": "text.html.cshtml keyword.operator.arithmetic.cs",
-		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
 		"c": "bold",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock entity.name.tag.html",
 		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": "><",
-		"t": "text.html.cshtml keyword.operator.relational.cs",
-		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
-		}
-	},
-	{
-		"c": "/",
-		"t": "text.html.cshtml keyword.operator.arithmetic.cs",
-		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
-		}
-	},
-	{
-		"c": "italic",
-		"t": "text.html.cshtml variable.other.readwrite.cs",
-		"r": {
-			"dark_plus": "variable: #9CDCFE",
-			"light_plus": "variable: #001080",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
+			"dark_plus": "entity.name.tag: #569CD6",
+			"light_plus": "entity.name.tag: #800000",
+			"dark_vs": "entity.name.tag: #569CD6",
+			"light_vs": "entity.name.tag: #800000",
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
 		"c": ">",
-		"t": "text.html.cshtml keyword.operator.relational.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.definition.tag.end.html",
 		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
+		}
+	},
+	{
+		"c": "totalMessage = \"Total = \" + total;",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
+		"r": {
+			"dark_plus": "default: #D4D4D4",
+			"light_plus": "default: #000000",
+			"dark_vs": "default: #D4D4D4",
+			"light_vs": "default: #000000",
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
+		}
+	},
+	{
+		"c": "</",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.definition.tag.begin.html",
+		"r": {
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
+		}
+	},
+	{
+		"c": "bold",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock entity.name.tag.html",
+		"r": {
+			"dark_plus": "entity.name.tag: #569CD6",
+			"light_plus": "entity.name.tag: #800000",
+			"dark_vs": "entity.name.tag: #569CD6",
+			"light_vs": "entity.name.tag: #800000",
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
+		}
+	},
+	{
+		"c": ">",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.definition.tag.end.html",
+		"r": {
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
+		}
+	},
+	{
+		"c": "</",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.definition.tag.begin.html",
+		"r": {
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
+		}
+	},
+	{
+		"c": "italic",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock entity.name.tag.html",
+		"r": {
+			"dark_plus": "entity.name.tag: #569CD6",
+			"light_plus": "entity.name.tag: #800000",
+			"dark_vs": "entity.name.tag: #569CD6",
+			"light_vs": "entity.name.tag: #800000",
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
+		}
+	},
+	{
+		"c": ">",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.definition.tag.end.html",
+		"r": {
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
 		"c": "    ",
-		"t": "text.html.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "}",
-		"t": "text.html.cshtml punctuation.curlybrace.close.cs",
+		"t": "text.html.cshtml meta.structure.razor.codeblock source.cs meta.statement.if.razor meta.structure.razor.csharp.codeblock punctuation.curlybrace.close.cs",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
 		"c": "}",
-		"t": "text.html.cshtml keyword.control.cshtml",
+		"t": "text.html.cshtml meta.structure.razor.codeblock keyword.control.razor.directive.codeblock.close",
 		"r": {
 			"dark_plus": "keyword.control: #C586C0",
 			"light_plus": "keyword.control: #AF00DB",
 			"dark_vs": "keyword.control: #569CD6",
 			"light_vs": "keyword.control: #0000FF",
-			"hc_black": "keyword.control: #C586C0"
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
 		}
 	},
 	{
@@ -1415,7 +1279,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1426,7 +1291,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -1437,7 +1303,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1445,10 +1312,11 @@
 		"t": "text.html.cshtml meta.tag.metadata.doctype.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -1459,7 +1327,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1470,7 +1339,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1481,7 +1351,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -1492,7 +1363,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1500,10 +1372,11 @@
 		"t": "text.html.cshtml meta.tag.structure.html.start.html meta.attribute.lang.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -1514,7 +1387,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1525,7 +1399,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -1536,7 +1411,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -1547,7 +1423,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -1558,7 +1435,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1569,7 +1447,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1580,7 +1459,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1591,7 +1471,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -1602,7 +1483,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1613,7 +1495,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1624,7 +1507,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1635,7 +1519,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -1646,7 +1531,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1657,7 +1543,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1668,7 +1555,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1679,7 +1567,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -1690,7 +1579,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1701,7 +1591,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1712,7 +1603,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1723,7 +1615,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -1734,7 +1627,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1742,10 +1636,11 @@
 		"t": "text.html.cshtml meta.tag.metadata.meta.void.html meta.attribute.charset.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -1756,7 +1651,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1767,7 +1663,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -1778,7 +1675,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -1789,7 +1687,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -1800,7 +1699,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1811,7 +1711,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1822,7 +1723,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1833,7 +1735,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1844,7 +1747,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -1855,7 +1759,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1866,7 +1771,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1877,7 +1783,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -1888,7 +1795,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1899,7 +1807,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1910,7 +1819,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1921,7 +1831,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -1932,7 +1843,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1943,7 +1855,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1954,7 +1867,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1965,7 +1879,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -1976,7 +1891,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -1987,7 +1903,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -1998,7 +1915,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2009,7 +1927,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2020,7 +1939,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2031,7 +1951,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2042,7 +1963,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2053,7 +1975,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2064,7 +1987,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2075,7 +1999,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2086,7 +2011,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2097,7 +2023,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2108,7 +2035,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2116,10 +2044,11 @@
 		"t": "text.html.cshtml meta.tag.structure.form.start.html meta.attribute.action.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -2130,7 +2059,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2141,7 +2071,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2152,7 +2083,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2163,7 +2095,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2171,10 +2104,11 @@
 		"t": "text.html.cshtml meta.tag.structure.form.start.html meta.attribute.method.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -2185,7 +2119,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2196,7 +2131,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2207,7 +2143,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2218,7 +2155,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2229,7 +2167,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2240,7 +2179,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2251,7 +2191,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2262,7 +2203,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2273,7 +2215,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2284,7 +2227,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2295,7 +2239,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2306,7 +2251,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2314,10 +2260,11 @@
 		"t": "text.html.cshtml meta.tag.structure.label.start.html meta.attribute.for.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -2328,7 +2275,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2339,7 +2287,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2350,7 +2299,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2361,7 +2311,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2372,7 +2323,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2383,7 +2335,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2394,7 +2347,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2405,7 +2359,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2416,7 +2371,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2427,7 +2383,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2438,7 +2395,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2449,7 +2407,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2460,7 +2419,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2468,10 +2428,11 @@
 		"t": "text.html.cshtml meta.tag.structure.input.void.html meta.attribute.type.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -2482,7 +2443,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2493,7 +2455,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2504,7 +2467,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2515,7 +2479,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2526,7 +2491,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2534,10 +2500,11 @@
 		"t": "text.html.cshtml meta.tag.structure.input.void.html meta.attribute.name.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -2548,7 +2515,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2559,7 +2527,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2570,7 +2539,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2581,7 +2551,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2592,7 +2563,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2603,7 +2575,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2614,7 +2587,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2625,7 +2599,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2636,7 +2611,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2647,7 +2623,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2658,7 +2635,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2669,7 +2647,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2680,7 +2659,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2691,7 +2671,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2702,7 +2683,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2713,7 +2695,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2724,7 +2707,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2732,10 +2716,11 @@
 		"t": "text.html.cshtml meta.tag.structure.label.start.html meta.attribute.for.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -2746,7 +2731,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2757,7 +2743,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2768,7 +2755,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2779,7 +2767,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2790,7 +2779,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2801,7 +2791,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2812,7 +2803,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2823,7 +2815,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2834,7 +2827,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2845,7 +2839,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2856,7 +2851,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -2867,7 +2863,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -2878,7 +2875,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2886,10 +2884,11 @@
 		"t": "text.html.cshtml meta.tag.structure.input.void.html meta.attribute.type.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -2900,7 +2899,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2911,7 +2911,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2922,7 +2923,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2933,7 +2935,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2944,7 +2947,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2952,10 +2956,11 @@
 		"t": "text.html.cshtml meta.tag.structure.input.void.html meta.attribute.name.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -2966,7 +2971,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -2977,7 +2983,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2988,7 +2995,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -2999,7 +3007,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -3010,7 +3019,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3021,7 +3031,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3032,7 +3043,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3043,7 +3055,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3054,7 +3067,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -3065,7 +3079,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3076,7 +3091,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3087,7 +3103,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3098,7 +3115,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -3109,7 +3127,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3120,7 +3139,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3131,7 +3151,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -3142,7 +3163,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3150,10 +3172,11 @@
 		"t": "text.html.cshtml meta.tag.structure.input.void.html meta.attribute.type.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -3164,7 +3187,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3175,7 +3199,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -3186,7 +3211,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -3197,7 +3223,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -3208,7 +3235,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3216,10 +3244,11 @@
 		"t": "text.html.cshtml meta.tag.structure.input.void.html meta.attribute.value.html entity.other.attribute-name.html",
 		"r": {
 			"dark_plus": "entity.other.attribute-name: #9CDCFE",
-			"light_plus": "entity.other.attribute-name: #FF0000",
+			"light_plus": "entity.other.attribute-name: #E50000",
 			"dark_vs": "entity.other.attribute-name: #9CDCFE",
-			"light_vs": "entity.other.attribute-name: #FF0000",
-			"hc_black": "entity.other.attribute-name: #9CDCFE"
+			"light_vs": "entity.other.attribute-name: #E50000",
+			"hc_black": "entity.other.attribute-name: #9CDCFE",
+			"hc_light": "entity.other.attribute-name: #264F78"
 		}
 	},
 	{
@@ -3230,7 +3259,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3241,7 +3271,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -3252,7 +3283,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -3263,7 +3295,8 @@
 			"light_plus": "string.quoted.double.html: #0000FF",
 			"dark_vs": "string: #CE9178",
 			"light_vs": "string.quoted.double.html: #0000FF",
-			"hc_black": "string: #CE9178"
+			"hc_black": "string: #CE9178",
+			"hc_light": "string.quoted.double.html: #0F4A85"
 		}
 	},
 	{
@@ -3274,7 +3307,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3285,7 +3319,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3296,7 +3331,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3307,7 +3343,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -3318,7 +3355,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3329,7 +3367,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3340,7 +3379,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3351,7 +3391,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -3362,29 +3403,92 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
-		"c": "\t@* now we call the totalMessage method",
+		"c": "\t",
 		"t": "text.html.cshtml",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
-		"c": "\t   (a multi line razor comment outside code) *@",
-		"t": "text.html.cshtml",
+		"c": "@",
+		"t": "text.html.cshtml meta.comment.razor keyword.control.cshtml.transition",
 		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
+		}
+	},
+	{
+		"c": "*",
+		"t": "text.html.cshtml meta.comment.razor keyword.control.razor.comment.star",
+		"r": {
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
+		}
+	},
+	{
+		"c": " now we call the totalMessage method",
+		"t": "text.html.cshtml meta.comment.razor comment.block.razor",
+		"r": {
+			"dark_plus": "comment: #6A9955",
+			"light_plus": "comment: #008000",
+			"dark_vs": "comment: #6A9955",
+			"light_vs": "comment: #008000",
+			"hc_black": "comment: #7CA668",
+			"hc_light": "comment: #515151"
+		}
+	},
+	{
+		"c": "\t   (a multi line razor comment outside code) ",
+		"t": "text.html.cshtml meta.comment.razor comment.block.razor",
+		"r": {
+			"dark_plus": "comment: #6A9955",
+			"light_plus": "comment: #008000",
+			"dark_vs": "comment: #6A9955",
+			"light_vs": "comment: #008000",
+			"hc_black": "comment: #7CA668",
+			"hc_light": "comment: #515151"
+		}
+	},
+	{
+		"c": "*",
+		"t": "text.html.cshtml meta.comment.razor keyword.control.razor.comment.star",
+		"r": {
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
+		}
+	},
+	{
+		"c": "@",
+		"t": "text.html.cshtml meta.comment.razor keyword.control.cshtml.transition",
+		"r": {
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
 		}
 	},
 	{
@@ -3395,7 +3499,8 @@
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3406,7 +3511,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3417,7 +3523,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -3428,150 +3535,32 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
-		"c": "@totalMessage",
-		"t": "text.html.cshtml meta.expression.implicit.cshtml keyword.control.cshtml",
+		"c": "@",
+		"t": "text.html.cshtml meta.expression.implicit.cshtml keyword.control.cshtml.transition",
 		"r": {
 			"dark_plus": "keyword.control: #C586C0",
 			"light_plus": "keyword.control: #AF00DB",
 			"dark_vs": "keyword.control: #569CD6",
 			"light_vs": "keyword.control: #0000FF",
-			"hc_black": "keyword.control: #C586C0"
-		}
-	},
-	{
-		"c": "</p>",
-		"t": "text.html.cshtml meta.expression.implicit.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "  ",
-		"t": "text.html.cshtml",
-		"r": {
-			"dark_plus": "default: #D4D4D4",
-			"light_plus": "default: #000000",
-			"dark_vs": "default: #D4D4D4",
-			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
-		}
-	},
-	{
-		"c": "<",
-		"t": "text.html.cshtml meta.tag.structure.p.start.html punctuation.definition.tag.begin.html",
-		"r": {
-			"dark_plus": "punctuation.definition.tag: #808080",
-			"light_plus": "punctuation.definition.tag: #800000",
-			"dark_vs": "punctuation.definition.tag: #808080",
-			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
-		}
-	},
-	{
-		"c": "p",
-		"t": "text.html.cshtml meta.tag.structure.p.start.html entity.name.tag.html",
-		"r": {
-			"dark_plus": "entity.name.tag: #569CD6",
-			"light_plus": "entity.name.tag: #800000",
-			"dark_vs": "entity.name.tag: #569CD6",
-			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
-		}
-	},
-	{
-		"c": ">",
-		"t": "text.html.cshtml meta.tag.structure.p.start.html punctuation.definition.tag.end.html",
-		"r": {
-			"dark_plus": "punctuation.definition.tag: #808080",
-			"light_plus": "punctuation.definition.tag: #800000",
-			"dark_vs": "punctuation.definition.tag: #808080",
-			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
-		}
-	},
-	{
-		"c": "@(",
-		"t": "text.html.cshtml meta.expression.explicit.cshtml keyword.control.cshtml",
-		"r": {
-			"dark_plus": "keyword.control: #C586C0",
-			"light_plus": "keyword.control: #AF00DB",
-			"dark_vs": "keyword.control: #569CD6",
-			"light_vs": "keyword.control: #0000FF",
-			"hc_black": "keyword.control: #C586C0"
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
 		}
 	},
 	{
 		"c": "totalMessage",
-		"t": "text.html.cshtml meta.expression.explicit.cshtml variable.other.readwrite.cs",
+		"t": "text.html.cshtml meta.expression.implicit.cshtml source.cs variable.other.object.cs",
 		"r": {
 			"dark_plus": "variable: #9CDCFE",
 			"light_plus": "variable: #001080",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "variable: #9CDCFE"
-		}
-	},
-	{
-		"c": "+",
-		"t": "text.html.cshtml meta.expression.explicit.cshtml keyword.operator.arithmetic.cs",
-		"r": {
-			"dark_plus": "keyword.operator: #D4D4D4",
-			"light_plus": "keyword.operator: #000000",
-			"dark_vs": "keyword.operator: #D4D4D4",
-			"light_vs": "keyword.operator: #000000",
-			"hc_black": "keyword.operator: #D4D4D4"
-		}
-	},
-	{
-		"c": "\"",
-		"t": "text.html.cshtml meta.expression.explicit.cshtml string.quoted.double.cs punctuation.definition.string.begin.cs",
-		"r": {
-			"dark_plus": "string: #CE9178",
-			"light_plus": "string: #A31515",
-			"dark_vs": "string: #CE9178",
-			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
-		}
-	},
-	{
-		"c": "!",
-		"t": "text.html.cshtml meta.expression.explicit.cshtml string.quoted.double.cs",
-		"r": {
-			"dark_plus": "string: #CE9178",
-			"light_plus": "string: #A31515",
-			"dark_vs": "string: #CE9178",
-			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
-		}
-	},
-	{
-		"c": "\"",
-		"t": "text.html.cshtml meta.expression.explicit.cshtml string.quoted.double.cs punctuation.definition.string.end.cs",
-		"r": {
-			"dark_plus": "string: #CE9178",
-			"light_plus": "string: #A31515",
-			"dark_vs": "string: #CE9178",
-			"light_vs": "string: #A31515",
-			"hc_black": "string: #CE9178"
-		}
-	},
-	{
-		"c": ")",
-		"t": "text.html.cshtml meta.expression.explicit.cshtml keyword.control.cshtml",
-		"r": {
-			"dark_plus": "keyword.control: #C586C0",
-			"light_plus": "keyword.control: #AF00DB",
-			"dark_vs": "keyword.control: #569CD6",
-			"light_vs": "keyword.control: #0000FF",
-			"hc_black": "keyword.control: #C586C0"
+			"hc_black": "variable: #9CDCFE",
+			"hc_light": "variable: #001080"
 		}
 	},
 	{
@@ -3582,7 +3571,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3593,7 +3583,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -3604,29 +3595,224 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
-		"c": "  An email address (with escaped at character): name@",
+		"c": "  ",
 		"t": "text.html.cshtml",
 		"r": {
 			"dark_plus": "default: #D4D4D4",
 			"light_plus": "default: #000000",
 			"dark_vs": "default: #D4D4D4",
 			"light_vs": "default: #000000",
-			"hc_black": "default: #FFFFFF"
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
-		"c": "@domain.com",
-		"t": "text.html.cshtml meta.expression.implicit.cshtml keyword.control.cshtml",
+		"c": "<",
+		"t": "text.html.cshtml meta.tag.structure.p.start.html punctuation.definition.tag.begin.html",
+		"r": {
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
+		}
+	},
+	{
+		"c": "p",
+		"t": "text.html.cshtml meta.tag.structure.p.start.html entity.name.tag.html",
+		"r": {
+			"dark_plus": "entity.name.tag: #569CD6",
+			"light_plus": "entity.name.tag: #800000",
+			"dark_vs": "entity.name.tag: #569CD6",
+			"light_vs": "entity.name.tag: #800000",
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
+		}
+	},
+	{
+		"c": ">",
+		"t": "text.html.cshtml meta.tag.structure.p.start.html punctuation.definition.tag.end.html",
+		"r": {
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
+		}
+	},
+	{
+		"c": "@",
+		"t": "text.html.cshtml meta.expression.explicit.cshtml keyword.control.cshtml.transition",
 		"r": {
 			"dark_plus": "keyword.control: #C586C0",
 			"light_plus": "keyword.control: #AF00DB",
 			"dark_vs": "keyword.control: #569CD6",
 			"light_vs": "keyword.control: #0000FF",
-			"hc_black": "keyword.control: #C586C0"
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
+		}
+	},
+	{
+		"c": "(",
+		"t": "text.html.cshtml meta.expression.explicit.cshtml keyword.control.cshtml",
+		"r": {
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
+		}
+	},
+	{
+		"c": "totalMessage",
+		"t": "text.html.cshtml meta.expression.explicit.cshtml variable.other.readwrite.cs",
+		"r": {
+			"dark_plus": "variable: #9CDCFE",
+			"light_plus": "variable: #001080",
+			"dark_vs": "default: #D4D4D4",
+			"light_vs": "default: #000000",
+			"hc_black": "variable: #9CDCFE",
+			"hc_light": "variable: #001080"
+		}
+	},
+	{
+		"c": "+",
+		"t": "text.html.cshtml meta.expression.explicit.cshtml keyword.operator.arithmetic.cs",
+		"r": {
+			"dark_plus": "keyword.operator: #D4D4D4",
+			"light_plus": "keyword.operator: #000000",
+			"dark_vs": "keyword.operator: #D4D4D4",
+			"light_vs": "keyword.operator: #000000",
+			"hc_black": "keyword.operator: #D4D4D4",
+			"hc_light": "keyword.operator: #000000"
+		}
+	},
+	{
+		"c": "\"",
+		"t": "text.html.cshtml meta.expression.explicit.cshtml string.quoted.double.cs punctuation.definition.string.begin.cs",
+		"r": {
+			"dark_plus": "string: #CE9178",
+			"light_plus": "string: #A31515",
+			"dark_vs": "string: #CE9178",
+			"light_vs": "string: #A31515",
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
+		}
+	},
+	{
+		"c": "!",
+		"t": "text.html.cshtml meta.expression.explicit.cshtml string.quoted.double.cs",
+		"r": {
+			"dark_plus": "string: #CE9178",
+			"light_plus": "string: #A31515",
+			"dark_vs": "string: #CE9178",
+			"light_vs": "string: #A31515",
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
+		}
+	},
+	{
+		"c": "\"",
+		"t": "text.html.cshtml meta.expression.explicit.cshtml string.quoted.double.cs punctuation.definition.string.end.cs",
+		"r": {
+			"dark_plus": "string: #CE9178",
+			"light_plus": "string: #A31515",
+			"dark_vs": "string: #CE9178",
+			"light_vs": "string: #A31515",
+			"hc_black": "string: #CE9178",
+			"hc_light": "string: #0F4A85"
+		}
+	},
+	{
+		"c": ")",
+		"t": "text.html.cshtml meta.expression.explicit.cshtml keyword.control.cshtml",
+		"r": {
+			"dark_plus": "keyword.control: #C586C0",
+			"light_plus": "keyword.control: #AF00DB",
+			"dark_vs": "keyword.control: #569CD6",
+			"light_vs": "keyword.control: #0000FF",
+			"hc_black": "keyword.control: #C586C0",
+			"hc_light": "keyword.control: #B5200D"
+		}
+	},
+	{
+		"c": "</",
+		"t": "text.html.cshtml meta.tag.structure.p.end.html punctuation.definition.tag.begin.html",
+		"r": {
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
+		}
+	},
+	{
+		"c": "p",
+		"t": "text.html.cshtml meta.tag.structure.p.end.html entity.name.tag.html",
+		"r": {
+			"dark_plus": "entity.name.tag: #569CD6",
+			"light_plus": "entity.name.tag: #800000",
+			"dark_vs": "entity.name.tag: #569CD6",
+			"light_vs": "entity.name.tag: #800000",
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
+		}
+	},
+	{
+		"c": ">",
+		"t": "text.html.cshtml meta.tag.structure.p.end.html punctuation.definition.tag.end.html",
+		"r": {
+			"dark_plus": "punctuation.definition.tag: #808080",
+			"light_plus": "punctuation.definition.tag: #800000",
+			"dark_vs": "punctuation.definition.tag: #808080",
+			"light_vs": "punctuation.definition.tag: #800000",
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
+		}
+	},
+	{
+		"c": "  An email address (with escaped at character): name",
+		"t": "text.html.cshtml",
+		"r": {
+			"dark_plus": "default: #D4D4D4",
+			"light_plus": "default: #000000",
+			"dark_vs": "default: #D4D4D4",
+			"light_vs": "default: #000000",
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
+		}
+	},
+	{
+		"c": "@@",
+		"t": "text.html.cshtml constant.character.escape.razor.transition",
+		"r": {
+			"dark_plus": "constant.character.escape: #D7BA7D",
+			"light_plus": "constant.character.escape: #EE0000",
+			"dark_vs": "default: #D4D4D4",
+			"light_vs": "default: #000000",
+			"hc_black": "constant.character: #569CD6",
+			"hc_light": "constant.character.escape: #EE0000"
+		}
+	},
+	{
+		"c": "domain.com",
+		"t": "text.html.cshtml",
+		"r": {
+			"dark_plus": "default: #D4D4D4",
+			"light_plus": "default: #000000",
+			"dark_vs": "default: #D4D4D4",
+			"light_vs": "default: #000000",
+			"hc_black": "default: #FFFFFF",
+			"hc_light": "default: #292929"
 		}
 	},
 	{
@@ -3637,7 +3823,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3648,7 +3835,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -3659,7 +3847,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3670,7 +3859,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	},
 	{
@@ -3681,7 +3871,8 @@
 			"light_plus": "entity.name.tag: #800000",
 			"dark_vs": "entity.name.tag: #569CD6",
 			"light_vs": "entity.name.tag: #800000",
-			"hc_black": "entity.name.tag: #569CD6"
+			"hc_black": "entity.name.tag: #569CD6",
+			"hc_light": "entity.name.tag: #0F4A85"
 		}
 	},
 	{
@@ -3692,7 +3883,8 @@
 			"light_plus": "punctuation.definition.tag: #800000",
 			"dark_vs": "punctuation.definition.tag: #808080",
 			"light_vs": "punctuation.definition.tag: #800000",
-			"hc_black": "punctuation.definition.tag: #808080"
+			"hc_black": "punctuation.definition.tag: #808080",
+			"hc_light": "punctuation.definition.tag: #0F4A85"
 		}
 	}
 ]

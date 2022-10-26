@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isEqual } from 'vs/base/common/resources';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { EditorActivation } from 'vs/platform/editor/common/editor';
 import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-import { EditorResourceAccessor, EditorInputWithOptions, isEditorInputWithOptions, IUntypedEditorInput } from 'vs/workbench/common/editor';
+import { EditorInputWithOptions, isEditorInputWithOptions, IUntypedEditorInput, isEditorInput, EditorInputCapabilities } from 'vs/workbench/common/editor';
 import { EditorInput } from 'vs/workbench/common/editor/editorInput';
 import { IEditorGroup, GroupsOrder, preferredSideBySideGroupDirection, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
 import { PreferredGroup, SIDE_GROUP } from 'vs/workbench/services/editor/common/editorService';
@@ -52,8 +51,8 @@ export function findGroup(accessor: ServicesAccessor, editor: EditorInputWithOpt
 
 function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, preferredGroup: PreferredGroup | undefined, editorGroupService: IEditorGroupsService, configurationService: IConfigurationService): IEditorGroup {
 	let group: IEditorGroup | undefined;
-	let editor = isEditorInputWithOptions(input) ? input.editor : input;
-	let options = input.options;
+	const editor = isEditorInputWithOptions(input) ? input.editor : input;
+	const options = input.options;
 
 	// Group: Instance of Group
 	if (preferredGroup && typeof preferredGroup !== 'number') {
@@ -95,8 +94,10 @@ function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, prefer
 
 		// Respect option to reveal an editor if it is open (not necessarily visible)
 		// Still prefer to reveal an editor in a group where the editor is active though.
+		// We also try to reveal an editor if it has the `Singleton` capability which
+		// indicates that the same editor cannot be opened across groups.
 		if (!group) {
-			if (options?.revealIfOpened || configurationService.getValue<boolean>('workbench.editor.revealIfOpen')) {
+			if (options?.revealIfOpened || configurationService.getValue<boolean>('workbench.editor.revealIfOpen') || (isEditorInput(editor) && editor.hasCapability(EditorInputCapabilities.Singleton))) {
 				let groupWithInputActive: IEditorGroup | undefined = undefined;
 				let groupWithInputOpened: IEditorGroup | undefined = undefined;
 
@@ -180,31 +181,14 @@ function isActive(group: IEditorGroup, editor: EditorInput | IUntypedEditorInput
 		return false;
 	}
 
-	return matchesEditor(group.activeEditor, editor);
+	return group.activeEditor.matches(editor);
 }
 
 function isOpened(group: IEditorGroup, editor: EditorInput | IUntypedEditorInput): boolean {
 	for (const typedEditor of group.editors) {
-		if (matchesEditor(typedEditor, editor)) {
+		if (typedEditor.matches(editor)) {
 			return true;
 		}
-	}
-
-	return false;
-}
-
-function matchesEditor(typedEditor: EditorInput, editor: EditorInput | IUntypedEditorInput): boolean {
-	if (typedEditor.matches(editor)) {
-		return true;
-	}
-
-	// Note: intentionally doing a "weak" check on the resource
-	// because `EditorInput.matches` will not work for untyped
-	// editors that have no `override` defined.
-	//
-	// TODO@lramos15 https://github.com/microsoft/vscode/issues/131619
-	if (typedEditor.resource) {
-		return isEqual(typedEditor.resource, EditorResourceAccessor.getCanonicalUri(editor));
 	}
 
 	return false;

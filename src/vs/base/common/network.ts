@@ -52,7 +52,7 @@ export namespace Schemas {
 
 	export const vscodeRemoteResource = 'vscode-remote-resource';
 
-	export const userData = 'vscode-userdata';
+	export const vscodeUserData = 'vscode-userdata';
 
 	export const vscodeCustomEditor = 'vscode-custom-editor';
 
@@ -101,14 +101,23 @@ export namespace Schemas {
 	 * Scheme used vs live share
 	 */
 	export const vsls = 'vsls';
+
+	/**
+	 * Scheme used for the Source Control commit input's text document
+	 */
+	export const vscodeSourceControl = 'vscode-scm';
 }
 
+export const connectionTokenCookieName = 'vscode-tkn';
+export const connectionTokenQueryName = 'tkn';
+
 class RemoteAuthoritiesImpl {
-	private readonly _hosts: { [authority: string]: string | undefined; } = Object.create(null);
-	private readonly _ports: { [authority: string]: number | undefined; } = Object.create(null);
-	private readonly _connectionTokens: { [authority: string]: string | undefined; } = Object.create(null);
+	private readonly _hosts: { [authority: string]: string | undefined } = Object.create(null);
+	private readonly _ports: { [authority: string]: number | undefined } = Object.create(null);
+	private readonly _connectionTokens: { [authority: string]: string | undefined } = Object.create(null);
 	private _preferredWebSchema: 'http' | 'https' = 'http';
 	private _delegate: ((uri: URI) => URI) | null = null;
+	private _remoteResourcesPath: string = `/${Schemas.vscodeRemoteResource}`;
 
 	setPreferredWebSchema(schema: 'http' | 'https') {
 		this._preferredWebSchema = schema;
@@ -116,6 +125,10 @@ class RemoteAuthoritiesImpl {
 
 	setDelegate(delegate: (uri: URI) => URI): void {
 		this._delegate = delegate;
+	}
+
+	setServerRootPath(serverRootPath: string): void {
+		this._remoteResourcesPath = `${serverRootPath}/${Schemas.vscodeRemoteResource}`;
 	}
 
 	set(authority: string, host: string, port: number): void {
@@ -127,25 +140,29 @@ class RemoteAuthoritiesImpl {
 		this._connectionTokens[authority] = connectionToken;
 	}
 
+	getPreferredWebSchema(): 'http' | 'https' {
+		return this._preferredWebSchema;
+	}
+
 	rewrite(uri: URI): URI {
 		if (this._delegate) {
 			return this._delegate(uri);
 		}
 		const authority = uri.authority;
 		let host = this._hosts[authority];
-		if (host && host.indexOf(':') !== -1) {
+		if (host && host.indexOf(':') !== -1 && host.indexOf('[') === -1) {
 			host = `[${host}]`;
 		}
 		const port = this._ports[authority];
 		const connectionToken = this._connectionTokens[authority];
 		let query = `path=${encodeURIComponent(uri.path)}`;
 		if (typeof connectionToken === 'string') {
-			query += `&tkn=${encodeURIComponent(connectionToken)}`;
+			query += `&${connectionTokenQueryName}=${encodeURIComponent(connectionToken)}`;
 		}
 		return URI.from({
 			scheme: platform.isWeb ? this._preferredWebSchema : Schemas.vscodeRemoteResource,
 			authority: `${host}:${port}`,
-			path: `/vscode-remote-resource`,
+			path: this._remoteResourcesPath,
 			query
 		});
 	}
@@ -181,7 +198,7 @@ class FileAccessImpl {
 				// ...and we run in native environments
 				platform.isNative ||
 				// ...or web worker extensions on desktop
-				(typeof platform.globals.importScripts === 'function' && platform.globals.origin === `${Schemas.vscodeFileResource}://${FileAccessImpl.FALLBACK_AUTHORITY}`)
+				(platform.isWebWorker && platform.globals.origin === `${Schemas.vscodeFileResource}://${FileAccessImpl.FALLBACK_AUTHORITY}`)
 			)
 		) {
 			return uri.with({
@@ -234,3 +251,53 @@ class FileAccessImpl {
 }
 
 export const FileAccess = new FileAccessImpl();
+
+
+export namespace COI {
+
+	const coiHeaders = new Map<'3' | '2' | '1' | string, Record<string, string>>([
+		['1', { 'Cross-Origin-Opener-Policy': 'same-origin' }],
+		['2', { 'Cross-Origin-Embedder-Policy': 'require-corp' }],
+		['3', { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp' }],
+	]);
+
+	export const CoopAndCoep = Object.freeze(coiHeaders.get('3'));
+
+	const coiSearchParamName = 'vscode-coi';
+
+	/**
+	 * Extract desired headers from `vscode-coi` invocation
+	 */
+	export function getHeadersFromQuery(url: string | URI | URL): Record<string, string> | undefined {
+		let params: URLSearchParams | undefined;
+		if (typeof url === 'string') {
+			params = new URL(url).searchParams;
+		} else if (url instanceof URL) {
+			params = url.searchParams;
+		} else if (URI.isUri(url)) {
+			params = new URL(url.toString(true)).searchParams;
+		}
+		const value = params?.get(coiSearchParamName);
+		if (!value) {
+			return undefined;
+		}
+		return coiHeaders.get(value);
+	}
+
+	/**
+	 * Add the `vscode-coi` query attribute based on wanting `COOP` and `COEP`. Will be a noop when `crossOriginIsolated`
+	 * isn't enabled the current context
+	 */
+	export function addSearchParam(urlOrSearch: URLSearchParams | Record<string, string>, coop: boolean, coep: boolean): void {
+		if (!(<any>globalThis).crossOriginIsolated) {
+			// depends on the current context being COI
+			return;
+		}
+		const value = coop && coep ? '3' : coep ? '2' : '1';
+		if (urlOrSearch instanceof URLSearchParams) {
+			urlOrSearch.set(coiSearchParamName, value);
+		} else {
+			(<Record<string, string>>urlOrSearch)[coiSearchParamName] = value;
+		}
+	}
+}

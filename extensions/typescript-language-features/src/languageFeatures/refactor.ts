@@ -22,7 +22,7 @@ const localize = nls.loadMessageBundle();
 
 
 interface DidApplyRefactoringCommand_Args {
-	readonly codeAction: InlinedCodeAction
+	readonly codeAction: InlinedCodeAction;
 }
 
 class DidApplyRefactoringCommand implements Command {
@@ -36,6 +36,7 @@ class DidApplyRefactoringCommand implements Command {
 	public async execute(args: DidApplyRefactoringCommand_Args): Promise<void> {
 		/* __GDPR__
 			"refactor.execute" : {
+				"owner": "mjbvz",
 				"action" : { "classification": "PublicNonPersonalData", "purpose": "FeatureInsight" },
 				"${include}": [
 					"${TypeScriptCommonProperties}"
@@ -134,7 +135,7 @@ const Extract_Interface = Object.freeze<CodeActionKind>({
 });
 
 const Move_NewFile = Object.freeze<CodeActionKind>({
-	kind: vscode.CodeActionKind.Refactor.append('move').append('newFile'),
+	kind: vscode.CodeActionKind.RefactorMove.append('newFile'),
 	matches: refactor => refactor.name.startsWith('Move to a new file')
 });
 

@@ -6,13 +6,9 @@
 import * as assert from 'assert';
 import * as uuid from 'vs/base/common/uuid';
 import { OS, OperatingSystem } from 'vs/base/common/platform';
-import { Registry } from 'vs/platform/registry/common/platform';
-import { Action } from 'vs/base/common/actions';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { SimpleKeybinding, ChordKeybinding } from 'vs/base/common/keybindings';
-import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 import { CommandsRegistry } from 'vs/platform/commands/common/commands';
-import { IWorkbenchActionRegistry, Extensions as ActionExtensions } from 'vs/workbench/common/actions';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
 import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
@@ -22,18 +18,13 @@ import { USLayoutResolvedKeybinding } from 'vs/platform/keybinding/common/usLayo
 
 import { TestInstantiationService } from 'vs/platform/instantiation/test/common/instantiationServiceMock';
 import { IKeybindingItemEntry } from 'vs/workbench/services/preferences/common/preferences';
+import { Action2, registerAction2 } from 'vs/platform/actions/common/actions';
 
 interface Modifiers {
 	metaKey?: boolean;
 	ctrlKey?: boolean;
 	altKey?: boolean;
 	shiftKey?: boolean;
-}
-
-class AnAction extends Action {
-	constructor(id: string) {
-		super(id);
-	}
 }
 
 suite('KeybindingsEditorModel', () => {
@@ -61,6 +52,18 @@ suite('KeybindingsEditorModel', () => {
 		await testObject.resolve(new Map<string, string>());
 		const actuals = asResolvedKeybindingItems(testObject.fetch(''));
 		assertKeybindingItems(actuals, expected);
+	});
+
+	test('fetch returns distinct keybindings', async () => {
+		const command = 'a' + uuid.generateUuid();
+		const expected = prepareKeybindingService(
+			aResolvedKeybindingItem({ command, firstPart: { keyCode: KeyCode.Escape } }),
+			aResolvedKeybindingItem({ command, firstPart: { keyCode: KeyCode.Escape } }),
+		);
+
+		await testObject.resolve(new Map<string, string>());
+		const actuals = asResolvedKeybindingItems(testObject.fetch(''));
+		assertKeybindingItems(actuals, [expected[0]]);
 	});
 
 	test('fetch returns default keybindings at the top', async () => {
@@ -665,8 +668,16 @@ suite('KeybindingsEditorModel', () => {
 	}
 
 	function registerCommandWithTitle(command: string, title: string): void {
-		const registry = Registry.as<IWorkbenchActionRegistry>(ActionExtensions.WorkbenchActions);
-		registry.registerWorkbenchAction(SyncActionDescriptor.create(AnAction, command, title, { primary: 0 }), '');
+		registerAction2(class extends Action2 {
+			constructor() {
+				super({
+					id: command,
+					title: { value: title, original: title },
+					f1: true
+				});
+			}
+			async run(): Promise<void> { }
+		});
 	}
 
 	function assertKeybindingItems(actual: ResolvedKeybindingItem[], expected: ResolvedKeybindingItem[]) {
@@ -694,12 +705,12 @@ suite('KeybindingsEditorModel', () => {
 		}
 	}
 
-	function aResolvedKeybindingItem({ command, when, isDefault, firstPart, chordPart }: { command?: string, when?: string, isDefault?: boolean, firstPart?: { keyCode: KeyCode, modifiers?: Modifiers }, chordPart?: { keyCode: KeyCode, modifiers?: Modifiers } }): ResolvedKeybindingItem {
-		const aSimpleKeybinding = function (part: { keyCode: KeyCode, modifiers?: Modifiers }): SimpleKeybinding {
+	function aResolvedKeybindingItem({ command, when, isDefault, firstPart, chordPart }: { command?: string; when?: string; isDefault?: boolean; firstPart?: { keyCode: KeyCode; modifiers?: Modifiers }; chordPart?: { keyCode: KeyCode; modifiers?: Modifiers } }): ResolvedKeybindingItem {
+		const aSimpleKeybinding = function (part: { keyCode: KeyCode; modifiers?: Modifiers }): SimpleKeybinding {
 			const { ctrlKey, shiftKey, altKey, metaKey } = part.modifiers || { ctrlKey: false, shiftKey: false, altKey: false, metaKey: false };
 			return new SimpleKeybinding(ctrlKey!, shiftKey!, altKey!, metaKey!, part.keyCode);
 		};
-		let parts: SimpleKeybinding[] = [];
+		const parts: SimpleKeybinding[] = [];
 		if (firstPart) {
 			parts.push(aSimpleKeybinding(firstPart));
 			if (chordPart) {

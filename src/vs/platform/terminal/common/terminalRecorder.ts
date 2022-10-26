@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IPtyHostProcessReplayEvent, ReplayEntry } from 'vs/platform/terminal/common/terminalProcess';
+import { IPtyHostProcessReplayEvent } from 'vs/platform/terminal/common/capabilities/capabilities';
+import { ReplayEntry } from 'vs/platform/terminal/common/terminalProcess';
 
 const MAX_RECORDER_DATA_SIZE = 1024 * 1024; // 1MB
 
@@ -84,7 +85,12 @@ export class TerminalRecorder {
 			}
 		});
 		return {
-			events: this._entries.map(entry => ({ cols: entry.cols, rows: entry.rows, data: entry.data[0] ?? '' }))
+			events: this._entries.map(entry => ({ cols: entry.cols, rows: entry.rows, data: entry.data[0] ?? '' })),
+			// No command restoration is needed when relaunching terminals
+			commands: {
+				isWindowsPty: false,
+				commands: []
+			}
 		};
 	}
 

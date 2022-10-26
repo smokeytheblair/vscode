@@ -87,6 +87,10 @@ onceDocumentLoaded(() => {
 			}
 		});
 	}
+
+	if (typeof settings.settings.selectedLine === 'number') {
+		marker.onDidChangeTextEditorSelection(settings.settings.selectedLine, documentVersion);
+	}
 });
 
 const onUpdateView = (() => {
@@ -110,7 +114,6 @@ window.addEventListener('resize', () => {
 }, true);
 
 window.addEventListener('message', async event => {
-
 	switch (event.data.type) {
 		case 'onDidChangeTextEditorSelection':
 			if (event.data.source === documentResource) {
@@ -124,11 +127,18 @@ window.addEventListener('message', async event => {
 			}
 			return;
 
-		case 'updateContent':
+		case 'updateContent': {
 			const root = document.querySelector('.markdown-body')!;
 
 			const parser = new DOMParser();
 			const newContent = parser.parseFromString(event.data.content, 'text/html');
+
+			// Strip out meta http-equiv tags
+			for (const metaElement of Array.from(newContent.querySelectorAll('meta'))) {
+				if (metaElement.hasAttribute('http-equiv')) {
+					metaElement.remove();
+				}
+			}
 
 			if (event.data.source !== documentResource) {
 				root.replaceWith(newContent.querySelector('.markdown-body')!);
@@ -209,6 +219,7 @@ window.addEventListener('message', async event => {
 
 			window.dispatchEvent(new CustomEvent('vscode.markdown.updateContent'));
 			break;
+		}
 	}
 }, false);
 
@@ -227,7 +238,7 @@ document.addEventListener('dblclick', event => {
 	}
 
 	const offset = event.pageY;
-	const line = getEditorLineNumberForPageOffset(offset, documentVersion, settings);
+	const line = getEditorLineNumberForPageOffset(offset, documentVersion);
 	if (typeof line === 'number' && !isNaN(line)) {
 		messaging.postMessage('didClick', { line: Math.floor(line) });
 	}
@@ -276,7 +287,7 @@ window.addEventListener('scroll', throttle(() => {
 	if (scrollDisabledCount > 0) {
 		scrollDisabledCount -= 1;
 	} else {
-		const line = getEditorLineNumberForPageOffset(window.scrollY, documentVersion, settings);
+		const line = getEditorLineNumberForPageOffset(window.scrollY, documentVersion);
 		if (typeof line === 'number' && !isNaN(line)) {
 			messaging.postMessage('revealLine', { line });
 		}

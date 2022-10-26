@@ -3,40 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import 'vs/css!./iconlabel';
 import * as dom from 'vs/base/browser/dom';
 import { HighlightedLabel } from 'vs/base/browser/ui/highlightedlabel/highlightedLabel';
 import { IHoverDelegate } from 'vs/base/browser/ui/iconLabel/iconHoverDelegate';
-import { setupCustomHover, setupNativeHover } from 'vs/base/browser/ui/iconLabel/iconLabelHover';
-import { CancellationToken } from 'vs/base/common/cancellation';
+import { ITooltipMarkdownString, setupCustomHover, setupNativeHover } from 'vs/base/browser/ui/iconLabel/iconLabelHover';
 import { IMatch } from 'vs/base/common/filters';
-import { IMarkdownString } from 'vs/base/common/htmlContent';
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
 import { equals } from 'vs/base/common/objects';
 import { Range } from 'vs/base/common/range';
-import 'vs/css!./iconlabel';
 
 export interface IIconLabelCreationOptions {
-	supportHighlights?: boolean;
-	supportDescriptionHighlights?: boolean;
-	supportIcons?: boolean;
-	hoverDelegate?: IHoverDelegate;
-}
-
-export interface IIconLabelMarkdownString {
-	markdown: IMarkdownString | string | HTMLElement | undefined | ((token: CancellationToken) => Promise<IMarkdownString | string | undefined>);
-	markdownNotSupportedFallback: string | undefined;
+	readonly supportHighlights?: boolean;
+	readonly supportDescriptionHighlights?: boolean;
+	readonly supportIcons?: boolean;
+	readonly hoverDelegate?: IHoverDelegate;
 }
 
 export interface IIconLabelValueOptions {
-	title?: string | IIconLabelMarkdownString;
+	title?: string | ITooltipMarkdownString;
 	descriptionTitle?: string;
 	hideIcon?: boolean;
-	extraClasses?: string[];
+	extraClasses?: readonly string[];
 	italic?: boolean;
 	strikethrough?: boolean;
-	matches?: IMatch[];
+	matches?: readonly IMatch[];
 	labelEscapeNewLines?: boolean;
-	descriptionMatches?: IMatch[];
+	descriptionMatches?: readonly IMatch[];
+	disabledCommand?: boolean;
 	readonly separator?: string;
 	readonly domId?: string;
 }
@@ -131,22 +125,28 @@ export class IconLabel extends Disposable {
 	}
 
 	setLabel(label: string | string[], description?: string, options?: IIconLabelValueOptions): void {
-		const classes = ['monaco-icon-label'];
+		const labelClasses = ['monaco-icon-label'];
+		const containerClasses = ['monaco-icon-label-container'];
 		if (options) {
 			if (options.extraClasses) {
-				classes.push(...options.extraClasses);
+				labelClasses.push(...options.extraClasses);
 			}
 
 			if (options.italic) {
-				classes.push('italic');
+				labelClasses.push('italic');
 			}
 
 			if (options.strikethrough) {
-				classes.push('strikethrough');
+				labelClasses.push('strikethrough');
+			}
+
+			if (options.disabledCommand) {
+				containerClasses.push('disabled');
 			}
 		}
 
-		this.domNode.className = classes.join(' ');
+		this.domNode.className = labelClasses.join(' ');
+		this.labelContainer.className = containerClasses.join(' ');
 		this.setupHover(options?.descriptionTitle ? this.labelContainer : this.element, options?.title);
 
 		this.nameNode.setLabel(label, options);
@@ -167,7 +167,7 @@ export class IconLabel extends Disposable {
 		}
 	}
 
-	private setupHover(htmlElement: HTMLElement, tooltip: string | IIconLabelMarkdownString | undefined): void {
+	private setupHover(htmlElement: HTMLElement, tooltip: string | ITooltipMarkdownString | undefined): void {
 		const previousCustomHover = this.customHovers.get(htmlElement);
 		if (previousCustomHover) {
 			previousCustomHover.dispose();
@@ -241,7 +241,7 @@ class Label {
 	}
 }
 
-function splitMatches(labels: string[], separator: string, matches: IMatch[] | undefined): IMatch[][] | undefined {
+function splitMatches(labels: string[], separator: string, matches: readonly IMatch[] | undefined): IMatch[][] | undefined {
 	if (!matches) {
 		return undefined;
 	}

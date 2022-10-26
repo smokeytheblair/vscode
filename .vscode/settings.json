@@ -6,6 +6,7 @@
 		".build": true,
 		".profile-oss": true,
 		"**/.DS_Store": true,
+		"cli/target": true,
 		"build/**/*.js": {
 			"when": "$(basename).ts"
 		}
@@ -26,7 +27,7 @@
 		"test/automation/out/**": true,
 		"test/integration/browser/out/**": true,
 		"src/vs/base/test/node/uri.test.data.txt": true,
-		"src/vs/workbench/test/browser/api/extHostDocumentData.test.perf-data.ts": true
+		"src/vs/workbench/api/test/browser/extHostDocumentData.test.perf-data.ts": true
 	},
 	"lcov.path": [
 		"./.build/coverage/lcov.info",
@@ -41,9 +42,6 @@
 			}
 		}
 	],
-	"eslint.options": {
-		"rulePaths": ["./build/lib/eslint"]
-	},
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"npm.exclude": "**/extensions/**",
 	"npm.packageManager": "yarn",
@@ -52,15 +50,28 @@
 	"typescript.preferences.quoteStyle": "single",
 	"json.schemas": [
 		{
-			"fileMatch": ["cgmanifest.json"],
-			"url": "./.vscode/cgmanifest.schema.json"
+			"fileMatch": [
+				"cgmanifest.json"
+			],
+			"url": "https://json.schemastore.org/component-detection-manifest.json",
 		},
 		{
-			"fileMatch": ["cglicenses.json"],
+			"fileMatch": [
+				"cglicenses.json"
+			],
 			"url": "./.vscode/cglicenses.schema.json"
 		}
 	],
 	"git.ignoreLimitWarning": true,
+	"git.branchProtection": [
+		"main",
+		"distro",
+		"release/*"
+	],
+	"git.branchProtectionPrompt": "alwaysCommitToNewBranch",
+	"git.branchRandomName.enable": true,
+	"git.pullBeforeCheckout": true,
+	"git.mergeEditor": true,
 	"remote.extensionKind": {
 		"msjsdiag.debugger-for-chrome": "workspace"
 	},
@@ -77,6 +88,13 @@
 		"editor.defaultFormatter": "vscode.typescript-language-features",
 		"editor.formatOnSave": true
 	},
+	"[rust]": {
+		"editor.defaultFormatter": "rust-lang.rust-analyzer",
+		"editor.formatOnSave": true,
+	},
+	"rust-analyzer.linkedProjects": [
+		"cli/Cargo.toml"
+	],
 	"typescript.tsc.autoDetect": "off",
 	"testing.autoRun.mode": "rerun",
 	"conventionalCommits.scopes": [
@@ -88,5 +106,8 @@
 		"list",
 		"git",
 		"sash"
-	]
+	],
+	"githubPullRequests.assignCreated": "${user}",
+	"githubPullRequests.defaultMergeMethod": "squash",
+	"application.experimental.rendererProfiling": true
 }

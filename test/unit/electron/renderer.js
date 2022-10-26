@@ -56,7 +56,7 @@
 		['rmdir', 1],
 	].forEach((element) => {
 		intercept(element[0], element[1]);
-	})
+	});
 })();
 
 const { ipcRenderer } = require('electron');
@@ -72,19 +72,18 @@ if (util.inspect && util.inspect['defaultOptions']) {
 	util.inspect['defaultOptions'].customInspect = false;
 }
 
-let _tests_glob = '**/test/**/*.test.js';
+const _tests_glob = '**/test/**/*.test.js';
 let loader;
 let _out;
 
 function initLoader(opts) {
-	let outdir = opts.build ? 'out-build' : 'out';
+	const outdir = opts.build ? 'out-build' : 'out';
 	_out = path.join(__dirname, `../../../${outdir}`);
 
 	// setup loader
 	loader = require(`${_out}/vs/loader`);
 	const loaderConfig = {
 		nodeRequire: require,
-		nodeMain: __filename,
 		catchError: true,
 		baseUrl: bootstrap.fileUriFromPath(path.join(__dirname, '../../../src'), { isWindows: process.platform === 'win32' }),
 		paths: {
@@ -109,10 +108,10 @@ function createCoverageReport(opts) {
 	return Promise.resolve(undefined);
 }
 
-function loadWorkbenchTestingModule() {
+function loadWorkbenchTestingUtilsModule() {
 	return new Promise((resolve, reject) => {
-		loader.require(['vs/workbench/test/electron-browser/testing'], resolve, reject);
-	})
+		loader.require(['vs/workbench/test/common/utils'], resolve, reject);
+	});
 }
 
 function loadTestModules(opts) {
@@ -172,7 +171,7 @@ function loadTests(opts) {
 		});
 	});
 
-	return loadWorkbenchTestingModule().then((workbenchTestingModule) => {
+	return loadWorkbenchTestingUtilsModule().then((workbenchTestingModule) => {
 		const assertCleanState = workbenchTestingModule.assertCleanState;
 
 		suite('Tests are using suiteSetup and setup correctly', () => {
@@ -199,7 +198,7 @@ function loadTests(opts) {
 				});
 			});
 		});
-	})
+	});
 }
 
 function serializeSuite(suite) {
@@ -299,7 +298,7 @@ function runTests(opts) {
 			mocha.grep(opts.grep);
 		}
 
-		if (!opts.debug) {
+		if (!opts.dev) {
 			mocha.reporter(IPCReporter);
 		}
 
@@ -309,7 +308,7 @@ function runTests(opts) {
 			});
 		});
 
-		if (opts.debug) {
+		if (opts.dev) {
 			runner.on('fail', (test, err) => {
 
 				console.error(test.fullTitle());

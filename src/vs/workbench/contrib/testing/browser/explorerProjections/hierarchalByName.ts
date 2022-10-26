@@ -3,14 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { AbstractTreeViewState } from 'vs/base/browser/ui/tree/abstractTree';
 import { TestExplorerTreeElement } from 'vs/workbench/contrib/testing/browser/explorerProjections';
 import { flatTestItemDelimiter } from 'vs/workbench/contrib/testing/browser/explorerProjections/display';
 import { HierarchicalByLocationProjection as HierarchicalByLocationProjection } from 'vs/workbench/contrib/testing/browser/explorerProjections/hierarchalByLocation';
 import { ByLocationTestItemElement } from 'vs/workbench/contrib/testing/browser/explorerProjections/hierarchalNodes';
 import { NodeRenderDirective } from 'vs/workbench/contrib/testing/browser/explorerProjections/nodeHelper';
-import { InternalTestItem } from 'vs/workbench/contrib/testing/common/testCollection';
+import { InternalTestItem } from 'vs/workbench/contrib/testing/common/testTypes';
 import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService';
 import { ITestService } from 'vs/workbench/contrib/testing/common/testService';
+import { TestId } from 'vs/workbench/contrib/testing/common/testId';
 
 /**
  * Type of test element in the list.
@@ -74,8 +76,8 @@ export class ByNameTestItemElement extends ByLocationTestItemElement {
  * test root rather than the heirarchal parent.
  */
 export class HierarchicalByNameProjection extends HierarchicalByLocationProjection {
-	constructor(@ITestService testService: ITestService, @ITestResultService results: ITestResultService) {
-		super(testService, results);
+	constructor(lastState: AbstractTreeViewState, @ITestService testService: ITestService, @ITestResultService results: ITestResultService) {
+		super(lastState, testService, results);
 
 		const originalRenderNode = this.renderNode.bind(this);
 		this.renderNode = (node, recurse) => {
@@ -96,7 +98,8 @@ export class HierarchicalByNameProjection extends HierarchicalByLocationProjecti
 	 * @override
 	 */
 	protected override createItem(item: InternalTestItem): ByLocationTestItemElement {
-		const actualParent = item.parent ? this.items.get(item.parent) as ByNameTestItemElement : undefined;
+		const parentId = TestId.parentId(item.item.extId);
+		const actualParent = parentId ? this.items.get(parentId.toString()) as ByNameTestItemElement : undefined;
 		if (!actualParent) {
 			return new ByNameTestItemElement(item, null, r => this.changes.addedOrRemoved(r));
 		}

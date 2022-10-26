@@ -6,7 +6,7 @@
 import { ToolBar } from 'vs/base/browser/ui/toolbar/toolbar';
 import { Action, IAction } from 'vs/base/common/actions';
 import { DisposableStore } from 'vs/base/common/lifecycle';
-import { MarshalledId } from 'vs/base/common/marshalling';
+import { MarshalledId } from 'vs/base/common/marshallingIds';
 import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
 import { localize } from 'vs/nls';
 import { DropdownWithPrimaryActionViewItem } from 'vs/platform/actions/browser/dropdownWithPrimaryActionViewItem';
@@ -18,12 +18,16 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { INotebookCellActionContext } from 'vs/workbench/contrib/notebook/browser/controller/coreActions';
-import { CellViewModelStateChangeEvent, ICellViewModel, INotebookEditorDelegate, NOTEBOOK_CELL_EXECUTION_STATE, NOTEBOOK_CELL_LIST_FOCUSED, NOTEBOOK_CELL_TYPE, NOTEBOOK_EDITOR_FOCUSED } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-import { CellPart } from 'vs/workbench/contrib/notebook/browser/view/cellParts/cellPart';
-import { BaseCellRenderTemplate } from 'vs/workbench/contrib/notebook/browser/view/notebookRenderingCommon';
+import { ICellViewModel, INotebookEditorDelegate } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
+import { CellPart } from 'vs/workbench/contrib/notebook/browser/view/cellPart';
+import { registerStickyScroll } from 'vs/workbench/contrib/notebook/browser/view/cellParts/stickyScroll';
+import { NOTEBOOK_CELL_EXECUTION_STATE, NOTEBOOK_CELL_LIST_FOCUSED, NOTEBOOK_CELL_TYPE, NOTEBOOK_EDITOR_FOCUSED } from 'vs/workbench/contrib/notebook/common/notebookContextKeys';
 
 export class RunToolbar extends CellPart {
-	toolbar!: ToolBar;
+	private toolbar!: ToolBar;
+
+	private primaryMenu: IMenu;
+	private secondaryMenu: IMenu;
 
 	constructor(
 		readonly notebookEditor: INotebookEditorDelegate,
@@ -37,41 +41,32 @@ export class RunToolbar extends CellPart {
 	) {
 		super();
 
-		const menu = this._register(menuService.createMenu(this.notebookEditor.creationOptions.menuIds.cellExecutePrimary!, contextKeyService));
+		this.primaryMenu = this._register(menuService.createMenu(this.notebookEditor.creationOptions.menuIds.cellExecutePrimary!, contextKeyService));
+		this.secondaryMenu = this._register(menuService.createMenu(this.notebookEditor.creationOptions.menuIds.cellExecuteToolbar, contextKeyService));
 		this.createRunCellToolbar(runButtonContainer, cellContainer, contextKeyService);
 		const updateActions = () => {
-			const actions = this.getCellToolbarActions(menu);
+			const actions = this.getCellToolbarActions(this.primaryMenu);
 			const primary = actions.primary[0]; // Only allow one primary action
 			this.toolbar.setActions(primary ? [primary] : []);
 		};
 		updateActions();
-		this._register(menu.onDidChange(updateActions));
+		this._register(this.primaryMenu.onDidChange(updateActions));
+		this._register(this.secondaryMenu.onDidChange(updateActions));
 		this._register(this.notebookEditor.notebookOptions.onDidChangeOptions(updateActions));
 	}
 
-	renderCell(element: ICellViewModel, templateData: BaseCellRenderTemplate): void {
+	override didRenderCell(element: ICellViewModel): void {
+		this.cellDisposables.add(registerStickyScroll(this.notebookEditor, element, this.runButtonContainer));
+
 		this.toolbar.context = <INotebookCellActionContext>{
 			ui: true,
 			cell: element,
-			cellTemplate: templateData,
 			notebookEditor: this.notebookEditor,
 			$mid: MarshalledId.NotebookCellActionContext
 		};
 	}
 
-	prepareLayout(): void {
-		// no op
-	}
-
-	updateInternalLayoutNow(element: ICellViewModel): void {
-		// no op
-	}
-
-	updateState(element: ICellViewModel, e: CellViewModelStateChangeEvent): void {
-		// no op
-	}
-
-	getCellToolbarActions(menu: IMenu): { primary: IAction[], secondary: IAction[]; } {
+	getCellToolbarActions(menu: IMenu): { primary: IAction[]; secondary: IAction[] } {
 		const primary: IAction[] = [];
 		const secondary: IAction[] = [];
 		const result = { primary, secondary };
@@ -92,14 +87,12 @@ export class RunToolbar extends CellPart {
 			actionViewItemProvider: _action => {
 				actionViewItemDisposables.clear();
 
-				const primaryMenu = actionViewItemDisposables.add(this.menuService.createMenu(this.notebookEditor.creationOptions.menuIds.cellExecutePrimary!, contextKeyService));
-				const primary = this.getCellToolbarActions(primaryMenu).primary[0];
+				const primary = this.getCellToolbarActions(this.primaryMenu).primary[0];
 				if (!(primary instanceof MenuItemAction)) {
 					return undefined;
 				}
 
-				const menu = actionViewItemDisposables.add(this.menuService.createMenu(this.notebookEditor.creationOptions.menuIds.cellExecuteToolbar, contextKeyService));
-				const secondary = this.getCellToolbarActions(menu).secondary;
+				const secondary = this.getCellToolbarActions(this.secondaryMenu).secondary;
 				if (!secondary.length) {
 					return undefined;
 				}

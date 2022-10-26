@@ -20,7 +20,7 @@ import { EditorCommand, registerEditorContribution, registerEditorCommand } from
 import { IEditorOptions, EditorOption } from 'vs/editor/common/config/editorOptions';
 import { IEditorContribution } from 'vs/editor/common/editorCommon';
 import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
-import { ToggleTabFocusModeAction } from 'vs/editor/contrib/toggleTabFocusMode/toggleTabFocusMode';
+import { ToggleTabFocusModeAction } from 'vs/editor/contrib/toggleTabFocusMode/browser/toggleTabFocusMode';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IContextKey, IContextKeyService, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
@@ -32,7 +32,7 @@ import { registerThemingParticipant } from 'vs/platform/theme/common/themeServic
 import { AccessibilitySupport } from 'vs/platform/accessibility/common/accessibility';
 import { Action2, registerAction2 } from 'vs/platform/actions/common/actions';
 import { ICommandService } from 'vs/platform/commands/common/commands';
-import { NEW_UNTITLED_FILE_COMMAND_ID } from 'vs/workbench/contrib/files/browser/fileCommands';
+import { NEW_UNTITLED_FILE_COMMAND_ID } from 'vs/workbench/contrib/files/browser/fileConstants';
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
 
 const CONTEXT_ACCESSIBILITY_WIDGET_VISIBLE = new RawContextKey<boolean>('accessibilityHelpWidgetVisible', false);
@@ -46,24 +46,26 @@ export class AccessibilityHelpController extends Disposable implements IEditorCo
 	}
 
 	private _editor: ICodeEditor;
-	private _widget: AccessibilityHelpWidget;
+	private _widget?: AccessibilityHelpWidget;
 
 	constructor(
 		editor: ICodeEditor,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
 		this._editor = editor;
-		this._widget = this._register(instantiationService.createInstance(AccessibilityHelpWidget, this._editor));
 	}
 
 	public show(): void {
+		if (!this._widget) {
+			this._widget = this._register(this.instantiationService.createInstance(AccessibilityHelpWidget, this._editor));
+		}
 		this._widget.show();
 	}
 
 	public hide(): void {
-		this._widget.hide();
+		this._widget?.hide();
 	}
 }
 
@@ -177,7 +179,7 @@ class AccessibilityHelpWidget extends Widget implements IOverlayWidget {
 	}
 
 	private _descriptionForCommand(commandId: string, msg: string, noKbMsg: string): string {
-		let kb = this._keybindingService.lookupKeybinding(commandId);
+		const kb = this._keybindingService.lookupKeybinding(commandId);
 		if (kb) {
 			return strings.format(msg, kb.getAriaLabel());
 		}
@@ -265,7 +267,7 @@ class AccessibilityHelpWidget extends Widget implements IOverlayWidget {
 	}
 
 	private _layout(): void {
-		let editorLayout = this._editor.getLayoutInfo();
+		const editorLayout = this._editor.getLayoutInfo();
 
 		const width = Math.min(editorLayout.width - 40, AccessibilityHelpWidget.WIDTH);
 		const height = Math.min(editorLayout.height - 40, AccessibilityHelpWidget.HEIGHT);
@@ -307,9 +309,7 @@ class ShowAccessibilityHelpAction extends Action2 {
 
 		if (activeEditor) {
 			const controller = AccessibilityHelpController.get(activeEditor);
-			if (controller) {
-				controller.show();
-			}
+			controller?.show();
 		}
 	}
 }

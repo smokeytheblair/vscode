@@ -8,7 +8,7 @@ import * as nls from 'vscode-nls';
 import { Command, CommandManager } from '../commands/commandManager';
 import { ITypeScriptServiceClient } from '../typescriptService';
 import API from '../utils/api';
-import { isSupportedLanguageMode } from '../utils/languageModeIds';
+import { isSupportedLanguageMode } from '../utils/languageIds';
 import * as typeConverters from '../utils/typeConverters';
 
 const localize = nls.loadMessageBundle();
@@ -30,10 +30,7 @@ class FileReferencesCommand implements Command {
 			return;
 		}
 
-		if (!resource) {
-			resource = vscode.window.activeTextEditor?.document.uri;
-		}
-
+		resource ??= vscode.window.activeTextEditor?.document.uri;
 		if (!resource) {
 			vscode.window.showErrorMessage(localize('error.noResource', "Find file references failed. No resource provided."));
 			return;

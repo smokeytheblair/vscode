@@ -10,22 +10,24 @@ import { listenStream } from 'vs/base/common/stream';
 import { isDefined } from 'vs/base/common/types';
 import { localize } from 'vs/nls';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IProcessDataEvent, IProcessPropertyMap, IShellLaunchConfig, ITerminalChildProcess, ITerminalDimensionsOverride, ITerminalLaunchError, ProcessCapability, ProcessPropertyType, TerminalLocation, TerminalShellType } from 'vs/platform/terminal/common/terminal';
+import { IProcessDataEvent, IProcessPropertyMap, IShellLaunchConfig, ITerminalChildProcess, ITerminalDimensionsOverride, ITerminalLaunchError, ProcessPropertyType, TerminalLocation, TerminalShellType } from 'vs/platform/terminal/common/terminal';
 import { IViewsService } from 'vs/workbench/common/views';
 import { ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalService } from 'vs/workbench/contrib/terminal/browser/terminal';
 import { TERMINAL_VIEW_ID } from 'vs/workbench/contrib/terminal/common/terminal';
 import { testingViewIcon } from 'vs/workbench/contrib/testing/browser/icons';
 import { ITestResult } from 'vs/workbench/contrib/testing/common/testResult';
 import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService';
+import { getMarkId } from 'vs/workbench/contrib/testing/common/testTypes';
 
 
 export interface ITestingOutputTerminalService {
 	_serviceBrand: undefined;
 
 	/**
-	 * Opens a terminal for the given test's output.
+	 * Opens a terminal for the given test's output. Optionally, scrolls to and
+	 * selects the given marker in the test results.
 	 */
-	open(result: ITestResult): Promise<void>;
+	open(result: ITestResult, marker?: number): Promise<void>;
 }
 
 const friendlyDate = (date: number) => {
@@ -78,7 +80,7 @@ export class TestingOutputTerminalService implements ITestingOutputTerminalServi
 	/**
 	 * @inheritdoc
 	 */
-	public async open(result: ITestResult | undefined): Promise<void> {
+	public async open(result: ITestResult | undefined, marker?: number): Promise<void> {
 		const testOutputPtys = this.terminalService.instances
 			.map(t => {
 				const output = this.outputTerminals.get(t);
@@ -95,6 +97,8 @@ export class TestingOutputTerminalService implements ITestingOutputTerminalServi
 			} else {
 				this.terminalGroupService.showPanel();
 			}
+
+			this.revealMarker(existing[0], marker);
 			return;
 		}
 
@@ -113,11 +117,11 @@ export class TestingOutputTerminalService implements ITestingOutputTerminalServi
 				icon: testingViewIcon,
 				customPtyImplementation: () => output,
 				name: getTitle(result),
-			}
-		}), output, result);
+			},
+		}), output, result, marker);
 	}
 
-	private async showResultsInTerminal(terminal: ITerminalInstance, output: TestOutputProcess, result: ITestResult | undefined) {
+	private async showResultsInTerminal(terminal: ITerminalInstance, output: TestOutputProcess, result: ITestResult | undefined, thenSelectMarker?: number) {
 		this.outputTerminals.set(terminal, output);
 		output.resetFor(result?.id, getTitle(result));
 		this.terminalService.setActiveInstance(terminal);
@@ -151,8 +155,15 @@ export class TestingOutputTerminalService implements ITestingOutputTerminalServi
 				const text = localize('runFinished', 'Test run finished at {0}', completedAt.toLocaleString());
 				output.pushData(`\r\n\r\n\x1b[1m> ${text} <\x1b[0m\r\n\r\n`);
 				output.ended = true;
+				this.revealMarker(terminal, thenSelectMarker);
 			},
 		});
+	}
+
+	private revealMarker(terminal: ITerminalInstance, marker?: number) {
+		if (marker !== undefined) {
+			terminal.scrollToMark(getMarkId(marker, true), getMarkId(marker, false), true);
+		}
 	}
 }
 
@@ -164,8 +175,6 @@ class TestOutputProcess extends Disposable implements ITerminalChildProcess {
 	private processDataEmitter = this._register(new Emitter<string | IProcessDataEvent>());
 	private titleEmitter = this._register(new Emitter<string>());
 	private readonly startedDeferred = new DeferredPromise<void>();
-	private _capabilities: ProcessCapability[] = [];
-	get capabilities(): ProcessCapability[] { return this._capabilities; }
 	/** Whether the associated test has ended (indicating the terminal can be reused) */
 	public ended = true;
 	/** Result currently being displayed */
@@ -193,14 +202,14 @@ class TestOutputProcess extends Disposable implements ITerminalChildProcess {
 
 	public readonly onProcessData = this.processDataEmitter.event;
 	public readonly onProcessExit = this._register(new Emitter<number | undefined>()).event;
-	private readonly _onProcessReady = this._register(new Emitter<{ pid: number; cwd: string; capabilities: ProcessCapability[] }>());
+	private readonly _onProcessReady = this._register(new Emitter<{ pid: number; cwd: string }>());
 	public readonly onProcessReady = this._onProcessReady.event;
 	public readonly onProcessTitleChanged = this.titleEmitter.event;
 	public readonly onProcessShellTypeChanged = this._register(new Emitter<TerminalShellType>()).event;
 
 	public start(): Promise<ITerminalLaunchError | undefined> {
 		this.startedDeferred.complete();
-		this._onProcessReady.fire({ pid: -1, cwd: '', capabilities: [] });
+		this._onProcessReady.fire({ pid: -1, cwd: '' });
 		return Promise.resolve(undefined);
 	}
 	public shutdown(): void {

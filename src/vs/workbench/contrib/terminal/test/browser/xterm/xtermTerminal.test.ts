@@ -16,17 +16,24 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IViewDescriptor, IViewDescriptorService, ViewContainerLocation } from 'vs/workbench/common/views';
 import { IEditorOptions } from 'vs/editor/common/config/editorOptions';
 import { Emitter } from 'vs/base/common/event';
-import { TERMINAL_BACKGROUND_COLOR, TERMINAL_FOREGROUND_COLOR, TERMINAL_CURSOR_FOREGROUND_COLOR, TERMINAL_CURSOR_BACKGROUND_COLOR, TERMINAL_SELECTION_BACKGROUND_COLOR } from 'vs/workbench/contrib/terminal/common/terminalColorRegistry';
+import { TERMINAL_BACKGROUND_COLOR, TERMINAL_FOREGROUND_COLOR, TERMINAL_CURSOR_FOREGROUND_COLOR, TERMINAL_CURSOR_BACKGROUND_COLOR, TERMINAL_SELECTION_BACKGROUND_COLOR, TERMINAL_SELECTION_FOREGROUND_COLOR, TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR } from 'vs/workbench/contrib/terminal/common/terminalColorRegistry';
 import { PANEL_BACKGROUND, SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { WebglAddon } from 'xterm-addon-webgl';
 import { ILogService, NullLogService } from 'vs/platform/log/common/log';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { TestStorageService } from 'vs/workbench/test/common/workbenchTestServices';
 import { isSafari } from 'vs/base/browser/browser';
+import { TerminalLocation } from 'vs/platform/terminal/common/terminal';
+import { TerminalCapabilityStore } from 'vs/platform/terminal/common/capabilities/terminalCapabilityStore';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { ContextMenuService } from 'vs/platform/contextview/browser/contextMenuService';
+import { TestLifecycleService } from 'vs/workbench/test/browser/workbenchTestServices';
+import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle';
 
 class TestWebglAddon {
 	static shouldThrow = false;
 	static isEnabled = false;
+	readonly onChangeTextureAtlas = new Emitter().event as IEvent<HTMLCanvasElement>;
 	readonly onContextLoss = new Emitter().event as IEvent<void>;
 	activate() {
 		TestWebglAddon.isEnabled = !TestWebglAddon.shouldThrow;
@@ -42,15 +49,15 @@ class TestWebglAddon {
 
 class TestXtermTerminal extends XtermTerminal {
 	webglAddonPromise: Promise<typeof WebglAddon> = Promise.resolve(TestWebglAddon);
+	// Force synchronous to avoid async when activating the addon
 	protected override _getWebglAddonConstructor() {
-		// Force synchronous to avoid async when activating the addon
 		return this.webglAddonPromise;
 	}
 }
 
-class TestViewDescriptorService implements Partial<IViewDescriptorService> {
+export class TestViewDescriptorService implements Partial<IViewDescriptorService> {
 	private _location = ViewContainerLocation.Panel;
-	private _onDidChangeLocation = new Emitter<{ views: IViewDescriptor[], from: ViewContainerLocation, to: ViewContainerLocation }>();
+	private _onDidChangeLocation = new Emitter<{ views: IViewDescriptor[]; from: ViewContainerLocation; to: ViewContainerLocation }>();
 	onDidChangeLocation = this._onDidChangeLocation.event;
 	getViewLocationById(id: string) {
 		return this._location;
@@ -76,7 +83,7 @@ const defaultTerminalConfig: Partial<ITerminalConfiguration> = {
 	scrollback: 1000,
 	fastScrollSensitivity: 2,
 	mouseWheelScrollSensitivity: 1,
-	unicodeVersion: '11'
+	unicodeVersion: '6'
 };
 
 suite('XtermTerminal', () => {
@@ -84,7 +91,6 @@ suite('XtermTerminal', () => {
 	let configurationService: TestConfigurationService;
 	let themeService: TestThemeService;
 	let viewDescriptorService: TestViewDescriptorService;
-
 	let xterm: TestXtermTerminal;
 	let configHelper: ITerminalConfigHelper;
 
@@ -107,17 +113,19 @@ suite('XtermTerminal', () => {
 		instantiationService.stub(IStorageService, new TestStorageService());
 		instantiationService.stub(IThemeService, themeService);
 		instantiationService.stub(IViewDescriptorService, viewDescriptorService);
+		instantiationService.stub(IContextMenuService, instantiationService.createInstance(ContextMenuService));
+		instantiationService.stub(ILifecycleService, new TestLifecycleService());
 
 		configHelper = instantiationService.createInstance(TerminalConfigHelper);
-		xterm = instantiationService.createInstance(TestXtermTerminal, Terminal, configHelper, 80, 30);
+		xterm = instantiationService.createInstance(TestXtermTerminal, Terminal, configHelper, 80, 30, TerminalLocation.Panel, new TerminalCapabilityStore(), true);
 
 		TestWebglAddon.shouldThrow = false;
 		TestWebglAddon.isEnabled = false;
 	});
 
 	test('should use fallback dimensions of 80x30', () => {
-		strictEqual(xterm.raw.getOption('cols'), 80);
-		strictEqual(xterm.raw.getOption('rows'), 30);
+		strictEqual(xterm.raw.cols, 80);
+		strictEqual(xterm.raw.rows, 30);
 	});
 
 	suite('theme', () => {
@@ -126,14 +134,14 @@ suite('XtermTerminal', () => {
 				[PANEL_BACKGROUND]: '#ff0000',
 				[SIDE_BAR_BACKGROUND]: '#00ff00'
 			}));
-			xterm = instantiationService.createInstance(XtermTerminal, Terminal, configHelper, 80, 30);
-			strictEqual(xterm.raw.getOption('theme').background, '#ff0000');
+			xterm = instantiationService.createInstance(XtermTerminal, Terminal, configHelper, 80, 30, TerminalLocation.Panel, new TerminalCapabilityStore(), true);
+			strictEqual(xterm.raw.options.theme?.background, '#ff0000');
 			viewDescriptorService.moveTerminalToLocation(ViewContainerLocation.Sidebar);
-			strictEqual(xterm.raw.getOption('theme').background, '#00ff00');
+			strictEqual(xterm.raw.options.theme?.background, '#00ff00');
 			viewDescriptorService.moveTerminalToLocation(ViewContainerLocation.Panel);
-			strictEqual(xterm.raw.getOption('theme').background, '#ff0000');
+			strictEqual(xterm.raw.options.theme?.background, '#ff0000');
 			viewDescriptorService.moveTerminalToLocation(ViewContainerLocation.AuxiliaryBar);
-			strictEqual(xterm.raw.getOption('theme').background, '#00ff00');
+			strictEqual(xterm.raw.options.theme?.background, '#00ff00');
 		});
 		test('should react to and apply theme changes', () => {
 			themeService.setTheme(new TestColorTheme({
@@ -142,6 +150,8 @@ suite('XtermTerminal', () => {
 				[TERMINAL_CURSOR_FOREGROUND_COLOR]: '#000300',
 				[TERMINAL_CURSOR_BACKGROUND_COLOR]: '#000400',
 				[TERMINAL_SELECTION_BACKGROUND_COLOR]: '#000500',
+				[TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR]: '#000600',
+				[TERMINAL_SELECTION_FOREGROUND_COLOR]: undefined,
 				'terminal.ansiBlack': '#010000',
 				'terminal.ansiRed': '#020000',
 				'terminal.ansiGreen': '#030000',
@@ -159,13 +169,15 @@ suite('XtermTerminal', () => {
 				'terminal.ansiBrightCyan': '#150000',
 				'terminal.ansiBrightWhite': '#160000',
 			}));
-			xterm = instantiationService.createInstance(XtermTerminal, Terminal, configHelper, 80, 30);
-			deepStrictEqual(xterm.raw.getOption('theme'), {
+			xterm = instantiationService.createInstance(XtermTerminal, Terminal, configHelper, 80, 30, TerminalLocation.Panel, new TerminalCapabilityStore(), true);
+			deepStrictEqual(xterm.raw.options.theme, {
 				background: '#000100',
 				foreground: '#000200',
 				cursor: '#000300',
 				cursorAccent: '#000400',
-				selection: '#000500',
+				selectionBackground: '#000500',
+				selectionInactiveBackground: '#000600',
+				selectionForeground: undefined,
 				black: '#010000',
 				green: '#030000',
 				red: '#020000',
@@ -189,6 +201,8 @@ suite('XtermTerminal', () => {
 				[TERMINAL_CURSOR_FOREGROUND_COLOR]: '#00030f',
 				[TERMINAL_CURSOR_BACKGROUND_COLOR]: '#00040f',
 				[TERMINAL_SELECTION_BACKGROUND_COLOR]: '#00050f',
+				[TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR]: '#00060f',
+				[TERMINAL_SELECTION_FOREGROUND_COLOR]: '#00070f',
 				'terminal.ansiBlack': '#01000f',
 				'terminal.ansiRed': '#02000f',
 				'terminal.ansiGreen': '#03000f',
@@ -206,12 +220,14 @@ suite('XtermTerminal', () => {
 				'terminal.ansiBrightCyan': '#15000f',
 				'terminal.ansiBrightWhite': '#16000f',
 			}));
-			deepStrictEqual(xterm.raw.getOption('theme'), {
+			deepStrictEqual(xterm.raw.options.theme, {
 				background: '#00010f',
 				foreground: '#00020f',
 				cursor: '#00030f',
 				cursorAccent: '#00040f',
-				selection: '#00050f',
+				selectionBackground: '#00050f',
+				selectionInactiveBackground: '#00060f',
+				selectionForeground: '#00070f',
 				black: '#01000f',
 				green: '#03000f',
 				red: '#02000f',
@@ -235,7 +251,6 @@ suite('XtermTerminal', () => {
 	suite('renderers', () => {
 		test('should re-evaluate gpu acceleration auto when the setting is changed', async () => {
 			// Check initial state
-			strictEqual(xterm.raw.getOption('rendererType'), 'dom');
 			strictEqual(TestWebglAddon.isEnabled, false);
 
 			// Open xterm as otherwise the webgl addon won't activate
@@ -256,7 +271,6 @@ suite('XtermTerminal', () => {
 			await configurationService.setUserConfiguration('terminal', { integrated: { ...defaultTerminalConfig, gpuAcceleration: 'off' } });
 			configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
 			await xterm.webglAddonPromise; // await addon activate
-			strictEqual(xterm.raw.getOption('rendererType'), 'dom');
 			strictEqual(TestWebglAddon.isEnabled, false);
 
 			// Set to auto again but throw when activating the webgl addon
@@ -264,7 +278,6 @@ suite('XtermTerminal', () => {
 			await configurationService.setUserConfiguration('terminal', { integrated: { ...defaultTerminalConfig, gpuAcceleration: 'auto' } });
 			configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
 			await xterm.webglAddonPromise; // await addon activate
-			strictEqual(xterm.raw.getOption('rendererType'), 'canvas');
 			strictEqual(TestWebglAddon.isEnabled, false);
 		});
 	});

@@ -1,8 +1,8 @@
+"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const crypto = require("crypto");
@@ -20,7 +20,7 @@ function getPlatform(product, os, arch, type) {
     switch (os) {
         case 'win32':
             switch (product) {
-                case 'client':
+                case 'client': {
                     const asset = arch === 'ia32' ? 'win32' : `win32-${arch}`;
                     switch (type) {
                         case 'archive':
@@ -32,6 +32,7 @@ function getPlatform(product, os, arch, type) {
                         default:
                             throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
                     }
+                }
                 case 'server':
                     if (arch === 'arm64') {
                         throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
@@ -42,6 +43,8 @@ function getPlatform(product, os, arch, type) {
                         throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
                     }
                     return arch === 'ia32' ? 'server-win32-web' : `server-win32-${arch}-web`;
+                case 'cli':
+                    return `cli-win32-${arch}`;
                 default:
                     throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
             }
@@ -51,6 +54,8 @@ function getPlatform(product, os, arch, type) {
                     return `server-alpine-${arch}`;
                 case 'web':
                     return `server-alpine-${arch}-web`;
+                case 'cli':
+                    return `cli-alpine-${arch}`;
                 default:
                     throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
             }
@@ -73,6 +78,8 @@ function getPlatform(product, os, arch, type) {
                     return `linux-deb-${arch}`;
                 case 'rpm-package':
                     return `linux-rpm-${arch}`;
+                case 'cli':
+                    return `cli-linux-${arch}`;
                 default:
                     throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
             }
@@ -84,12 +91,17 @@ function getPlatform(product, os, arch, type) {
                     }
                     return `darwin-${arch}`;
                 case 'server':
-                    return 'server-darwin';
-                case 'web':
-                    if (arch !== 'x64') {
-                        throw new Error(`What should the platform be?: ${product} ${os} ${arch} ${type}`);
+                    if (arch === 'x64') {
+                        return 'server-darwin';
                     }
-                    return 'server-darwin-web';
+                    return `server-darwin-${arch}`;
+                case 'web':
+                    if (arch === 'x64') {
+                        return 'server-darwin-web';
+                    }
+                    return `server-darwin-${arch}-web`;
+                case 'cli':
+                    return `cli-darwin-${arch}`;
                 default:
                     throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
             }
@@ -131,7 +143,7 @@ async function main() {
     const platform = getPlatform(product, os, arch, unprocessedType);
     const type = getRealType(unprocessedType);
     const quality = getEnv('VSCODE_QUALITY');
-    const commit = getEnv('BUILD_SOURCEVERSION');
+    const commit = process.env['VSCODE_DISTRO_COMMIT'] || getEnv('BUILD_SOURCEVERSION');
     console.log('Creating asset...');
     const stat = await new Promise((c, e) => fs.stat(filePath, (err, stat) => err ? e(err) : c(stat)));
     const size = stat.size;
@@ -146,16 +158,6 @@ async function main() {
     const blobServiceClient = new storage_blob_1.BlobServiceClient(`https://vscode.blob.core.windows.net`, credential, storagePipelineOptions);
     const containerClient = blobServiceClient.getContainerClient(quality);
     const blobClient = containerClient.getBlockBlobClient(blobName);
-    const blobExists = await blobClient.exists();
-    if (blobExists) {
-        console.log(`Blob ${quality}, ${blobName} already exists, not publishing again.`);
-        return;
-    }
-    const mooncakeCredential = new identity_1.ClientSecretCredential(process.env['AZURE_MOONCAKE_TENANT_ID'], process.env['AZURE_MOONCAKE_CLIENT_ID'], process.env['AZURE_MOONCAKE_CLIENT_SECRET']);
-    const mooncakeBlobServiceClient = new storage_blob_1.BlobServiceClient(`https://vscode.blob.core.chinacloudapi.cn`, mooncakeCredential, storagePipelineOptions);
-    const mooncakeContainerClient = mooncakeBlobServiceClient.getContainerClient(quality);
-    const mooncakeBlobClient = mooncakeContainerClient.getBlockBlobClient(blobName);
-    console.log('Uploading blobs to Azure storage and Mooncake Azure storage...');
     const blobOptions = {
         blobHTTPHeaders: {
             blobContentType: mime.lookup(filePath),
@@ -163,11 +165,42 @@ async function main() {
             blobCacheControl: 'max-age=31536000, public'
         }
     };
-    await (0, retry_1.retry)(() => Promise.all([
-        blobClient.uploadFile(filePath, blobOptions),
-        mooncakeBlobClient.uploadFile(filePath, blobOptions)
-    ]));
-    console.log('Blobs successfully uploaded.');
+    const uploadPromises = [];
+    if (await blobClient.exists()) {
+        console.log(`Blob ${quality}, ${blobName} already exists, not publishing again.`);
+    }
+    else {
+        uploadPromises.push((0, retry_1.retry)(async () => {
+            await blobClient.uploadFile(filePath, blobOptions);
+            console.log('Blob successfully uploaded to Azure storage.');
+        }));
+    }
+    const shouldUploadToMooncake = /true/i.test(process.env['VSCODE_PUBLISH_TO_MOONCAKE'] ?? 'true');
+    if (shouldUploadToMooncake) {
+        const mooncakeCredential = new identity_1.ClientSecretCredential(process.env['AZURE_MOONCAKE_TENANT_ID'], process.env['AZURE_MOONCAKE_CLIENT_ID'], process.env['AZURE_MOONCAKE_CLIENT_SECRET']);
+        const mooncakeBlobServiceClient = new storage_blob_1.BlobServiceClient(`https://vscode.blob.core.chinacloudapi.cn`, mooncakeCredential, storagePipelineOptions);
+        const mooncakeContainerClient = mooncakeBlobServiceClient.getContainerClient(quality);
+        const mooncakeBlobClient = mooncakeContainerClient.getBlockBlobClient(blobName);
+        if (await mooncakeBlobClient.exists()) {
+            console.log(`Mooncake Blob ${quality}, ${blobName} already exists, not publishing again.`);
+        }
+        else {
+            uploadPromises.push((0, retry_1.retry)(async () => {
+                await mooncakeBlobClient.uploadFile(filePath, blobOptions);
+                console.log('Blob successfully uploaded to Mooncake Azure storage.');
+            }));
+        }
+        if (uploadPromises.length) {
+            console.log('Uploading blobs to Azure storage and Mooncake Azure storage...');
+        }
+    }
+    else {
+        if (uploadPromises.length) {
+            console.log('Uploading blobs to Azure storage...');
+        }
+    }
+    await Promise.all(uploadPromises);
+    console.log(uploadPromises.length ? 'All blobs successfully uploaded.' : 'No blobs to upload.');
     const assetUrl = `${process.env['AZURE_CDN_URL']}/${quality}/${blobName}`;
     const blobPath = new URL(assetUrl).pathname;
     const mooncakeUrl = `${process.env['MOONCAKE_CDN_URL']}${blobPath}`;

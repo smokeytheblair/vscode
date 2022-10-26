@@ -15,7 +15,7 @@ import { Action } from 'vs/base/common/actions';
 import { Delayer } from 'vs/base/common/async';
 import { Emitter, Event } from 'vs/base/common/event';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
-import { CONTEXT_FIND_WIDGET_NOT_VISIBLE } from 'vs/editor/contrib/find/findModel';
+import { CONTEXT_FIND_WIDGET_NOT_VISIBLE } from 'vs/editor/contrib/find/browser/findModel';
 import * as nls from 'vs/nls';
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
@@ -26,16 +26,16 @@ import { KeybindingsRegistry, KeybindingWeight } from 'vs/platform/keybinding/co
 import { ISearchConfigurationProperties } from 'vs/workbench/services/search/common/search';
 import { attachFindReplaceInputBoxStyler, attachInputBoxStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService, ThemeIcon } from 'vs/platform/theme/common/themeService';
-import { ContextScopedFindInput, ContextScopedReplaceInput } from 'vs/platform/browser/contextScopedHistoryWidget';
+import { ContextScopedFindInput, ContextScopedReplaceInput } from 'vs/platform/history/browser/contextScopedHistoryWidget';
 import { appendKeyBindingLabel, isSearchViewFocused, getSearchView } from 'vs/workbench/contrib/search/browser/searchActions';
 import * as Constants from 'vs/workbench/contrib/search/common/constants';
 import { IAccessibilityService } from 'vs/platform/accessibility/common/accessibility';
 import { isMacintosh } from 'vs/base/common/platform';
-import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
+import { Toggle } from 'vs/base/browser/ui/toggle/toggle';
 import { IViewsService } from 'vs/workbench/common/views';
 import { searchReplaceAllIcon, searchHideReplaceIcon, searchShowContextIcon, searchShowReplaceIcon } from 'vs/workbench/contrib/search/browser/searchIcons';
 import { ToggleSearchEditorContextLinesCommandId } from 'vs/workbench/contrib/searchEditor/browser/constants';
-import { showHistoryKeybindingHint } from 'vs/platform/browser/historyWidgetKeybindingHint';
+import { showHistoryKeybindingHint } from 'vs/platform/history/browser/historyWidgetKeybindingHint';
 
 /** Specified in searchview.css */
 export const SingleLineInputHeight = 24;
@@ -118,8 +118,8 @@ export class SearchWidget extends Widget {
 	private ignoreGlobalFindBufferOnNextFocus = false;
 	private previousGlobalFindBufferValue: string | null = null;
 
-	private _onSearchSubmit = this._register(new Emitter<{ triggeredOnType: boolean, delay: number }>());
-	readonly onSearchSubmit: Event<{ triggeredOnType: boolean, delay: number }> = this._onSearchSubmit.event;
+	private _onSearchSubmit = this._register(new Emitter<{ triggeredOnType: boolean; delay: number }>());
+	readonly onSearchSubmit: Event<{ triggeredOnType: boolean; delay: number }> = this._onSearchSubmit.event;
 
 	private _onSearchCancel = this._register(new Emitter<{ focus: boolean }>());
 	readonly onSearchCancel: Event<{ focus: boolean }> = this._onSearchCancel.event;
@@ -148,7 +148,7 @@ export class SearchWidget extends Widget {
 	private readonly _onDidToggleContext = new Emitter<void>();
 	readonly onDidToggleContext: Event<void> = this._onDidToggleContext.event;
 
-	private showContextCheckbox!: Checkbox;
+	private showContextToggle!: Toggle;
 	public contextLinesInput!: InputBox;
 
 	constructor(
@@ -314,11 +314,12 @@ export class SearchWidget extends Widget {
 			history: options.searchHistory,
 			showHistoryHint: () => showHistoryKeybindingHint(this.keybindingService),
 			flexibleHeight: true,
-			flexibleMaxHeight: SearchWidget.INPUT_MAX_HEIGHT
+			flexibleMaxHeight: SearchWidget.INPUT_MAX_HEIGHT,
+			showCommonFindToggles: true
 		};
 
 		const searchInputContainer = dom.append(parent, dom.$('.search-container.input-box'));
-		this.searchInput = this._register(new ContextScopedFindInput(searchInputContainer, this.contextViewService, inputOptions, this.contextKeyService, true));
+		this.searchInput = this._register(new ContextScopedFindInput(searchInputContainer, this.contextViewService, inputOptions, this.contextKeyService));
 		this._register(attachFindReplaceInputBoxStyler(this.searchInput, this.themeService));
 		this.searchInput.onKeyDown((keyboardEvent: IKeyboardEvent) => this.onSearchInputKeyDown(keyboardEvent));
 		this.searchInput.setValue(options.value || '');
@@ -355,20 +356,25 @@ export class SearchWidget extends Widget {
 		this._register(this.searchInputFocusTracker.onDidBlur(() => this.searchInputBoxFocused.set(false)));
 
 
-		this.showContextCheckbox = new Checkbox({
+		this.showContextToggle = new Toggle({
 			isChecked: false,
 			title: appendKeyBindingLabel(nls.localize('showContext', "Toggle Context Lines"), this.keybindingService.lookupKeybinding(ToggleSearchEditorContextLinesCommandId), this.keybindingService),
 			icon: searchShowContextIcon
 		});
-		this._register(this.showContextCheckbox.onChange(() => this.onContextLinesChanged()));
+		this._register(this.showContextToggle.onChange(() => this.onContextLinesChanged()));
 
 		if (options.showContextToggle) {
 			this.contextLinesInput = new InputBox(searchInputContainer, this.contextViewService, { type: 'number' });
 			this.contextLinesInput.element.classList.add('context-lines-input');
 			this.contextLinesInput.value = '' + (this.configurationService.getValue<ISearchConfigurationProperties>('search').searchEditor.defaultNumberOfContextLines ?? 1);
-			this._register(this.contextLinesInput.onDidChange(() => this.onContextLinesChanged()));
+			this._register(this.contextLinesInput.onDidChange((value: string) => {
+				if (value !== '0') {
+					this.showContextToggle.checked = true;
+				}
+				this.onContextLinesChanged();
+			}));
 			this._register(attachInputBoxStyler(this.contextLinesInput, this.themeService));
-			dom.append(searchInputContainer, this.showContextCheckbox.domNode);
+			dom.append(searchInputContainer, this.showContextToggle.domNode);
 		}
 	}
 
@@ -385,9 +391,9 @@ export class SearchWidget extends Widget {
 	public setContextLines(lines: number) {
 		if (!this.contextLinesInput) { return; }
 		if (lines === 0) {
-			this.showContextCheckbox.checked = false;
+			this.showContextToggle.checked = false;
 		} else {
-			this.showContextCheckbox.checked = true;
+			this.showContextToggle.checked = true;
 			this.contextLinesInput.value = '' + lines;
 		}
 	}
@@ -640,18 +646,18 @@ export class SearchWidget extends Widget {
 	}
 
 	getContextLines() {
-		return this.showContextCheckbox.checked ? +this.contextLinesInput.value : 0;
+		return this.showContextToggle.checked ? +this.contextLinesInput.value : 0;
 	}
 
 	modifyContextLines(increase: boolean) {
 		const current = +this.contextLinesInput.value;
 		const modified = current + (increase ? 1 : -1);
-		this.showContextCheckbox.checked = modified !== 0;
+		this.showContextToggle.checked = modified !== 0;
 		this.contextLinesInput.value = '' + modified;
 	}
 
 	toggleContextLines() {
-		this.showContextCheckbox.checked = !this.showContextCheckbox.checked;
+		this.showContextToggle.checked = !this.showContextToggle.checked;
 		this.onContextLinesChanged();
 	}
 

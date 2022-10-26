@@ -5,6 +5,7 @@
 
 import * as browser from 'vs/base/browser/browser';
 import * as dom from 'vs/base/browser/dom';
+import { DomEmitter } from 'vs/base/browser/event';
 import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { RunOnceScheduler } from 'vs/base/common/async';
 import { Emitter, Event } from 'vs/base/common/event';
@@ -29,11 +30,6 @@ export const CopyOptions = {
 	forceCopyWithSyntaxHighlighting: false
 };
 
-const enum ReadFromTextArea {
-	Type,
-	Paste
-}
-
 export interface IPasteData {
 	text: string;
 	metadata: ClipboardStoredMetadata | null;
@@ -55,8 +51,8 @@ export interface ClipboardStoredMetadata {
 }
 
 export interface ITextAreaInputHost {
-	getDataToCopy(html: boolean): ClipboardDataToCopy;
-	getScreenReaderContent(currentState: TextAreaState): TextAreaState;
+	getDataToCopy(): ClipboardDataToCopy;
+	getScreenReaderContent(): TextAreaState;
 	deduceModelPosition(viewAnchorPosition: Position, deltaOffset: number, lineFeedCnt: number): Position;
 }
 
@@ -94,7 +90,7 @@ export class InMemoryClipboardMetadataManager {
 }
 
 export interface ICompositionStartEvent {
-	revealDeltaColumns: number;
+	data: string;
 }
 
 export interface ICompleteTextAreaWrapper extends ITextAreaWrapper {
@@ -197,11 +193,15 @@ export class TextAreaInput extends Disposable {
 	private readonly _asyncFocusGainWriteScreenReaderContent: RunOnceScheduler;
 
 	private _textAreaState: TextAreaState;
+
+	public get textAreaState(): TextAreaState {
+		return this._textAreaState;
+	}
+
 	private _selectionChangeListener: IDisposable | null;
 
 	private _hasFocus: boolean;
 	private _currentComposition: CompositionContext | null;
-	private _nextCommand: ReadFromTextArea;
 
 	constructor(
 		private readonly _host: ITextAreaInputHost,
@@ -219,7 +219,6 @@ export class TextAreaInput extends Disposable {
 
 		this._hasFocus = false;
 		this._currentComposition = null;
-		this._nextCommand = ReadFromTextArea.Type;
 
 		let lastKeyDown: IKeyboardEvent | null = null;
 
@@ -261,35 +260,31 @@ export class TextAreaInput extends Disposable {
 
 			if (
 				this._OS === OperatingSystem.Macintosh
+				&& lastKeyDown
+				&& lastKeyDown.equals(KeyCode.KEY_IN_COMPOSITION)
 				&& this._textAreaState.selectionStart === this._textAreaState.selectionEnd
 				&& this._textAreaState.selectionStart > 0
 				&& this._textAreaState.value.substr(this._textAreaState.selectionStart - 1, 1) === e.data
+				&& (lastKeyDown.code === 'ArrowRight' || lastKeyDown.code === 'ArrowLeft')
 			) {
-				const isArrowKey = (
-					lastKeyDown && lastKeyDown.equals(KeyCode.KEY_IN_COMPOSITION)
-					&& (lastKeyDown.code === 'ArrowRight' || lastKeyDown.code === 'ArrowLeft')
-				);
-				if (isArrowKey || this._browser.isFirefox) {
-					// Handling long press case on Chromium/Safari macOS + arrow key => pretend the character was selected
-					// or long press case on Firefox on macOS
-					if (_debugComposition) {
-						console.log(`[compositionstart] Handling long press case on macOS + arrow key or Firefox`, e);
-					}
-					// Pretend the previous character was composed (in order to get it removed by subsequent compositionupdate events)
-					currentComposition.handleCompositionUpdate('x');
-					this._onCompositionStart.fire({ revealDeltaColumns: -1 });
-					return;
+				// Handling long press case on Chromium/Safari macOS + arrow key => pretend the character was selected
+				if (_debugComposition) {
+					console.log(`[compositionstart] Handling long press case on macOS + arrow key`, e);
 				}
+				// Pretend the previous character was composed (in order to get it removed by subsequent compositionupdate events)
+				currentComposition.handleCompositionUpdate('x');
+				this._onCompositionStart.fire({ data: e.data });
+				return;
 			}
 
 			if (this._browser.isAndroid) {
 				// when tapping on the editor, Android enters composition mode to edit the current word
 				// so we cannot clear the textarea on Android and we must pretend the current word was selected
-				this._onCompositionStart.fire({ revealDeltaColumns: -this._textAreaState.selectionStart });
+				this._onCompositionStart.fire({ data: e.data });
 				return;
 			}
 
-			this._onCompositionStart.fire({ revealDeltaColumns: 0 });
+			this._onCompositionStart.fire({ data: e.data });
 		}));
 
 		this._register(this._textArea.onCompositionUpdate((e) => {
@@ -306,7 +301,7 @@ export class TextAreaInput extends Disposable {
 				// For example, if the cursor is in the middle of a word like Mic|osoft
 				// and Microsoft is chosen from the keyboard's suggestions, the e.data will contain "Microsoft".
 				// This is not really usable because it doesn't tell us where the edit began and where it ended.
-				const newState = TextAreaState.readFromTextArea(this._textArea);
+				const newState = TextAreaState.readFromTextArea(this._textArea, this._textAreaState);
 				const typeInput = TextAreaState.deduceAndroidCompositionInput(this._textAreaState, newState);
 				this._textAreaState = newState;
 				this._onType.fire(typeInput);
@@ -314,7 +309,7 @@ export class TextAreaInput extends Disposable {
 				return;
 			}
 			const typeInput = currentComposition.handleCompositionUpdate(e.data);
-			this._textAreaState = TextAreaState.readFromTextArea(this._textArea);
+			this._textAreaState = TextAreaState.readFromTextArea(this._textArea, this._textAreaState);
 			this._onType.fire(typeInput);
 			this._onCompositionUpdate.fire(e);
 		}));
@@ -336,7 +331,7 @@ export class TextAreaInput extends Disposable {
 				// For example, if the cursor is in the middle of a word like Mic|osoft
 				// and Microsoft is chosen from the keyboard's suggestions, the e.data will contain "Microsoft".
 				// This is not really usable because it doesn't tell us where the edit began and where it ended.
-				const newState = TextAreaState.readFromTextArea(this._textArea);
+				const newState = TextAreaState.readFromTextArea(this._textArea, this._textAreaState);
 				const typeInput = TextAreaState.deduceAndroidCompositionInput(this._textAreaState, newState);
 				this._textAreaState = newState;
 				this._onType.fire(typeInput);
@@ -345,7 +340,7 @@ export class TextAreaInput extends Disposable {
 			}
 
 			const typeInput = currentComposition.handleCompositionUpdate(e.data);
-			this._textAreaState = TextAreaState.readFromTextArea(this._textArea);
+			this._textAreaState = TextAreaState.readFromTextArea(this._textArea, this._textAreaState);
 			this._onType.fire(typeInput);
 			this._onCompositionEnd.fire();
 		}));
@@ -363,7 +358,7 @@ export class TextAreaInput extends Disposable {
 				return;
 			}
 
-			const newState = TextAreaState.readFromTextArea(this._textArea);
+			const newState = TextAreaState.readFromTextArea(this._textArea, this._textAreaState);
 			const typeInput = TextAreaState.deduceInput(this._textAreaState, newState, /*couldBeEmojiInput*/this._OS === OperatingSystem.Macintosh);
 
 			if (typeInput.replacePrevCharCnt === 0 && typeInput.text.length === 1 && strings.isHighSurrogate(typeInput.text.charCodeAt(0))) {
@@ -372,21 +367,13 @@ export class TextAreaInput extends Disposable {
 			}
 
 			this._textAreaState = newState;
-			const typeInputIsNoOp = (
-				typeInput.text === ''
-				&& typeInput.replacePrevCharCnt === 0
-				&& typeInput.replaceNextCharCnt === 0
-				&& typeInput.positionDelta === 0
-			);
-			if (this._nextCommand === ReadFromTextArea.Type) {
-				if (!typeInputIsNoOp) {
-					this._onType.fire(typeInput);
-				}
-			} else {
-				if (!typeInputIsNoOp) {
-					this._firePaste(typeInput.text, null);
-				}
-				this._nextCommand = ReadFromTextArea.Type;
+			if (
+				typeInput.text !== ''
+				|| typeInput.replacePrevCharCnt !== 0
+				|| typeInput.replaceNextCharCnt !== 0
+				|| typeInput.positionDelta !== 0
+			) {
+				this._onType.fire(typeInput);
 			}
 		}));
 
@@ -410,18 +397,24 @@ export class TextAreaInput extends Disposable {
 			// result in a `selectionchange` event which we want to ignore
 			this._textArea.setIgnoreSelectionChangeTime('received paste event');
 
-			if (ClipboardEventUtils.canUseTextData(e)) {
-				const [pastePlainText, metadata] = ClipboardEventUtils.getTextData(e);
-				if (pastePlainText !== '') {
-					this._firePaste(pastePlainText, metadata);
-				}
-			} else {
-				if (this._textArea.getSelectionStart() !== this._textArea.getSelectionEnd()) {
-					// Clean up the textarea, to get a clean paste
-					this._setAndWriteTextAreaState('paste', TextAreaState.EMPTY);
-				}
-				this._nextCommand = ReadFromTextArea.Paste;
+			e.preventDefault();
+
+			if (!e.clipboardData) {
+				return;
 			}
+
+			let [text, metadata] = ClipboardEventUtils.getTextData(e.clipboardData);
+			if (!text) {
+				return;
+			}
+
+			// try the in-memory store
+			metadata = metadata || InMemoryClipboardMetadataManager.INSTANCE.get(text);
+
+			this._onPaste.fire({
+				text: text,
+				metadata: metadata
+			});
 		}));
 
 		this._register(this._textArea.onFocus(() => {
@@ -471,7 +464,7 @@ export class TextAreaInput extends Disposable {
 
 	_initializeFromTest(): void {
 		this._hasFocus = true;
-		this._textAreaState = TextAreaState.readFromTextArea(this._textArea);
+		this._textAreaState = TextAreaState.readFromTextArea(this._textArea, null);
 	}
 
 	private _installSelectionChangeListener(): IDisposable {
@@ -524,7 +517,7 @@ export class TextAreaInput extends Disposable {
 				return;
 			}
 
-			if (!this._textAreaState.selectionStartPosition || !this._textAreaState.selectionEndPosition) {
+			if (!this._textAreaState.selection) {
 				// Cannot correlate a position in the textarea with a position in the editor...
 				return;
 			}
@@ -623,11 +616,11 @@ export class TextAreaInput extends Disposable {
 			return;
 		}
 
-		this._setAndWriteTextAreaState(reason, this._host.getScreenReaderContent(this._textAreaState));
+		this._setAndWriteTextAreaState(reason, this._host.getScreenReaderContent());
 	}
 
 	private _ensureClipboardGetsEditorSelection(e: ClipboardEvent): void {
-		const dataToCopy = this._host.getDataToCopy(ClipboardEventUtils.canUseTextData(e));
+		const dataToCopy = this._host.getDataToCopy();
 		const storedMetadata: ClipboardStoredMetadata = {
 			version: 1,
 			isFromEmptySelection: dataToCopy.isFromEmptySelection,
@@ -641,91 +634,63 @@ export class TextAreaInput extends Disposable {
 			storedMetadata
 		);
 
-		if (!ClipboardEventUtils.canUseTextData(e)) {
-			// Looks like an old browser. The strategy is to place the text
-			// we'd like to be copied to the clipboard in the textarea and select it.
-			this._setAndWriteTextAreaState('copy or cut', TextAreaState.selectedText(dataToCopy.text));
-			return;
+		e.preventDefault();
+		if (e.clipboardData) {
+			ClipboardEventUtils.setTextData(e.clipboardData, dataToCopy.text, dataToCopy.html, storedMetadata);
 		}
-
-		ClipboardEventUtils.setTextData(e, dataToCopy.text, dataToCopy.html, storedMetadata);
-	}
-
-	private _firePaste(text: string, metadata: ClipboardStoredMetadata | null): void {
-		if (!metadata) {
-			// try the in-memory store
-			metadata = InMemoryClipboardMetadataManager.INSTANCE.get(text);
-		}
-		this._onPaste.fire({
-			text: text,
-			metadata: metadata
-		});
 	}
 }
 
 class ClipboardEventUtils {
 
-	public static canUseTextData(e: ClipboardEvent): boolean {
-		if (e.clipboardData) {
-			return true;
-		}
-		return false;
-	}
-
-	public static getTextData(e: ClipboardEvent): [string, ClipboardStoredMetadata | null] {
-		if (e.clipboardData) {
-			e.preventDefault();
-
-			const text = e.clipboardData.getData(Mimes.text);
-			let metadata: ClipboardStoredMetadata | null = null;
-			const rawmetadata = e.clipboardData.getData('vscode-editor-data');
-			if (typeof rawmetadata === 'string') {
-				try {
-					metadata = <ClipboardStoredMetadata>JSON.parse(rawmetadata);
-					if (metadata.version !== 1) {
-						metadata = null;
-					}
-				} catch (err) {
-					// no problem!
+	public static getTextData(clipboardData: DataTransfer): [string, ClipboardStoredMetadata | null] {
+		const text = clipboardData.getData(Mimes.text);
+		let metadata: ClipboardStoredMetadata | null = null;
+		const rawmetadata = clipboardData.getData('vscode-editor-data');
+		if (typeof rawmetadata === 'string') {
+			try {
+				metadata = <ClipboardStoredMetadata>JSON.parse(rawmetadata);
+				if (metadata.version !== 1) {
+					metadata = null;
 				}
+			} catch (err) {
+				// no problem!
 			}
-
-			return [text, metadata];
 		}
 
-		throw new Error('ClipboardEventUtils.getTextData: Cannot use text data!');
+		if (text.length === 0 && metadata === null && clipboardData.files.length > 0) {
+			// no textual data pasted, generate text from file names
+			const files: File[] = Array.prototype.slice.call(clipboardData.files, 0);
+			return [files.map(file => file.name).join('\n'), null];
+		}
+
+		return [text, metadata];
 	}
 
-	public static setTextData(e: ClipboardEvent, text: string, html: string | null | undefined, metadata: ClipboardStoredMetadata): void {
-		if (e.clipboardData) {
-			e.clipboardData.setData(Mimes.text, text);
-			if (typeof html === 'string') {
-				e.clipboardData.setData('text/html', html);
-			}
-			e.clipboardData.setData('vscode-editor-data', JSON.stringify(metadata));
-			e.preventDefault();
-			return;
+	public static setTextData(clipboardData: DataTransfer, text: string, html: string | null | undefined, metadata: ClipboardStoredMetadata): void {
+		clipboardData.setData(Mimes.text, text);
+		if (typeof html === 'string') {
+			clipboardData.setData('text/html', html);
 		}
-
-		throw new Error('ClipboardEventUtils.setTextData: Cannot use text data!');
+		clipboardData.setData('vscode-editor-data', JSON.stringify(metadata));
 	}
 }
 
 export class TextAreaWrapper extends Disposable implements ICompleteTextAreaWrapper {
 
-	public readonly onKeyDown = this._register(dom.createEventEmitter(this._actual, 'keydown')).event;
-	public readonly onKeyPress = this._register(dom.createEventEmitter(this._actual, 'keypress')).event;
-	public readonly onKeyUp = this._register(dom.createEventEmitter(this._actual, 'keyup')).event;
-	public readonly onCompositionStart = this._register(dom.createEventEmitter(this._actual, 'compositionstart')).event;
-	public readonly onCompositionUpdate = this._register(dom.createEventEmitter(this._actual, 'compositionupdate')).event;
-	public readonly onCompositionEnd = this._register(dom.createEventEmitter(this._actual, 'compositionend')).event;
-	public readonly onBeforeInput = this._register(dom.createEventEmitter(this._actual, 'beforeinput')).event;
-	public readonly onInput = <Event<InputEvent>>this._register(dom.createEventEmitter(this._actual, 'input')).event;
-	public readonly onCut = this._register(dom.createEventEmitter(this._actual, 'cut')).event;
-	public readonly onCopy = this._register(dom.createEventEmitter(this._actual, 'copy')).event;
-	public readonly onPaste = this._register(dom.createEventEmitter(this._actual, 'paste')).event;
-	public readonly onFocus = this._register(dom.createEventEmitter(this._actual, 'focus')).event;
-	public readonly onBlur = this._register(dom.createEventEmitter(this._actual, 'blur')).event;
+	public readonly onKeyDown = this._register(new DomEmitter(this._actual, 'keydown')).event;
+	public readonly onKeyPress = this._register(new DomEmitter(this._actual, 'keypress')).event;
+	public readonly onKeyUp = this._register(new DomEmitter(this._actual, 'keyup')).event;
+	public readonly onCompositionStart = this._register(new DomEmitter(this._actual, 'compositionstart')).event;
+	public readonly onCompositionUpdate = this._register(new DomEmitter(this._actual, 'compositionupdate')).event;
+	public readonly onCompositionEnd = this._register(new DomEmitter(this._actual, 'compositionend')).event;
+	public readonly onBeforeInput = this._register(new DomEmitter(this._actual, 'beforeinput')).event;
+	public readonly onInput = <Event<InputEvent>>this._register(new DomEmitter(this._actual, 'input')).event;
+	public readonly onCut = this._register(new DomEmitter(this._actual, 'cut')).event;
+	public readonly onCopy = this._register(new DomEmitter(this._actual, 'copy')).event;
+	public readonly onPaste = this._register(new DomEmitter(this._actual, 'paste')).event;
+	public readonly onFocus = this._register(new DomEmitter(this._actual, 'focus')).event;
+	public readonly onBlur = this._register(new DomEmitter(this._actual, 'blur')).event;
 
 	private _onSyntheticTap = this._register(new Emitter<void>());
 	public readonly onSyntheticTap: Event<void> = this._onSyntheticTap.event;

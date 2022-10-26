@@ -17,10 +17,10 @@ import { Progress } from 'vs/platform/progress/common/progress';
 import { IExtendedExtensionSearchOptions, SearchError, SearchErrorCode, serializeSearchError } from 'vs/workbench/services/search/common/search';
 import { Range, TextSearchComplete, TextSearchContext, TextSearchMatch, TextSearchOptions, TextSearchPreviewOptions, TextSearchQuery, TextSearchResult } from 'vs/workbench/services/search/common/searchExtTypes';
 import { AST as ReAST, RegExpParser, RegExpVisitor } from 'vscode-regexpp';
-import { rgPath } from 'vscode-ripgrep';
+import { rgPath } from '@vscode/ripgrep';
 import { anchorGlob, createTextSearchResult, IOutputChannel, Maybe } from './ripgrepSearchUtils';
 
-// If vscode-ripgrep is in an .asar file, then the binary is unpacked.
+// If @vscode/ripgrep is in an .asar file, then the binary is unpacked.
 const rgDiskPath = rgPath.replace(/\bnode_modules\.asar\b/, 'node_modules.asar.unpacked');
 
 export class RipgrepTextSearchEngine {
@@ -66,13 +66,9 @@ export class RipgrepTextSearchEngine {
 			const cancel = () => {
 				isDone = true;
 
-				if (rgProc) {
-					rgProc.kill();
-				}
+				rgProc?.kill();
 
-				if (ripgrepParser) {
-					ripgrepParser.cancel();
-				}
+				ripgrepParser?.cancel();
 			};
 
 			let limitHit = false;
@@ -96,7 +92,10 @@ export class RipgrepTextSearchEngine {
 			rgProc.stderr!.on('data', data => {
 				const message = data.toString();
 				this.outputChannel.appendLine(message);
-				stderr += message;
+
+				if (stderr.length + message.length < 1e6) {
+					stderr += message;
+				}
 			});
 
 			rgProc.on('close', () => {
@@ -302,11 +301,15 @@ export class RipgrepParser extends EventEmitter {
 			}
 
 			const matchText = bytesOrTextToString(match.match);
-			const inBetweenChars = fullTextBytes.slice(prevMatchEnd, match.start).toString().length;
-			const startCol = prevMatchEndCol + inBetweenChars;
+
+			const inBetweenText = fullTextBytes.slice(prevMatchEnd, match.start).toString();
+			const inBetweenStats = getNumLinesAndLastNewlineLength(inBetweenText);
+			const startCol = inBetweenStats.numLines > 0 ?
+				inBetweenStats.lastLineLength :
+				inBetweenStats.lastLineLength + prevMatchEndCol;
 
 			const stats = getNumLinesAndLastNewlineLength(matchText);
-			const startLineNumber = prevMatchEndLine;
+			const startLineNumber = inBetweenStats.numLines + prevMatchEndLine;
 			const endLineNumber = stats.numLines + startLineNumber;
 			const endCol = stats.numLines > 0 ?
 				stats.lastLineLength :
@@ -348,7 +351,7 @@ function bytesOrTextToString(obj: any): string {
 		obj.text;
 }
 
-function getNumLinesAndLastNewlineLength(text: string): { numLines: number, lastLineLength: number } {
+function getNumLinesAndLastNewlineLength(text: string): { numLines: number; lastLineLength: number } {
 	const re = /\n/g;
 	let numLines = 0;
 	let lastNewlineIdx = -1;
@@ -403,7 +406,9 @@ function getRgArgs(query: TextSearchQuery, options: TextSearchOptions): string[]
 	}
 
 	if (options.useIgnoreFiles) {
-		args.push('--no-ignore-parent');
+		if (!options.useParentIgnoreFiles) {
+			args.push('--no-ignore-parent');
+		}
 	} else {
 		// Don't use .gitignore or .ignore
 		args.push('--no-ignore');
@@ -438,7 +443,7 @@ function getRgArgs(query: TextSearchQuery, options: TextSearchOptions): string[]
 
 	if (query.isRegExp) {
 		query.pattern = unicodeEscapesToPCRE2(query.pattern);
-		args.push('--auto-hybrid-regex');
+		args.push('--engine', 'auto');
 	}
 
 	let searchPatternAfterDoubleDashes: Maybe<string>;
@@ -573,8 +578,7 @@ export function fixRegexNewline(pattern: string): string {
 						// If quantified, we can't use a negative lookahead in a quantifier.
 						// But `.` already doesn't match new lines, so we can just use that
 						// (with any other negations) instead.
-						const quant = parent.parent;
-						replace(quant.start, quant.end, (otherContent ? `[^${otherContent}]` : '.') + (quant.greedy ? '+' : '*'));
+						replace(parent.start, parent.end, otherContent ? `[^${otherContent}]` : '.');
 					} else {
 						replace(parent.start, parent.end, '(?!\\r?\\n' + (otherContent ? `|[${otherContent}]` : '') + ')');
 					}

@@ -103,14 +103,6 @@ async function detectAvailableWindowsProfiles(
 			source: ProfileSource.GitBash,
 			isAutoDetected: true
 		});
-		detectedProfiles.set('Cygwin', {
-			path: [
-				`${process.env['HOMEDRIVE']}\\cygwin64\\bin\\bash.exe`,
-				`${process.env['HOMEDRIVE']}\\cygwin\\bin\\bash.exe`
-			],
-			args: ['--login'],
-			isAutoDetected: true
-		});
 		detectedProfiles.set('Command Prompt', {
 			path: `${system32Path}\\cmd.exe`,
 			icon: Codicon.terminalCmd,
@@ -122,7 +114,7 @@ async function detectAvailableWindowsProfiles(
 
 	const resultProfiles: ITerminalProfile[] = await transformToTerminalProfiles(detectedProfiles.entries(), defaultProfileName, fsProvider, shellEnv, logService, variableResolver);
 
-	if (includeDetectedProfiles || (!includeDetectedProfiles && useWslProfiles)) {
+	if (includeDetectedProfiles || useWslProfiles) {
 		try {
 			const result = await getWslProfiles(`${system32Path}\\${useWSLexe ? 'wsl' : 'bash'}.exe`, defaultProfileName);
 			for (const wslProfile of result) {
@@ -154,7 +146,7 @@ async function transformToTerminalProfiles(
 		if (profile === null) { continue; }
 		let originalPaths: string[];
 		let args: string[] | string | undefined;
-		let icon: ThemeIcon | URI | { light: URI, dark: URI } | undefined = undefined;
+		let icon: ThemeIcon | URI | { light: URI; dark: URI } | undefined = undefined;
 		if ('source' in profile) {
 			const source = profileSources?.get(profile.source);
 			if (!source) {
@@ -183,9 +175,10 @@ async function transformToTerminalProfiles(
 			validatedProfile.color = profile.color;
 			resultProfiles.push(validatedProfile);
 		} else {
-			logService?.trace('profile not validated', profileName, originalPaths);
+			logService?.debug('Terminal profile not validated', profileName, originalPaths);
 		}
 	}
+	logService?.debug('Validated terminal profiles', resultProfiles);
 	return resultProfiles;
 }
 
@@ -210,9 +203,10 @@ async function initializeWindowsProfiles(testPwshSourcePaths?: string[]): Promis
 			`${process.env['ProgramW6432']}\\Git\\usr\\bin\\bash.exe`,
 			`${process.env['ProgramFiles']}\\Git\\bin\\bash.exe`,
 			`${process.env['ProgramFiles']}\\Git\\usr\\bin\\bash.exe`,
+			`${process.env['ProgramFiles(X86)']}\\Git\\bin\\bash.exe`,
+			`${process.env['ProgramFiles(X86)']}\\Git\\usr\\bin\\bash.exe`,
 			`${process.env['LocalAppData']}\\Programs\\Git\\bin\\bash.exe`,
 			`${process.env['UserProfile']}\\scoop\\apps\\git-with-openssh\\current\\bin\\bash.exe`,
-			`${process.env['AllUsersProfile']}\\scoop\\apps\\git-with-openssh\\current\\bin\\bash.exe`
 		],
 		args: ['--login']
 	});
@@ -268,7 +262,7 @@ async function getWslProfiles(wslPath: string, defaultProfileName: string | unde
 			args: [`-d`, `${distroName}`],
 			isDefault: profileName === defaultProfileName,
 			icon: getWslIcon(distroName),
-			isAutoDetected: true
+			isAutoDetected: false
 		};
 		// Add the profile
 		profiles.push(profile);
@@ -353,6 +347,8 @@ async function validateProfilePaths(profileName: string, defaultProfileName: str
 		if (!executable) {
 			return validateProfilePaths(profileName, defaultProfileName, potentialPaths, fsProvider, shellEnv, args);
 		}
+		profile.path = executable;
+		profile.isFromPath = true;
 		return profile;
 	}
 
@@ -365,7 +361,7 @@ async function validateProfilePaths(profileName: string, defaultProfileName: str
 }
 
 export interface IFsProvider {
-	existsFile(path: string): Promise<boolean>,
+	existsFile(path: string): Promise<boolean>;
 	readFile(path: string): Promise<Buffer>;
 }
 
@@ -377,7 +373,7 @@ interface IPotentialTerminalProfile {
 	profileName: string;
 	paths: string[];
 	args?: string[];
-	icon?: ThemeIcon | URI | { light: URI, dark: URI };
+	icon?: ThemeIcon | URI | { light: URI; dark: URI };
 }
 
 export type IUnresolvedTerminalProfile = ITerminalExecutable | ITerminalProfileSource | null;
